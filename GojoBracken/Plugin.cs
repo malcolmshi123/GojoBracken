@@ -19,7 +19,7 @@ namespace GojoBracken
 
         private Harmony harmony;
 
-        void Awake()
+        private void Awake()
         {
             harmony = new Harmony(modGUID);
             harmony.PatchAll();
