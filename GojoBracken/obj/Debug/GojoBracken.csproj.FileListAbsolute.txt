@@ -9,7 +9,6 @@ C:\Users\Malcolm Shi\repos\GojoBracken\GojoBracken\bin\Debug\MonoMod.Utils.dll
 C:\Users\Malcolm Shi\repos\GojoBracken\GojoBracken\bin\Debug\MonoMod.RuntimeDetour.dll
 C:\Users\Malcolm Shi\repos\GojoBracken\GojoBracken\bin\Debug\netstandard.dll
 C:\Users\Malcolm Shi\repos\GojoBracken\GojoBracken\bin\Debug\UnityEngine.DSPGraphModule.dll
-C:\Users\Malcolm Shi\repos\GojoBracken\GojoBracken\bin\Debug\UnityEngine.AudioModule.dll
 C:\Users\Malcolm Shi\repos\GojoBracken\GojoBracken\bin\Debug\UnityEngine.UnityCurlModule.dll
 C:\Users\Malcolm Shi\repos\GojoBracken\GojoBracken\bin\Debug\UnityEngine.ContentLoadModule.dll
 C:\Users\Malcolm Shi\repos\GojoBracken\GojoBracken\bin\Debug\UnityEngine.PropertiesModule.dll
@@ -37,7 +36,6 @@ C:\Users\Malcolm Shi\repos\GojoBracken\GojoBracken\bin\Debug\UnityEngine.Tilemap
 C:\Users\Malcolm Shi\repos\GojoBracken\GojoBracken\bin\Debug\UnityEngine.TerrainModule.dll
 C:\Users\Malcolm Shi\repos\GojoBracken\GojoBracken\bin\Debug\UnityEngine.IMGUIModule.dll
 C:\Users\Malcolm Shi\repos\GojoBracken\GojoBracken\bin\Debug\UnityEngine.VFXModule.dll
-C:\Users\Malcolm Shi\repos\GojoBracken\GojoBracken\bin\Debug\UnityEngine.VideoModule.dll
 C:\Users\Malcolm Shi\repos\GojoBracken\GojoBracken\bin\Debug\UnityEngine.VRModule.dll
 C:\Users\Malcolm Shi\repos\GojoBracken\GojoBracken\bin\Debug\UnityEngine.GridModule.dll
 C:\Users\Malcolm Shi\repos\GojoBracken\GojoBracken\bin\Debug\UnityEngine.ImageConversionModule.dll
@@ -77,7 +75,6 @@ C:\Users\Malcolm Shi\repos\GojoBracken\GojoBracken\obj\Debug\GojoBracken.csproj.
 C:\Users\Malcolm Shi\repos\GojoBracken\GojoBracken\obj\Debug\GojoBracken.dll
 C:\Users\Malcolm Shi\repos\GojoBracken\GojoBracken\obj\Debug\GojoBracken.pdb
 C:\Users\Malcolm Shi\repos\GojoBracken\GojoBracken\bin\Debug\Assembly-CSharp.dll
-C:\Users\Malcolm Shi\repos\GojoBracken\GojoBracken\bin\Debug\Unity.Netcode.Runtime.dll
 C:\Users\Malcolm Shi\repos\GojoBracken\GojoBracken\bin\Debug\Unity.Animation.Rigging.dll
 C:\Users\Malcolm Shi\repos\GojoBracken\GojoBracken\bin\Debug\UnityEngine.UI.dll
 C:\Users\Malcolm Shi\repos\GojoBracken\GojoBracken\bin\Debug\Unity.TextMeshPro.dll
@@ -111,3 +108,4 @@ C:\Users\Malcolm Shi\repos\GojoBracken\GojoBracken\bin\Debug\Unity.Services.Core
 C:\Users\Malcolm Shi\repos\GojoBracken\GojoBracken\bin\Debug\Unity.Services.Core.dll
 C:\Users\Malcolm Shi\repos\GojoBracken\GojoBracken\bin\Debug\Newtonsoft.Json.dll
 C:\Users\Malcolm Shi\repos\GojoBracken\GojoBracken\bin\Debug\Unity.Profiling.Core.dll
+C:\Users\Malcolm Shi\repos\GojoBracken\GojoBracken\bin\Debug\LC_API.dll
