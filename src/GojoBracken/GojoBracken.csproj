@@ -5,7 +5,7 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <RootNamespace>GojoBracken</RootNamespace>
     <AssemblyName>GojoBracken</AssemblyName>
-    <Version>0.1.0</Version>
+    <Version>0.1.1</Version>
     <Description>Cosmetic Gojo Satoru replacement for Lethal Company's Bracken.</Description>
     <BepInExCoreDir Condition="'$(BepInExCoreDir)' == '' and '$(LethalCompanyDir)' != ''">$(LethalCompanyDir)/BepInEx/core</BepInExCoreDir>
     <GameManagedDir Condition="'$(GameManagedDir)' == '' and '$(LethalCompanyDir)' != ''">$(LethalCompanyDir)/Lethal Company_Data/Managed</GameManagedDir>
@@ -41,5 +41,3 @@
            Text="GameManagedDir must point to Lethal Company_Data/Managed and contain UnityEngine.dll and UnityEngine.CoreModule.dll." />
   </Target>
 </Project>
-
-

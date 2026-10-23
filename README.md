@@ -9,7 +9,7 @@ A cosmetic Lethal Company mod that will replace the Bracken with Gojo Satoru fro
 
 ## Current status
 
-Version 0.1.0 is a plugin foundation: it logs when BepInEx loads it.
+Version 0.1.1 is a plugin foundation with optional runtime diagnostics for the testing PC.
 It does not replace the Bracken or provide an aura or voice line yet.
 No model, audio, Unity project, AssetBundle, or installable release is included.
 
@@ -33,7 +33,7 @@ Copy only that DLL into BepInEx/plugins/GojoBracken in a separate test profile.
 Start the game and check BepInEx/LogOutput.log for:
 
 ```text
-Gojo Bracken 0.1.0 loaded. Plugin foundation only; cosmetics are not implemented yet.
+Gojo Bracken 0.1.1 loaded. Plugin foundation only; cosmetics are not implemented yet.
 ```
 
 For command-line builds, LethalCompanyDir, BepInExCoreDir, and GameManagedDir can also be passed using -p:Name="path". GameManagedDir defaults to LethalCompanyDir/Lethal Company_Data/Managed; BepInExCoreDir defaults to LethalCompanyDir/BepInEx/core when not supplied.
@@ -65,6 +65,31 @@ RemoteSigned applies only to the child PowerShell process above; it does not cha
 Bring back compatibility.json and the version number displayed in the game's main menu. If unityVersionFromPlayer is null, also provide the Unity version line from the game's Player.log. UnityPlayer file-version metadata is preserved in the report for inspection.
 
 This is an installation inventory, not a compatibility certification. The active render settings, Bracken state mapping, anger range, corpse-carrying behavior, and anger replication remain pending code/runtime inspection before the Unity asset project is pinned.
+
+## Runtime diagnostics on the testing PC
+
+The reported baseline is game **v81**, Steam build **22825947**, Unity player **2022.3.62f2**, BepInEx file version **5.4.23.5**, and Harmony file version **2.9.0.0** (2026-10-23). The HDRP assembly is present. This identifies the test installation; runtime compatibility and the final Unity project settings remain unverified.
+
+Version 0.1.1 adds an optional observation mode. It does not patch enemy methods, change enemy fields, or add network messages.
+
+1. Build Release and copy GojoBracken.dll into the separate test profile's BepInEx/plugins/GojoBracken folder, replacing the earlier foundation DLL. Ensure the profile contains only one copy of this plugin.
+2. Launch once and exit to generate BepInEx/config/FreakyFriday.GojoBracken.cfg.
+3. In that profile's config file, set:
+
+```ini
+[Diagnostics]
+Enabled = true
+```
+
+4. Restart the game. Play normally and observe a Bracken hunting, retreating when spotted, becoming aggressive, and dragging a corpse. Note which visible behavior corresponds to each logged state.
+5. Return the lines containing [Diagnostics] from that profile's BepInEx/LogOutput.log, together with whether you were the host or a joining client. Repeat as a client joining a vanilla host if possible, and keep the two logs labelled separately.
+6. Set Enabled = false and restart when finished.
+
+Diagnostics report Unity/application versions, the currently selected render pipeline type and assembly version, and per-Bracken instance/network IDs, ownership flags, numbered state names, anger, corpse-carrying, kill-animation, and death fields. Missing fields appear as <unavailable>; no state numbers or anger limits are guessed. A null pipeline is logged as built-in-or-not-initialized rather than assumed HDRP.
+
+Sampling runs every 0.5 seconds and logs changed snapshots, so very short transitions may be missed. Values are local observations; these logs alone do not establish anger bounds or prove replication. A sampling failure stops the observer and logs a warning. No observation scan runs when diagnostics are disabled.
+
+Implementation references: [Unity's current render pipeline API](https://docs.unity3d.com/2022.3/Documentation/ScriptReference/Rendering.GraphicsSettings-currentRenderPipeline.html) and [BepInEx configuration](https://docs.bepinex.dev/articles/dev_guide/plugin_tutorial/4_configuration.html).
 
 ## Research and asset requirements
 

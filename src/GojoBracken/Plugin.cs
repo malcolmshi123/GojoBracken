@@ -7,12 +7,25 @@ namespace GojoBracken
     {
         public const string PluginGuid = "FreakyFriday.GojoBracken";
         public const string PluginName = "Gojo Bracken";
-        public const string PluginVersion = "0.1.0";
+        public const string PluginVersion = "0.1.1";
+
+        private RuntimeDiagnostics diagnostics;
 
         private void Awake()
         {
+            bool enableDiagnostics = Config.Bind("Diagnostics", "Enabled", false,
+                "Log runtime render settings and Bracken state changes for compatibility testing. Restart the game after changing this setting.").Value;
+            if (enableDiagnostics)
+            {
+                diagnostics = new RuntimeDiagnostics(Logger);
+            }
+
             Logger.LogInfo($"{PluginName} {PluginVersion} loaded. Plugin foundation only; cosmetics are not implemented yet.");
+        }
+
+        private void Update()
+        {
+            diagnostics?.Update();
         }
     }
 }
-
