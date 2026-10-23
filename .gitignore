@@ -1,0 +1,28 @@
+# .NET and editor output
+**/bin/
+**/obj/
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+
+# Machine-specific paths and local dependency copies
+/local.props
+/lib/
+*.dll
+*.pdb
+
+# Unity generated state (retain Assets, Packages, ProjectSettings, and .meta files)
+**/[Ll]ibrary/
+**/[Tt]emp/
+**/[Ll]ogs/
+**/[Uu]ser[Ss]ettings/
+**/[Oo]bj/
+**/[Bb]uild/
+**/[Bb]uilds/
+
+# Generated bundles and release packages
+/artifacts/
+/dist/
+

@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="../../local.props" Condition="Exists('../../local.props')" />
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <RootNamespace>GojoBracken</RootNamespace>
+    <AssemblyName>GojoBracken</AssemblyName>
+    <Version>0.1.0</Version>
+    <Description>Cosmetic Gojo Satoru replacement for Lethal Company's Bracken.</Description>
+    <BepInExCoreDir Condition="'$(BepInExCoreDir)' == '' and '$(LethalCompanyDir)' != ''">$(LethalCompanyDir)/BepInEx/core</BepInExCoreDir>
+    <GameManagedDir Condition="'$(GameManagedDir)' == '' and '$(LethalCompanyDir)' != ''">$(LethalCompanyDir)/Lethal Company_Data/Managed</GameManagedDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="BepInEx">
+      <HintPath>$(BepInExCoreDir)/BepInEx.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="0Harmony">
+      <HintPath>$(BepInExCoreDir)/0Harmony.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>$(GameManagedDir)/UnityEngine.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>$(GameManagedDir)/UnityEngine.CoreModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <Target Name="ValidateLocalReferences" BeforeTargets="ResolveAssemblyReferences" Condition="'$(DesignTimeBuild)' != 'true'">
+    <Error Condition="'$(BepInExCoreDir)' == ''"
+           Text="Set LethalCompanyDir and BepInExCoreDir in local.props (see local.props.example), or pass them as MSBuild properties." />
+    <Error Condition="'$(GameManagedDir)' == ''"
+           Text="Set LethalCompanyDir in local.props, or pass GameManagedDir as an MSBuild property." />
+    <Error Condition="!Exists('$(BepInExCoreDir)/BepInEx.dll') or !Exists('$(BepInExCoreDir)/0Harmony.dll')"
+           Text="BepInExCoreDir must contain BepInEx 5's BepInEx.dll and 0Harmony.dll." />
+    <Error Condition="!Exists('$(GameManagedDir)/UnityEngine.dll') or !Exists('$(GameManagedDir)/UnityEngine.CoreModule.dll')"
+           Text="GameManagedDir must point to Lethal Company_Data/Managed and contain UnityEngine.dll and UnityEngine.CoreModule.dll." />
+  </Target>
+</Project>
+
+

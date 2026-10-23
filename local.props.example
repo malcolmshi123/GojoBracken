@@ -1,0 +1,9 @@
+<Project>
+  <PropertyGroup>
+    <!-- Copy this file to local.props and edit on your development PC. -->
+    <LethalCompanyDir>C:\Games\Steam\steamapps\common\Lethal Company</LethalCompanyDir>
+    <!-- For a mod manager, use the test profile's BepInEx\core directory. -->
+    <BepInExCoreDir>C:\Games\Steam\steamapps\common\Lethal Company\BepInEx\core</BepInExCoreDir>
+  </PropertyGroup>
+</Project>
+
