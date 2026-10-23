@@ -2,10 +2,13 @@
 <#
 .SYNOPSIS
 Reports installed game and mod-loader file versions without loading game assemblies.
+.DESCRIPTION
+Compatible with Windows PowerShell 5.1. No PowerShell upgrade is required.
+The examples set RemoteSigned only for the child process; no persistent policy is changed.
 .EXAMPLE
-.\scripts\Get-GameCompatibility.ps1 -GameDirectory 'C:\Games\Lethal Company'
+powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File .\scripts\Get-GameCompatibility.ps1 -GameDirectory 'C:\Games\Lethal Company'
 .EXAMPLE
-.\scripts\Get-GameCompatibility.ps1 -GameDirectory 'C:\Games\Lethal Company' -BepInExCoreDirectory 'C:\ModProfiles\GojoTest\BepInEx\core'
+powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File .\scripts\Get-GameCompatibility.ps1 -GameDirectory 'C:\Games\Lethal Company' -BepInExCoreDirectory 'C:\ModProfiles\GojoTest\BepInEx\core'
 #>
 [CmdletBinding()]
 param(
@@ -88,10 +91,10 @@ if (-not $files.bepinex.present -or -not $files.harmony.present) {
 
 [ordered]@{
     reportVersion = 1
+    powershellVersion = $PSVersionTable.PSVersion.ToString()
     collectedAtUtc = [DateTime]::UtcNow.ToString('o')
     steamBuildId = $steamBuildId
     unityVersionFromPlayer = $unityVersion
     files = $files
     notes = $notes
 } | ConvertTo-Json -Depth 6
-

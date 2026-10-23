@@ -47,17 +47,20 @@ VS Code design-time project loading skips the build-only local reference validat
 
 Before choosing a Unity Editor version, run the read-only compatibility script on the PC with Lethal Company installed. It reports file versions and SHA256 hashes without loading game assemblies or changing the game. It does not include your installation paths in the JSON.
 
-From the repository root, use the actual game installation and, if applicable, your separate mod-manager test profile:
+Use the built-in Windows PowerShell 5.1; PowerShell 7 is not required. From the repository root, use the actual game installation and, if applicable, your separate mod-manager test profile:
 
 ```powershell
 New-Item -ItemType Directory -Force artifacts | Out-Null
-.\scripts\Get-GameCompatibility.ps1 `
+powershell.exe -NoProfile -ExecutionPolicy RemoteSigned `
+    -File .\scripts\Get-GameCompatibility.ps1 `
     -GameDirectory 'C:\Games\Steam\steamapps\common\Lethal Company' `
     -BepInExCoreDirectory 'C:\ModProfiles\GojoTest\BepInEx\core' |
     Set-Content -Encoding UTF8 .\artifacts\compatibility.json
 ```
 
-For a manual BepInEx installation inside the game directory, omit BepInExCoreDirectory. Run the script from PowerShell 7 (pwsh). The generated artifacts directory is ignored by Git.
+For a manual BepInEx installation inside the game directory, omit BepInExCoreDirectory. The generated artifacts directory is ignored by Git.
+
+RemoteSigned applies only to the child PowerShell process above; it does not change machine-wide or user-wide settings. It permits local unsigned scripts while requiring signatures for internet-marked scripts. Review the script before running it. Managed execution policies still take precedence; if one blocks the script, share the error rather than overriding it. See [Microsoft execution-policy documentation](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_execution_policies?view=powershell-5.1).
 
 Bring back compatibility.json and the version number displayed in the game's main menu. If unityVersionFromPlayer is null, also provide the Unity version line from the game's Player.log. UnityPlayer file-version metadata is preserved in the report for inspection.
 
