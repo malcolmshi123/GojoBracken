@@ -43,6 +43,26 @@ Unity is not needed to compile this foundation; it will be needed to author and 
 
 VS Code design-time project loading skips the build-only local reference validation. A real build still requires the reference paths above. Archived DLLs can support editing and a foundation compile check, but do not establish compatibility with the current game. After installing the SDK, fully restart VS Code to refresh SDK discovery.
 
+## Check the testing PC
+
+Before choosing a Unity Editor version, run the read-only compatibility script on the PC with Lethal Company installed. It reports file versions and SHA256 hashes without loading game assemblies or changing the game. It does not include your installation paths in the JSON.
+
+From the repository root, use the actual game installation and, if applicable, your separate mod-manager test profile:
+
+```powershell
+New-Item -ItemType Directory -Force artifacts | Out-Null
+.\scripts\Get-GameCompatibility.ps1 `
+    -GameDirectory 'C:\Games\Steam\steamapps\common\Lethal Company' `
+    -BepInExCoreDirectory 'C:\ModProfiles\GojoTest\BepInEx\core' |
+    Set-Content -Encoding UTF8 .\artifacts\compatibility.json
+```
+
+For a manual BepInEx installation inside the game directory, omit BepInExCoreDirectory. Run the script from PowerShell 7 (pwsh). The generated artifacts directory is ignored by Git.
+
+Bring back compatibility.json and the version number displayed in the game's main menu. If unityVersionFromPlayer is null, also provide the Unity version line from the game's Player.log. UnityPlayer file-version metadata is preserved in the report for inspection.
+
+This is an installation inventory, not a compatibility certification. The active render settings, Bracken state mapping, anger range, corpse-carrying behavior, and anger replication remain pending code/runtime inspection before the Unity asset project is pinned.
+
 ## Research and asset requirements
 
 The old malcolmshi123/GojoBracken source at commit aab524b was inspected and backed up before the fresh start. It contained a BepInEx entry point, a basic model/audio patch, and terminal patches, but no referenced Gojo prefab or media assets.
@@ -71,7 +91,7 @@ Before creating that project, inspect the game on the testing PC to confirm its 
 
 ## Planned behavior and checkpoints
 
-1. Plugin foundation (this increment).
+1. Plugin foundation (complete; game testing pending).
 2. Inspect the testing PC's game version; prepare the Unity asset pipeline and credited assets.
 3. Implement the animated replacement with vanilla visuals retained if assets cannot load.
 4. Add anger-scaled aura and one-shot spatial audio on aggro entry.
@@ -93,5 +113,3 @@ Validation will cover phase transitions, anger bounds, repeated aggro entries, m
 
 Code is MIT licensed; the original 2024 Malcolm Shi attribution is retained.
 Any future third-party model, animation, effect, or audio has its own terms and credits; the code license does not license those assets.
-
-
