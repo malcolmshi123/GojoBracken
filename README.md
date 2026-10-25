@@ -141,7 +141,7 @@ The new plugin will load AssetBundles through Unity directly, using BepInEx 5 an
 
 Required assets, none included yet:
 
-- A rigged Gojo model with textures, materials, and animations adapted to the Bracken. First candidate: [Gojo Satoru by wing2](https://sketchfab.com/3d-models/gojo-satoru-1e19a0308d474704a04b662b65bf7f40). Appearance, rig, availability, and attribution must be checked before adoption.
+- A rigged Gojo model with textures, materials, and animations adapted to the Bracken. The original wing2 listing is deleted. See [current model research](UnityProject/README.md#required-assets) for the next rigged candidate and the pending download/import checks.
 - A blue-white aura prefab using shaders compatible with the game's render pipeline.
 - The original Japanese voice clip, with source/provenance recorded separately from the code license.
 - A reproducible Unity project that exports the model, effects, and audio in a Windows x64 AssetBundle.

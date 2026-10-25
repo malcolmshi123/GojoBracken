@@ -41,7 +41,15 @@ The scene is already generated. The **GojoBracken > Create native aura study** m
 
 Prefabs must use native Unity components only, with no custom or missing scripts and no missing materials/shaders. Runtime mod code will be attached by the plugin later. Referenced model textures, materials, animation controllers, and clips are included as bundle dependencies by Unity.
 
-The initial model candidate remains [wing2's Gojo Satoru](https://sketchfab.com/3d-models/gojo-satoru-1e19a0308d474704a04b662b65bf7f40). It has not been downloaded, imported, or adopted. Its appearance, usable rig, actual download availability, and asset terms need verification. Keep third-party asset terms separate from the repository's MIT code license. The credits check validates presence, not legal permission.
+Model research checked on 2026-10-25:
+
+- The original [wing2 candidate](https://sketchfab.com/3d-models/gojo-satoru-1e19a0308d474704a04b662b65bf7f40) now displays Model deleted in the live page. Older search results still advertise it; it is not an available source.
+- [Wnight's Gojo](https://sketchfab.com/3d-models/gojo-satoru-jujutsu-kaisen-683a544b70d4418cb378f094aa55c8f1) lists FBX and CC BY 4.0, but its live model information says Rigged geometries: No and Animations: 0. It would require rigging before animation work.
+- The next candidate is [Gojo Satoru Dance by Ayanokoji031](https://sketchfab.com/3d-models/gojo-satoru-dance-jujutsu-kaisen-556b63af173241d79598d62cf220671d). Its viewer shows white hair, a black blindfold, and a dark uniform. Live model information reports 12.6k triangles, 6.9k vertices, four materials/textures, rigged geometry, one animation, and original glTF with converted GLB available. Its license link identifies CC BY 4.0. Download opens a Sketchfab login prompt.
+
+The Ayanokoji031 candidate has now been downloaded and imported into a separate local study, with skin and clip-sampling checks and a rendered preview. It has not been adopted as a release asset. See [the inspection report and local study instructions](../docs/model-evaluation.md). Download the original archive with all textures and retain its license/attribution files. Before importing, inspect the skeleton, bind pose, skin weights, any included source credits, and animation data. The listed dance does not supply the required Bracken movement/attack/corpse animations. Unity glTFast 6.14.0 is now pinned for editor import, with its resolved dependencies retained in packages-lock.json. This does not select the game render pipeline or add a glTF runtime dependency to the plugin.
+
+Record the source URL, credited author(s), exact license, archive hash, and actual modifications when adopting an asset. Keep third-party terms separate from the repository's MIT code license. The exporter credits check validates presence, not legal permission.
 
 Do not put the browser or native study stand-in into the release prefab slots. Do not copy game DLLs or extracted game assets into this project.
 

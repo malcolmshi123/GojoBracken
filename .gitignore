@@ -30,3 +30,7 @@
 /UnityProject/*.csproj
 /UnityProject/*.sln
 /UnityProject/*.slnx
+
+# Downloaded candidate and generated local model study (provenance pending)
+/UnityProject/Assets/LocalModelStudy/
+/UnityProject/Assets/LocalModelStudy.meta
