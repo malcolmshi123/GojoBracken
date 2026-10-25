@@ -5,7 +5,7 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <RootNamespace>GojoBracken</RootNamespace>
     <AssemblyName>GojoBracken</AssemblyName>
-    <Version>0.1.1</Version>
+    <Version>0.1.2</Version>
     <Description>Cosmetic Gojo Satoru replacement for Lethal Company's Bracken.</Description>
     <BepInExCoreDir Condition="'$(BepInExCoreDir)' == '' and '$(LethalCompanyDir)' != ''">$(LethalCompanyDir)/BepInEx/core</BepInExCoreDir>
     <GameManagedDir Condition="'$(GameManagedDir)' == '' and '$(LethalCompanyDir)' != ''">$(LethalCompanyDir)/Lethal Company_Data/Managed</GameManagedDir>
@@ -28,6 +28,10 @@
       <HintPath>$(GameManagedDir)/UnityEngine.CoreModule.dll</HintPath>
       <Private>false</Private>
     </Reference>
+    <Reference Include="UnityEngine.AnimationModule">
+      <HintPath>$(GameManagedDir)/UnityEngine.AnimationModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
   </ItemGroup>
 
   <Target Name="ValidateLocalReferences" BeforeTargets="ResolveAssemblyReferences" Condition="'$(DesignTimeBuild)' != 'true'">
@@ -39,5 +43,7 @@
            Text="BepInExCoreDir must contain BepInEx 5's BepInEx.dll and 0Harmony.dll." />
     <Error Condition="!Exists('$(GameManagedDir)/UnityEngine.dll') or !Exists('$(GameManagedDir)/UnityEngine.CoreModule.dll')"
            Text="GameManagedDir must point to Lethal Company_Data/Managed and contain UnityEngine.dll and UnityEngine.CoreModule.dll." />
+    <Error Condition="!Exists('$(GameManagedDir)/UnityEngine.AnimationModule.dll')"
+           Text="GameManagedDir must also contain UnityEngine.AnimationModule.dll for the read-only rig report." />
   </Target>
 </Project>

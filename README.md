@@ -60,7 +60,7 @@ Copy only that DLL into BepInEx/plugins/GojoBracken in a separate test profile.
 Start the game and check BepInEx/LogOutput.log for:
 
 ```text
-Gojo Bracken 0.1.1 loaded. Plugin foundation only; cosmetics are not implemented yet.
+Gojo Bracken 0.1.2 loaded. Plugin foundation only; cosmetics are not implemented yet.
 ```
 
 For command-line builds, LethalCompanyDir, BepInExCoreDir, and GameManagedDir can also be passed using -p:Name="path". GameManagedDir defaults to LethalCompanyDir/Lethal Company_Data/Managed; BepInExCoreDir defaults to LethalCompanyDir/BepInEx/core when not supplied.
@@ -117,6 +117,12 @@ Diagnostics report Unity/application versions, the currently selected render pip
 Sampling runs every 0.5 seconds and logs changed snapshots, so very short transitions may be missed. Values are local observations; these logs alone do not establish anger bounds or prove replication. A sampling failure stops the observer and logs a warning. No observation scan runs when diagnostics are disabled.
 
 Implementation references: [Unity's current render pipeline API](https://docs.unity3d.com/2022.3/Documentation/ScriptReference/Rendering.GraphicsSettings-currentRenderPipeline.html) and [BepInEx configuration](https://docs.bepinex.dev/articles/dev_guide/plugin_tutorial/4_configuration.html).
+
+## Inspect the Bracken rig without an encounter
+
+Version 0.1.2 adds opt-in ExportBrackenRig diagnostics. It reads an already-loaded prefab and exports bone paths, renderer/shader names, and controller/clip metadata into BepInEx/config/GojoBracken. It never spawns an enemy or plays its controller. Unavailable prefab animator parameters are marked explicitly; state labels are not assumed to prove phase mapping.
+
+See [testing-PC instructions and verification limits](docs/testing-pc-rig-report.md). If the prefab is not loaded at the main menu, return the timeout message instead of seeking an encounter. Actual game report collection remains pending.
 
 ## Author the real Unity assets
 
