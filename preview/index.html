@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GojoBracken · Cosmetic preview</title>
+<style>
+:root{color-scheme:dark;font-family:Segoe UI,system-ui,sans-serif;color:#e8eef5;background:#0b1018;--line:#263343;--muted:#9aaabe;--blue:#94dcff}
+*{box-sizing:border-box}body{margin:0}button,input{font:inherit}button{cursor:pointer}
+header{max-width:1180px;margin:auto;padding:30px 28px 22px;display:flex;justify-content:space-between;gap:20px;align-items:center}
+h1{margin:4px 0 0;font-size:26px;font-weight:600;letter-spacing:-.6px}.eyebrow{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--blue)}
+.badge{border:1px solid var(--line);border-radius:30px;padding:8px 13px;color:#bacbda;font-size:12px}
+main{max-width:1180px;margin:auto;padding:0 28px 30px;display:grid;grid-template-columns:minmax(0,1.25fr) minmax(320px,1fr);gap:18px}
+.panel{background:#111a26;border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.scene{position:relative;min-height:620px;background:radial-gradient(ellipse at 50% 56%,#182e43 0,#101b2a 45%,#0e1723 80%)}
+.scene:before{content:"";position:absolute;inset:0;background-image:linear-gradient(#89bbda08 1px,transparent 1px),linear-gradient(90deg,#89bbda08 1px,transparent 1px);background-size:34px 34px}
+.scene-caption{position:absolute;top:24px;left:24px;right:24px;z-index:3}
+.scene-caption strong{display:block;font-size:17px;font-weight:500}.scene-caption p{font-size:12px;line-height:1.6;color:var(--muted);max-width:330px}
+#stage{position:absolute;inset:90px 0 80px;isolation:isolate}canvas{position:absolute;inset:0;width:100%;height:100%}
+.ground{position:absolute;left:20%;right:20%;bottom:9%;height:9%;border-radius:50%;background:radial-gradient(ellipse,#a7e9ff25,transparent 68%);border-bottom:1px solid #b5e5ff30}
+.figure{position:absolute;height:76%;width:52%;left:24%;bottom:11%;filter:drop-shadow(0 0 14px #80cfff33)}
+.scene-footer{position:absolute;bottom:22px;left:24px;right:24px;display:flex;align-items:center;justify-content:space-between;gap:15px}
+.stage-state{font-size:13px;color:var(--blue)}.quiet-button{background:transparent;color:#bbcad8;border:1px solid #344455;border-radius:8px;padding:8px 11px;font-size:12px}
+.controls{padding:24px}h2{font-size:16px;font-weight:600;margin:0 0 8px}p{line-height:1.55}.intro{margin:0 0 24px;color:var(--muted);font-size:13px}
+.section{padding:20px 0;border-top:1px solid var(--line)}.section-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;font-size:12px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:#c2d1e0}
+.phases{display:grid;grid-template-columns:1fr 1fr;gap:8px}.phase{background:#182433;border:1px solid #334153;color:#bdccdb;padding:11px;border-radius:9px;text-align:left;font-size:13px}
+.phase[aria-pressed=true]{background:#20394d;border-color:#8dd9ff;color:#e2f6ff;box-shadow:inset 3px 0 #8dd9ff}
+button:focus-visible,input:focus-visible{outline:2px solid #aae7ff;outline-offset:3px}button:disabled{opacity:.45;cursor:default}
+#phase-note{font-size:12px;min-height:38px;color:var(--muted);margin-bottom:0}input[type=range]{width:100%;accent-color:#9cdeff}
+.scale{display:flex;justify-content:space-between;color:var(--muted);font-size:11px;margin-top:7px}.meter{height:5px;border-radius:5px;background:#263343;overflow:hidden;margin-top:14px}.meter span{height:100%;display:block;background:linear-gradient(90deg,#5597c2,#d2f5ff)}
+.hint{font-size:11px;color:var(--muted);margin:10px 0 0;line-height:1.5}.file-control{display:block;font-size:12px;color:#cedbe8;margin-bottom:9px}.file-control input{display:block;width:100%;font-size:12px;margin-top:9px;color:#aebfd0}
+input::file-selector-button{background:#24384a;border:1px solid #3b5267;color:#dbeefb;padding:7px 10px;border-radius:7px;margin-right:9px;cursor:pointer}
+.audio-state{font-size:12px;color:var(--muted);margin:9px 0}.audio-actions{display:flex;align-items:center;justify-content:space-between;gap:14px}
+.count{font-size:12px;color:#a9bdcf}.actions{display:flex;gap:9px}button.primary{background:#b8e9ff;color:#0a2333;border:0;padding:10px 15px;border-radius:9px;font-weight:600;font-size:12px}
+.log{list-style:none;padding:0;margin:12px 0 0;max-height:100px;overflow:auto;font-size:11px;color:#a4b9cc;line-height:1.8}
+footer{max-width:1180px;margin:0 auto 24px;padding:0 28px;color:#8195aa;font-size:12px;line-height:1.6}
+@media(max-width:800px){header{padding:22px 18px}main{padding:0 18px 20px;grid-template-columns:1fr}.scene{min-height:420px}.controls{padding:20px}.badge{font-size:10px}h1{font-size:23px}}
+</style>
+</head>
+<body>
+<header><div><div class="eyebrow">GojoBracken / Developer tools</div><h1>Cosmetic preview</h1></div><div class="badge">Offline · no game required</div></header>
+<main>
+  <section class="panel scene" aria-label="Schematic character and simulated aura">
+    <div class="scene-caption"><strong>A quiet place to test.</strong><p>Schematic stand-in. The final Gojo model, rig, and in-game effects are not included.</p></div>
+    <div id="stage"><div class="ground"></div><canvas id="aura" aria-hidden="true"></canvas>
+      <svg class="figure" viewBox="0 0 180 340" role="img" aria-label="Schematic white-haired figure with a blindfold and dark uniform">
+        <defs><linearGradient id="jacket" x2="1" y2=".5"><stop stop-color="#101824"/><stop offset=".55" stop-color="#25364b"/><stop offset="1" stop-color="#0b1420"/></linearGradient></defs>
+        <path d="M62 216 85 218 79 315 56 315Z" fill="#131e2d" stroke="#435468"/>
+        <path d="M92 218 114 215 126 315 101 315Z" fill="#172334" stroke="#435468"/>
+        <path d="M54 311 80 311 79 325 43 325Q40 319 54 311M101 311 126 311 138 322 136 326 103 326Z" fill="#0a121e" stroke="#435468"/>
+        <path d="M60 96 43 109 27 185 42 193 62 139 60 220Q88 235 117 220L115 139 136 190 151 182 132 110 113 96Z" fill="url(#jacket)" stroke="#52657c" stroke-width="1.2"/>
+        <path d="M27 185 25 200Q31 208 38 199L42 191M136 189 141 202Q149 205 154 197L151 182" fill="#d6c6bf" stroke="#8d929e"/>
+        <path d="M73 76 73 102 103 102 102 76" fill="#d8c8c1"/>
+        <path d="M66 46Q88 30 111 46L109 74Q105 92 89 95 73 91 67 76Z" fill="#e1d3ca"/>
+        <path d="M63 50 112 48 112 64 66 67Z" fill="#080e19" stroke="#77899f" stroke-width="1.2"/>
+        <path d="M58 50 48 39 62 39 55 23 73 30 73 13 88 25 97 7 103 27 122 17 118 35 134 34 118 48 107 44 102 34 90 43 82 34 73 48Z" fill="#eef6fc" stroke="#b8cce1" stroke-width="1.2"/>
+        <path d="M69 97 87 111 109 95 116 119 91 132 64 118Z" fill="#25364a" stroke="#617186"/>
+        <path d="M91 131 91 218M63 217Q90 225 115 217" stroke="#52657c" fill="none"/>
+        <circle cx="95" cy="142" r="2" fill="#879cb0"/>
+      </svg>
+    </div>
+    <div class="scene-footer"><span id="stage-label" class="stage-state">Hunting · faint aura</span><button id="motion" class="quiet-button" aria-pressed="false">Pause animation</button></div>
+  </section>
+  <section class="panel controls" aria-label="Preview controls">
+    <h2>Choose the moment.</h2><p class="intro">Drive the presentation directly. No enemies, no random encounters, no network session.</p>
+    <div class="section"><div class="section-title">01 / Phase</div>
+      <div class="phases">
+        <button class="phase" data-phase="hunting" aria-pressed="true">Hunting</button>
+        <button class="phase" data-phase="retreat" aria-pressed="false">Retreat</button>
+        <button class="phase" data-phase="aggro" aria-pressed="false">Anger / aggro</button>
+        <button class="phase" data-phase="dragging" aria-pressed="false">Corpse dragging</button>
+      </div><p id="phase-note"></p>
+    </div>
+    <div class="section"><label class="section-title" for="anger"><span>02 / Simulated anger</span><output id="anger-value">0%</output></label>
+      <input id="anger" type="range" min="0" max="100" value="0" step="1">
+      <div class="scale"><span>Calm</span><span>Maximum</span></div>
+      <div class="meter"><span id="strength-meter" style="width:15%"></span></div>
+      <p class="hint">Aura strength: <output id="strength-value">15%</output>. Anger is normalized for this preview; the real game's anger range is still unverified.</p>
+    </div>
+    <div class="section"><div class="section-title">03 / Voice line</div>
+      <label class="file-control" for="voice-file">Load a local voice clip<input id="voice-file" type="file" accept="audio/*"></label>
+      <p id="audio-state" class="audio-state" role="status">No audio included. Load your own clip to audition it.</p>
+      <div class="audio-actions"><button id="replay" class="quiet-button" disabled>Replay loaded clip</button><span class="count">Aggro entries: <output id="voice-count">0</output></span></div>
+      <p class="hint">One trigger on entering aggro. Changing anger or selecting aggro again does not retrigger. Files stay in this browser.</p>
+    </div>
+    <div class="section"><div class="actions"><button id="reset" class="primary">Reset preview</button><button id="end" class="quiet-button">End preview</button></div>
+      <ol id="events" class="log" aria-label="Recent preview events" aria-live="polite"></ol>
+    </div>
+  </section>
+</main>
+<footer>Presentation prototype only. The aura is a browser effect, not a Unity asset. Phase controls simulate inputs; they do not validate Bracken AI, animation mapping, corpse interactions, or multiplayer replication.</footer>
+<script src="preview-state.js"></script>
+<script>
+"use strict";
+const state = new GojoPreview.PreviewState();
+const labels = {hunting:"Hunting",retreat:"Retreat",aggro:"Anger / aggro",dragging:"Corpse dragging"};
+const notes = {
+  hunting:"Aura follows anger, with a faint baseline even while calm.",
+  retreat:"Aura still follows anger. Retreat does not force it off.",
+  aggro:"Entering this phase triggers the loaded voice clip once.",
+  dragging:"Aura follows anger. No extra voice or corpse animation is shown."
+};
+const phases = Array.from(document.querySelectorAll("[data-phase]"));
+const anger = document.getElementById("anger");
+const filePicker = document.getElementById("voice-file");
+const replay = document.getElementById("replay");
+const audioState = document.getElementById("audio-state");
+const events = document.getElementById("events");
+const audio = new Audio();
+let audioUrl = null;
+let paused = matchMedia("(prefers-reduced-motion: reduce)").matches;
+let particleTime = 0;
+let previousTime = 0;
+
+function log(message) {
+  const item = document.createElement("li");
+  item.textContent = message;
+  events.prepend(item);
+  while (events.children.length > 8) events.lastChild.remove();
+}
+function stopAudio() {
+  audio.pause();
+  if (audioUrl) audio.currentTime = 0;
+}
+function playVoice(manual) {
+  if (!audioUrl) {
+    log("Aggro entry: voice event recorded; no clip loaded.");
+    return;
+  }
+  stopAudio();
+  audio.play().then(() => {
+    if (!state.active) { stopAudio(); return; }
+    audioState.textContent = "Playing: " + filePicker.files[0].name;
+    log(manual ? "Manual replay started." : "Aggro entry: audio playback started.");
+  }).catch(() => {
+    audioState.textContent = "Playback unavailable. Try a supported WAV or MP3 file.";
+    log("Audio could not play; the phase trigger was still recorded.");
+  });
+}
+function renderControls() {
+  for (const button of phases) {
+    button.setAttribute("aria-pressed", String(button.dataset.phase === state.phase));
+    button.disabled = !state.active;
+  }
+  anger.disabled = !state.active;
+  replay.disabled = !state.active || !audioUrl;
+  document.getElementById("end").disabled = !state.active;
+  document.getElementById("anger-value").textContent = Math.round(state.anger * 100) + "%";
+  document.getElementById("strength-value").textContent = Math.round(state.intensity * 100) + "%";
+  document.getElementById("strength-meter").style.width = state.intensity * 100 + "%";
+  document.getElementById("voice-count").textContent = state.voiceTriggerCount;
+  document.getElementById("phase-note").textContent = state.active ? notes[state.phase] : "Preview ended. Reset to start again.";
+  document.getElementById("stage-label").textContent = state.active
+    ? labels[state.phase] + " · aura " + Math.round(state.intensity * 100) + "%"
+    : "Preview ended · effects stopped";
+  document.getElementById("motion").textContent = paused ? "Resume animation" : "Pause animation";
+  document.getElementById("motion").setAttribute("aria-pressed", String(paused));
+}
+for (const button of phases) button.addEventListener("click", () => {
+  const changed = state.phase !== button.dataset.phase;
+  const voiceTriggered = state.setPhase(button.dataset.phase);
+  if (changed) log("Phase: " + labels[state.phase] + ".");
+  if (voiceTriggered) playVoice(false);
+  renderControls();
+});
+anger.addEventListener("input", () => { state.setAnger(Number(anger.value) / 100); renderControls(); });
+filePicker.addEventListener("change", () => {
+  stopAudio();
+  audio.removeAttribute("src");
+  if (audioUrl) URL.revokeObjectURL(audioUrl);
+  audioUrl = null;
+  const file = filePicker.files[0];
+  if (file) {
+    audioUrl = URL.createObjectURL(file);
+    audio.src = audioUrl;
+    audioState.textContent = "Ready: " + file.name;
+    log("Local clip loaded; no automatic replay.");
+  } else audioState.textContent = "No audio included. Load your own clip to audition it.";
+  renderControls();
+});
+audio.addEventListener("ended", () => { audioState.textContent = "Clip finished. Re-enter aggro or replay manually."; });
+audio.addEventListener("error", () => { if (audioUrl) audioState.textContent = "Could not decode this clip. Try a WAV or MP3 file."; });
+replay.addEventListener("click", () => { if (state.active && audioUrl) playVoice(true); });
+document.getElementById("end").addEventListener("click", () => {
+  state.end(); stopAudio(); audioState.textContent = audioUrl ? "Loaded clip stopped." : "No clip loaded.";
+  log("Preview ended: aura cleared and audio stopped."); renderControls(); drawAura();
+});
+document.getElementById("reset").addEventListener("click", () => {
+  stopAudio(); state.reset(); anger.value = 0; particleTime = 0; events.replaceChildren();
+  audioState.textContent = audioUrl ? "Loaded clip ready." : "No audio included. Load your own clip to audition it.";
+  log("Reset: hunting, zero anger, no voice trigger."); renderControls(); drawAura();
+});
+document.getElementById("motion").addEventListener("click", () => { paused = !paused; renderControls(); });
+window.addEventListener("pagehide", () => { stopAudio(); if (audioUrl) URL.revokeObjectURL(audioUrl); });
+
+const canvas = document.getElementById("aura");
+const context = canvas.getContext("2d");
+const particles = Array.from({length:100}, () => ({
+  x:Math.random(), y:Math.random(), speed:0.12+Math.random()*0.26,
+  radius:0.7+Math.random()*1.7, sway:Math.random()*Math.PI*2
+}));
+function resizeCanvas() {
+  const bounds = canvas.getBoundingClientRect();
+  const ratio = Math.min(window.devicePixelRatio || 1, 2);
+  canvas.width = Math.round(bounds.width * ratio);
+  canvas.height = Math.round(bounds.height * ratio);
+  context.setTransform(ratio, 0, 0, ratio, 0, 0);
+  drawAura();
+}
+function drawAura() {
+  const width = canvas.clientWidth, height = canvas.clientHeight;
+  context.clearRect(0,0,width,height);
+  if (!state.active) return;
+  const strength = state.intensity;
+  const glow = context.createRadialGradient(width*.5,height*.54,0,width*.5,height*.54,width*.36);
+  glow.addColorStop(0,"rgba(160,231,255,"+(0.07+strength*.11)+")");
+  glow.addColorStop(.5,"rgba(76,171,240,"+(strength*.13)+")"); glow.addColorStop(1,"rgba(70,150,240,0)");
+  context.fillStyle = glow; context.fillRect(0,0,width,height);
+  const count = Math.round(12+strength*88);
+  for (let i=0;i<count;i++) {
+    const p = particles[i];
+    const y = (p.y-particleTime*p.speed)%1;
+    const normalizedY = y < 0 ? y+1 : y;
+    const envelope = Math.sin(normalizedY*Math.PI);
+    const x = width*(.5+(p.x-.5)*(.32+strength*.12)+Math.sin(particleTime*1.4+p.sway)*.025);
+    const py = height*(.12+normalizedY*.78);
+    const alpha = envelope*(.2+strength*.65);
+    context.beginPath(); context.ellipse(x,py,p.radius, p.radius*(1+strength*2),0,0,Math.PI*2);
+    context.fillStyle="rgba(180,236,255,"+alpha+")";
+    context.shadowColor="#8bdcff"; context.shadowBlur=5+strength*10; context.fill();
+  }
+  context.shadowBlur=0;
+}
+function animate(time) {
+  const delta = previousTime ? Math.min((time-previousTime)/1000,.05) : 0;
+  previousTime = time;
+  if (!document.hidden && state.active) {
+    if (!paused) particleTime += delta;
+    drawAura();
+  }
+  requestAnimationFrame(animate);
+}
+new ResizeObserver(resizeCanvas).observe(canvas);
+renderControls();
+log("Ready: hunting, zero anger. No game or audio is running.");
+requestAnimationFrame(animate);
+</script>
+</body>
+</html>
+

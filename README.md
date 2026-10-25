@@ -15,6 +15,33 @@ No model, audio, Unity project, AssetBundle, or installable release is included.
 
 Development proceeds in small review checkpoints. Staging, commits, and pushes are performed manually by the repository owner, including the initial commit.
 
+## Preview without playing the game
+
+Open preview/index.html in a browser. In Windows PowerShell 5.1, from the repository root:
+
+```powershell
+Start-Process .\preview\index.html
+```
+
+Keep preview-state.js beside index.html. No server, PowerShell upgrade, Node.js, Unity installation, or game session is required to use the preview. It uses no external libraries or network services.
+
+- Choose hunting, retreat, aggro, or corpse dragging and adjust the simulated anger slider.
+- Aura strength ranges from a 15% calm baseline to 100%, in every phase. The slider is normalized and does not claim to match the game's unverified anger range.
+- Load a local audio file if you want sound. Entering aggro triggers it once; repeated aggro selection or anger adjustments do not retrigger it. Leave aggro and return to trigger it again.
+- Replay loaded clip auditions the audio manually without incrementing the aggro-entry counter.
+- End preview stops the aura and audio; Reset preview clears state and counters. Pause animation freezes the aura motion.
+- The character is a schematic stand-in and the aura is drawn in a browser canvas. This is a presentation prototype, not the Gojo 3D model, an animation rig, or a Unity AssetBundle.
+
+The preview records voice-trigger events even when no clip is loaded, but never labels those as successful playback. Audio stays local to the browser; no voice clip is shipped.
+
+For development, the preview's state tests use Node.js's built-in test runner:
+
+```powershell
+node --test .\preview\preview-state.test.cjs
+```
+
+These tests cover the browser prototype's phase/anger rules and event gating. They do not validate the C# plugin, Unity rendering/audio, or real Bracken state mapping. Controlled in-game and multiplayer checks remain separate and deferred; finding random Brackens is not a prerequisite for reviewing the cosmetics.
+
 ## Build the foundation
 
 On the PC used for game testing, install the .NET 10 SDK, Lethal Company, and BepInEx 5 for the game. The SDK runs the development tools; the plugin still targets netstandard2.1 for Unity compatibility. The plugin references the installed BepInEx and Unity assemblies rather than distributing copies.
@@ -81,8 +108,8 @@ Version 0.1.1 adds an optional observation mode. It does not patch enemy methods
 Enabled = true
 ```
 
-4. Restart the game. Play normally and observe a Bracken hunting, retreating when spotted, becoming aggressive, and dragging a corpse. Note which visible behavior corresponds to each logged state.
-5. Return the lines containing [Diagnostics] from that profile's BepInEx/LogOutput.log, together with whether you were the host or a joining client. Repeat as a client joining a vanilla host if possible, and keep the two logs labelled separately.
+4. For a startup-only check, restart and stay in the main menu to collect runtime and render-pipeline lines. Bracken state checks are deferred until a controlled private sandbox is available; do not search for random encounters.
+5. Return startup lines containing [Diagnostics] from that profile's BepInEx/LogOutput.log when convenient. Host/client state comparisons belong to a later controlled integration test, not the current preview checkpoint.
 6. Set Enabled = false and restart when finished.
 
 Diagnostics report Unity/application versions, the currently selected render pipeline type and assembly version, and per-Bracken instance/network IDs, ownership flags, numbered state names, anger, corpse-carrying, kill-animation, and death fields. Missing fields appear as <unavailable>; no state numbers or anger limits are guessed. A null pipeline is logged as built-in-or-not-initialized rather than assumed HDRP.
