@@ -120,7 +120,7 @@ Implementation references: [Unity's current render pipeline API](https://docs.un
 
 ## Author the real Unity assets
 
-Open UnityProject with Unity 2022.3.62f2 on the development laptop. See [the asset-project instructions](UnityProject/README.md) for import paths, validation, and the Windows x64 bundle command. The exporter requires actual assets and verified shader dependencies; it does not export the browser stand-in. Unity compilation and export are pending Editor installation and asset preparation.
+Open UnityProject with Unity 2022.3.62f2 on the development laptop. See [the asset-project instructions](UnityProject/README.md) for import paths, validation, and the Windows x64 bundle command. The exporter requires actual assets and verified shader dependencies; it does not export the browser stand-in. Unity 2022.3.62f2 now imports and compiles the project. Open Assets/GojoBrackenPreview/AuraStudy.unity in the Editor and press Play for a safe particle study with phase/anger controls. It uses a neutral capsule and authoring materials; the actual Gojo model, voice clip, game materials, and release bundle remain pending.
 
 ## Research and asset requirements
 

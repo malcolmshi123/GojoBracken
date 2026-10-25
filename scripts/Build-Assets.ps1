@@ -42,14 +42,16 @@ if ($PreflightOnly) {
 }
 
 if ([string]::IsNullOrWhiteSpace($UnityEditorPath)) {
-    $UnityEditorPath = Join-Path $env:ProgramFiles "Unity\Hub\Editor\$requiredVersion\Editor\Unity.exe"
+    $hubEditor = Join-Path $env:ProgramFiles "Unity\Hub\Editor\$requiredVersion\Editor\Unity.exe"
+    $standaloneEditor = Join-Path $env:ProgramFiles "Unity $requiredVersion\Editor\Unity.exe"
+    $UnityEditorPath = if (Test-Path -LiteralPath $hubEditor -PathType Leaf) { $hubEditor } else { $standaloneEditor }
 }
 if (-not (Test-Path -LiteralPath $UnityEditorPath -PathType Leaf)) {
     throw "Unity Editor was not found at $UnityEditorPath. Install Unity $requiredVersion or pass -UnityEditorPath."
 }
 $UnityEditorPath = (Resolve-Path -LiteralPath $UnityEditorPath).ProviderPath
 $editorVersion = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($UnityEditorPath).ProductVersion
-if ($editorVersion -notmatch ('^' + [regex]::Escape($requiredVersion) + '(\s|\(|$)')) {
+if ($editorVersion -notmatch ('^' + [regex]::Escape($requiredVersion) + '(?=$|[\s_(])')) {
     throw "Expected Unity $requiredVersion; editor metadata reports '$editorVersion'."
 }
 
