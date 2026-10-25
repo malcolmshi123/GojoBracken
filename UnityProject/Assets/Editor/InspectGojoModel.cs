@@ -10,10 +10,11 @@ namespace GojoBracken.Editor
 {
     public static class InspectGojoModel
     {
+        private const float TargetPreviewHeight = 2.1f;
         private const string ModelPath = "Assets/LocalModelStudy/source/gojo_menu.gltf";
-        private const string ScenePath = "Assets/LocalModelStudy/GojoModelStudy.unity";
+        private const string ScenePath = "Assets/LocalModelStudy/GojoIdleStudy.unity";
 
-        [MenuItem("GojoBracken/Create local Gojo model study")]
+        [MenuItem("GojoBracken/Create local Gojo idle study")]
         public static void CreateStudy()
         {
             if (Application.unityVersion != BuildGojoAssets.RequiredUnityVersion)
@@ -42,41 +43,10 @@ namespace GojoBracken.Editor
                 Debug.Log("MODEL SKIN: " + renderer.name + "; vertices=" + renderer.sharedMesh.vertexCount
                     + "; bones=" + renderer.bones.Length + "; bindposes=" + renderer.sharedMesh.bindposes.Length);
             }
-            Bounds bounds = meshes[0].bounds;
-            foreach (var renderer in meshes) bounds.Encapsulate(renderer.bounds);
-            if (bounds.size.y <= 0.001f) throw new InvalidOperationException("Model bounds are empty.");
-            model.transform.localScale *= 2.1f / bounds.size.y;
-            bounds = meshes[0].bounds;
-            foreach (var renderer in meshes) bounds.Encapsulate(renderer.bounds);
-            model.transform.position += new Vector3(-bounds.center.x, -bounds.min.y, -bounds.center.z);
+            FitStandingModel(model);
             var standIn = GameObject.Find("Neutral stand-in - NOT Gojo");
             if (standIn != null) standIn.SetActive(false);
-            var clips = AssetDatabase.LoadAllAssetsAtPath(ModelPath).OfType<AnimationClip>().ToArray();
-            if (clips.Length != 1 || clips[0].length <= 0f)
-                throw new InvalidOperationException("Expected one non-empty imported clip.");
-            var animator = model.GetComponentInChildren<Animator>(true);
-            if (animator == null) throw new InvalidOperationException("Imported Animator is missing.");
-            const string controllerPath = "Assets/LocalModelStudy/ModelStudy.controller";
-            if (File.Exists(controllerPath))
-                throw new InvalidOperationException("A study controller already exists; existing work will not be overwritten.");
-            var animationController = UnityEditor.Animations.AnimatorController.CreateAnimatorControllerAtPathWithClip(controllerPath, clips[0]);
-            animator.runtimeAnimatorController = animationController;
-            animator.applyRootMotion = false;
-            animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
-            // Verify a real imported bone curve changes before calling this an animated study.
-            var joint = animator.GetComponentsInChildren<Transform>(true).FirstOrDefault(item => item.name == "rightUpperArm");
-            if (joint == null) throw new InvalidOperationException("Expected arm joint is missing.");
-            clips[0].SampleAnimation(animator.gameObject, 0f);
-            var rotation = joint.localRotation;
-            clips[0].SampleAnimation(animator.gameObject, 0.8f);
-            if (Quaternion.Angle(rotation, joint.localRotation) < 0.01f)
-                throw new InvalidOperationException("Sampled clip did not move the expected arm joint.");
-            clips[0].SampleAnimation(animator.gameObject, 0f);
-            Debug.Log("MODEL MOTION: imported clip moves arm joint between 0 and 0.8 seconds.");
-            foreach (var clip in clips)
-                Debug.Log("MODEL CLIP: " + clip.name + "; seconds=" + clip.length + "; legacy=" + clip.legacy);
-            Debug.Log("MODEL ANIMATION COMPONENTS: Animator=" + model.GetComponentsInChildren<Animator>(true).Length
-                + "; Animation=" + model.GetComponentsInChildren<Animation>(true).Length);
+            Debug.Log("MODEL IDLE: upright spine, legs straightened, arms relaxed, soles aligned and grounded, dance disabled.");
             // Save the study without baking the generated flame shell into the scene.
             if (!EditorSceneManager.SaveScene(scene, ScenePath)) throw new InvalidOperationException("Could not save local model study.");
             var controller = UnityEngine.Object.FindObjectOfType<AuraStudyController>();
@@ -88,10 +58,74 @@ namespace GojoBracken.Editor
             Debug.Log("MODEL STUDY COMPLETE: " + ScenePath);
         }
 
+        [MenuItem("GojoBracken/Refresh local Gojo idle pose")]
+        public static void RefreshIdlePose()
+        {
+            if (Application.unityVersion != BuildGojoAssets.RequiredUnityVersion || Application.isPlaying)
+                throw new InvalidOperationException("Use the pinned Editor outside Play mode.");
+            if (!Application.isBatchMode && !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
+                return;
+            var scene = EditorSceneManager.OpenScene(ScenePath);
+            var model = GameObject.Find("Gojo candidate - local evaluation");
+            if (model == null) throw new InvalidOperationException("Gojo candidate is missing from the idle study.");
+            FitStandingModel(model);
+            if (!EditorSceneManager.SaveScene(scene))
+                throw new InvalidOperationException("Could not save the corrected idle pose.");
+            Debug.Log("IDLE REFRESH COMPLETE: upright spine, aligned soles, both feet grounded.");
+        }
+
+        private static void FitStandingModel(GameObject model)
+        {
+            GojoIdlePose.Apply(model);
+            Bounds bounds = GojoIdlePose.VisibleBounds(model);
+            if (bounds.size.y <= 0.001f) throw new InvalidOperationException("Model bounds are empty.");
+            model.transform.localScale *= TargetPreviewHeight / bounds.size.y;
+            bounds = GojoIdlePose.VisibleBounds(model);
+            model.transform.position += new Vector3(-bounds.center.x, -bounds.min.y, -bounds.center.z);
+            GojoIdlePose.GroundFeet(model);
+            bounds = GojoIdlePose.VisibleBounds(model);
+            if (Mathf.Abs(bounds.size.y - TargetPreviewHeight) > 0.002f)
+                throw new InvalidOperationException("Model did not fit the target preview height.");
+        }
+
+        // Run in an isolated project with -executeMethod for regression verification.
+        public static void VerifyIdleStudy()
+        {
+            if (!Application.isBatchMode)
+                throw new InvalidOperationException("Run this verification in batch mode on a project copy.");
+            Vector3 previousScale = Vector3.zero;
+            for (int pass = 0; pass < 3; pass++)
+            {
+                RefreshIdlePose();
+                var model = GameObject.Find("Gojo candidate - local evaluation");
+                Bounds bounds = GojoIdlePose.VisibleBounds(model);
+                if (Mathf.Abs(bounds.size.y - TargetPreviewHeight) > 0.002f || Mathf.Abs(bounds.min.y) > 0.001f)
+                    throw new InvalidOperationException("Idle height or floor contact changed after refresh.");
+                if (pass > 0 && (model.transform.localScale - previousScale).sqrMagnitude > 0.000001f)
+                    throw new InvalidOperationException("Repeated refresh changed model scale.");
+                previousScale = model.transform.localScale;
+                Debug.Log("IDLE SCALE PASS " + (pass + 1) + ": height=" + bounds.size.y);
+            }
+            var controller = UnityEngine.Object.FindObjectOfType<AuraStudyController>();
+            AuraStudyController.ConfigureFlames(controller.Aura);
+            controller.Anger = 1f;
+            controller.ApplyAura();
+            controller.Aura.Simulate(1.4f, true, true, false);
+            var envelope = controller.Aura.GetComponentInChildren<FlameEnvelope>();
+            if (envelope == null) throw new InvalidOperationException("Flame envelope is missing.");
+            float tip = envelope.GetComponent<MeshFilter>().sharedMesh.vertices
+                .Max(vertex => envelope.transform.TransformPoint(vertex).y);
+            var standing = GojoIdlePose.VisibleBounds(GameObject.Find("Gojo candidate - local evaluation"));
+            if (tip < standing.max.y + 0.2f)
+                throw new InvalidOperationException("Maximum aura does not extend above the model.");
+            Debug.Log("IDLE AURA SCALE PASS: modelTop=" + standing.max.y + "; flameTip=" + tip);
+            Capture(Camera.main);
+        }
+
         private static void Capture(Camera camera)
         {
             string repository = Directory.GetParent(Directory.GetParent(Application.dataPath).FullName).FullName;
-            string output = Path.Combine(repository, "artifacts", "assets", "gojo-model-study.png");
+            string output = Path.Combine(repository, "artifacts", "assets", "gojo-idle-study.png");
             Directory.CreateDirectory(Path.GetDirectoryName(output));
             var target = new RenderTexture(960, 640, 24);
             var image = new Texture2D(960, 640, TextureFormat.RGB24, false);

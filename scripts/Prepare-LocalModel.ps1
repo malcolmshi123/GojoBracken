@@ -43,4 +43,4 @@ try {
     $zip.Dispose()
 }
 Write-Output "Prepared ignored local candidate: $destination"
-Write-Output 'In Unity, allow package resolution/import to finish, then choose GojoBracken > Create local Gojo model study.'
+Write-Output 'In Unity, allow package resolution/import to finish, then choose GojoBracken > Create local Gojo idle study.'
