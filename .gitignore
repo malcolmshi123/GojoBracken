@@ -26,3 +26,7 @@
 /artifacts/
 /dist/
 
+# Unity-generated IDE projects (keep the plugin solution tracked)
+/UnityProject/*.csproj
+/UnityProject/*.sln
+/UnityProject/*.slnx

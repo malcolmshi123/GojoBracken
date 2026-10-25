@@ -11,7 +11,7 @@ A cosmetic Lethal Company mod that will replace the Bracken with Gojo Satoru fro
 
 Version 0.1.1 is a plugin foundation with optional runtime diagnostics for the testing PC.
 It does not replace the Bracken or provide an aura or voice line yet.
-No model, audio, Unity project, AssetBundle, or installable release is included.
+A Unity asset-project scaffold and exporter are included, but no final model, audio clip, aura prefab, AssetBundle, or installable release is included.
 
 Development proceeds in small review checkpoints. Staging, commits, and pushes are performed manually by the repository owner, including the initial commit.
 
@@ -118,6 +118,10 @@ Sampling runs every 0.5 seconds and logs changed snapshots, so very short transi
 
 Implementation references: [Unity's current render pipeline API](https://docs.unity3d.com/2022.3/Documentation/ScriptReference/Rendering.GraphicsSettings-currentRenderPipeline.html) and [BepInEx configuration](https://docs.bepinex.dev/articles/dev_guide/plugin_tutorial/4_configuration.html).
 
+## Author the real Unity assets
+
+Open UnityProject with Unity 2022.3.62f2 on the development laptop. See [the asset-project instructions](UnityProject/README.md) for import paths, validation, and the Windows x64 bundle command. The exporter requires actual assets and verified shader dependencies; it does not export the browser stand-in. Unity compilation and export are pending Editor installation and asset preparation.
+
 ## Research and asset requirements
 
 The old malcolmshi123/GojoBracken source at commit aab524b was inspected and backed up before the fresh start. It contained a BepInEx entry point, a basic model/audio patch, and terminal patches, but no referenced Gojo prefab or media assets.
@@ -142,7 +146,7 @@ Required assets, none included yet:
 - The original Japanese voice clip, with source/provenance recorded separately from the code license.
 - A reproducible Unity project that exports the model, effects, and audio in a Windows x64 AssetBundle.
 
-Before creating that project, inspect the game on the testing PC to confirm its Unity version, render pipeline, Bracken state mapping, anger range, corpse-carrying flag, and multiplayer replication. No current game version has been validated.
+The testing-PC report and main menu identify game v81 and Unity 2022.3.62f2. The new project uses that exact Editor version as its initial authoring baseline. Active render settings, Bracken state mapping, anger range, corpse-carrying behavior, and replication still require inspection before finalized material and runtime integration choices.
 
 ## Planned behavior and checkpoints
 
