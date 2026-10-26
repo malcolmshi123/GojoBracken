@@ -42,6 +42,8 @@ This idle scene is already prepared on the development laptop. Use the normal ph
 
 Intended game behavior: Gojo stands still when the Bracken is stationary, follows the position/rotation controlled by the Bracken AI, and adapts locomotion, attack, kill, and corpse-handling poses to the Bracken. The source dance must not drive gameplay movement. Actual game transform following and skeleton/animation adaptation remain pending. Keep the local study outside Assets/GojoBracken/Prefabs until the asset and gameplay requirements are satisfied.
 
+The approved saved pose can now be [baked into a local native prefab](local-native-gojo.md), with copied native skins/materials/textures and one constant standing-idle controller. It remains inside the ignored study directory. Native Animator, anchor-following, and bundle checks do not establish Bracken motion adaptation or adoption as a release asset.
+
 
 Posture correction: choose **GojoBracken > Refresh local Gojo idle pose** outside Play mode to update the existing idle scene. This uses baked shoe geometry to estimate the soles, rather than assuming foot-to-toe bone direction matches the shoe bottom. Small leg-height corrections are limited to 2 cm; larger errors fail validation. The isolated Unity check measured 0 degrees hip-to-head lean, less than 0.1 degrees sole tilt, and both soles within 1 mm of the floor. Front and side renders were inspected, including a side view with the aura hidden.
 

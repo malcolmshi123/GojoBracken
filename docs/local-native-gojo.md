@@ -1,0 +1,11 @@
+# Local native standing model
+
+The development laptop now has Assets/LocalModelStudy/NativeGojo/Gojo.prefab, generated from the saved, approved GojoIdleStudy scene. It copies the existing transforms without refreshing or adjusting the pose. Four native skins retain their bone references and bind poses; meshes, materials, and textures are copied into native assets. The output no longer depends on the imported glTF model or its dance controller.
+
+An enabled generic Animator plays one looped StandingIdle clip. The clip holds every rig transform at its approved position, rotation, and scale. It contains no dance, animation events, or root motion. Moving the parent anchor moves the visual; the clip does not drive the game character's movement. This is a stable standing foundation, not completed locomotion, attack, killing, or corpse animation adaptation. The 2.1-unit preview height remains uncalibrated against the actual Bracken.
+
+Open Unity 2022.3.62f2 outside Play mode. The output is already generated locally; select Assets/LocalModelStudy/NativeGojo/Gojo.prefab to inspect it. To recreate it in another prepared local study, choose GojoBracken > Bake local native Gojo prefab. The saved GojoIdleStudy.unity is required, and baking refuses an unsaved source scene or existing output folder. It neither refreshes nor saves over the approved pose scene.
+
+Choose GojoBracken > Verify local native Gojo prefab to repeat the native checks. They verify all four skins, materials/textures, a single idle clip, no custom scripts, stable pose after repeated Animator updates, 2.1-unit height/floor contact, parent-anchor following, and independence from imported study assets. They also export and reload a local Windows bundle under ignored artifacts/local-model-check and check overwrite refusal. The local model and its package shader dependencies must be available on this PC.
+
+The generated prefab, textures, clips, controller, and local test bundle remain ignored by Git. The [candidate's source/provenance issue](model-evaluation.md#source-and-archive) is unchanged; no model data is added to the public release assets. Do not treat local-native-gojo-check as a full gojobracken release bundle. Game material compatibility, the Bracken rig/motion adapter, the Japanese voice asset, and controlled game/multiplayer validation remain pending.

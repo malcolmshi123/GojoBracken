@@ -21,6 +21,8 @@ A per-instance aura/audio controller now has an opt-in game adapter, with Unity 
 
 The approved flame/wisps are now [baked as a native aura prefab](docs/native-aura.md), with no preview-script dependency. Rendering compatibility with the game remains pending.
 
+The approved standing pose is also [baked into a local-only native Gojo prefab](docs/local-native-gojo.md). It has a constant idle controller and no dance/root motion; downloaded model data remains ignored pending provenance review.
+
 Development proceeds in small review checkpoints. Staging, commits, and pushes are performed manually by the repository owner, including the initial commit.
 
 ## Preview without playing the game
