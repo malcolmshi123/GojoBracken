@@ -35,14 +35,14 @@ namespace GojoBracken
             }
         }
 
-        internal void Update()
+        internal void Update(float now)
         {
-            if (failed || Time.unscaledTime < nextSampleTime)
+            if (failed || now < nextSampleTime)
             {
                 return;
             }
 
-            nextSampleTime = Time.unscaledTime + 0.5f;
+            nextSampleTime = now + 0.5f;
             try
             {
                 LogPipeline();

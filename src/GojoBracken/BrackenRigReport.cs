@@ -62,6 +62,8 @@ namespace GojoBracken
                     info("[RigReport] Exported loaded prefab report: " + path);
                     return;
                 }
+                if (attempts == 1 || attempts % 5 == 0)
+                    info("[RigReport] Scan " + attempts + "/24 complete; no loaded prefab asset found.");
                 if (attempts >= 24)
                 {
                     finished = true;
@@ -75,6 +77,12 @@ namespace GojoBracken
             }
         }
 
+        internal void Cancel(string reason)
+        {
+            if (finished) return;
+            finished = true;
+            warning("[RigReport] Search cancelled after " + attempts + "/24 scans: " + reason + ". No report was exported.");
+        }
         internal static string Describe(Component enemy, string version)
         {
             var root = enemy.transform;

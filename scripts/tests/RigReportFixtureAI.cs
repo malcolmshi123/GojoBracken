@@ -11,3 +11,5 @@ public sealed class RigReportFixtureAI : MonoBehaviour
 }
 [Serializable]
 public sealed class RigReportFixtureState { public string name; }
+
+public sealed class RigReportEmptyAI : MonoBehaviour { }

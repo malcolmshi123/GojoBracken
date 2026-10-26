@@ -80,6 +80,16 @@ public static class RigReportFixtureDriver
         failure.Update(10f);
         Require(warnings.Count == warningCount + 2 && warnings[warnings.Count - 1].Contains("Export stopped"), "I/O failure stops safely");
         Debug.Log("RIG CHECK PASS: unavailable type and I/O failure");
+        int beforeCancel = warnings.Count;
+        var cancelled = new BrackenRigReport(typeof(RigReportEmptyAI), output + "-cancelled", "test", messages.Add, warnings.Add);
+        cancelled.Update(0f);
+        cancelled.Cancel("fixture disabled");
+        cancelled.Cancel("repeat");
+        cancelled.Update(120f);
+        Require(warnings.Count == beforeCancel + 1 && warnings[warnings.Count - 1].Contains("Search cancelled after 1/24"), "single cancellation message");
+        Require(messages.Exists(line => line.Contains("Scan 1/24 complete")), "first scan progress");
+        Require(!Directory.Exists(output + "-cancelled"), "cancelled search does not export");
+        Debug.Log("RIG CHECK PASS: first scan progress and explicit cancellation");
         Debug.Log("RIG CHECK REPORT: " + files[0]);
     }
     private static void Require(bool success, string message)

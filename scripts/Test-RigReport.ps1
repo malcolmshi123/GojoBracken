@@ -32,7 +32,7 @@ $process = Start-Process -FilePath $UnityEditorPath -ArgumentList $arguments -Wi
 if ($process.ExitCode -ne 0) { throw "Rig checks failed. Read $log." }
 foreach ($marker in @('RIG CHECK PASS: scene exclusion and bounded timeout',
     'RIG CHECK PASS: loaded prefab, bones, states, clips, explicit unavailable parameters, single export, no mutation',
-    'RIG CHECK PASS: unavailable type and I/O failure')) {
+    'RIG CHECK PASS: unavailable type and I/O failure', 'RIG CHECK PASS: first scan progress and explicit cancellation')) {
     if (-not (Select-String -LiteralPath $log -SimpleMatch -Quiet -Pattern $marker)) {
         throw "Unity did not confirm all checks. Read $log."
     }

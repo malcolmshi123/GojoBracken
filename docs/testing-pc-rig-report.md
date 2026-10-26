@@ -1,5 +1,8 @@
 # Testing PC: Bracken rig report
 
+**Handoff paused after the inconclusive 0.1.2 run. No further game launch or Bracken encounter is requested. Keep both diagnostics options false.** See [the observer investigation and prepared file-only route](observer-investigation.md). The launch instructions below describe the earlier attempt and are not a request to repeat it.
+
+
 GojoBracken 0.1.2 adds an optional report of an already-loaded Bracken prefab. It excludes scene instances and never spawns an enemy, plays an animation, alters a controller, patches methods, or adds network messages. No moon landing or Bracken encounter is needed for this attempt.
 
 Review, commit, and push the development-laptop changes before pulling on the testing PC. Staging, commits, and pushes remain manual.

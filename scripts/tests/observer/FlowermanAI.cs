@@ -1,0 +1,1 @@
+using UnityEngine; public sealed class FlowermanAI : MonoBehaviour { public float angerMeter = 0.25f; }
