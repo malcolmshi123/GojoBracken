@@ -9,7 +9,7 @@ A cosmetic Lethal Company mod that will replace the Bracken with Gojo Satoru fro
 
 ## Current status
 
-Version 0.1.1 is a plugin foundation with optional runtime diagnostics for the testing PC.
+Version 0.1.3 is a plugin foundation with optional runtime diagnostics and rig reporting for the testing PC.
 It does not replace the Bracken or provide an aura or voice line yet.
 A Unity asset-project scaffold and exporter are included, but no final model, audio clip, aura prefab, AssetBundle, or installable release is included.
 
@@ -123,6 +123,8 @@ Implementation references: [Unity's current render pipeline API](https://docs.un
 Version 0.1.2 adds opt-in ExportBrackenRig diagnostics. It reads an already-loaded prefab and exports bone paths, renderer/shader names, and controller/clip metadata into BepInEx/config/GojoBracken. It never spawns an enemy or plays its controller. Unavailable prefab animator parameters are marked explicitly; state labels are not assumed to prove phase mapping.
 
 See [testing-PC instructions and verification limits](docs/testing-pc-rig-report.md). If the prefab is not loaded at the main menu, return the timeout message instead of seeking an encounter. The 0.1.2 testing-PC attempt produced startup lines but no report or pipeline line. That handoff is paused; no further launch is requested. Version 0.1.3 adds immediate coroutine sampling and explicit progress/cancellation logs. See [the investigation and offline metadata reader](docs/observer-investigation.md). The testing-PC cause remains unconfirmed.
+
+The supplied offline metadata report matches the logged v81 game assembly MVID. The supplied DLL also matches its MVID and hash. Read-only inputs and a v81-specific cosmetic state machine are prepared; they are not attached to enemies yet. See [verified phase mapping, anger/RPC findings, and checks](docs/v81-behavior.md). See [confirmed members, checks, and remaining evidence](docs/v81-metadata-contract.md).
 
 ## Author the real Unity assets
 
