@@ -1,6 +1,6 @@
 Shader "GojoBracken/PreviewFlameEnvelope"
 {
-    Properties { _Strength ("Simulated anger", Range(0,1)) = 1 }
+    Properties { _Strength ("Simulated anger", Range(0,1)) = 1 _Intensity ("Aura strength", Range(0,3)) = 1 }
     SubShader
     {
         Tags { "Queue"="Transparent" "RenderType"="Transparent" }
@@ -14,6 +14,7 @@ Shader "GojoBracken/PreviewFlameEnvelope"
             #pragma fragment frag
             #include "UnityCG.cginc"
             float _Strength;
+            float _Intensity;
             struct appdata { float4 vertex : POSITION; float3 normal : NORMAL; float2 uv : TEXCOORD0; };
             struct v2f { float4 pos : SV_POSITION; float3 world : TEXCOORD0; float3 normal : TEXCOORD1; float2 uv : TEXCOORD2; };
             v2f vert(appdata v)
@@ -47,7 +48,7 @@ Shader "GojoBracken/PreviewFlameEnvelope"
                 float3 blue = float3(0.04, 0.22, 1);
                 float3 white = float3(0.65, 0.95, 1);
                 float3 color = lerp(white, blue, rim * 0.75) * (1.2 + _Strength * 0.7);
-                return fixed4(color, alpha);
+                return fixed4(color, saturate(alpha * _Intensity));
             }
             ENDCG
         }

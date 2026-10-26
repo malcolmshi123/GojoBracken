@@ -34,6 +34,10 @@
     </Reference>
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="../../shared/GojoBracken.Presentation/Runtime/*.cs" />
+  </ItemGroup>
+
   <Target Name="ValidateLocalReferences" BeforeTargets="ResolveAssemblyReferences" Condition="'$(DesignTimeBuild)' != 'true'">
     <Error Condition="'$(BepInExCoreDir)' == ''"
            Text="Set LethalCompanyDir and BepInExCoreDir in local.props (see local.props.example), or pass them as MSBuild properties." />

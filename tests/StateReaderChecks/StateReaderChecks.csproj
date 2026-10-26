@@ -8,7 +8,7 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="PresentationChecks.cs" />
-    <Compile Include="../../src/GojoBracken/BrackenV81Presentation.cs" Link="BrackenV81Presentation.cs" />
-    <Compile Include="../../src/GojoBracken/BrackenStateReader.cs" Link="BrackenStateReader.cs" />
+    <Compile Include="../../shared/GojoBracken.Presentation/Runtime/BrackenV81Presentation.cs" Link="BrackenV81Presentation.cs" />
+    <Compile Include="../../shared/GojoBracken.Presentation/Runtime/BrackenStateReader.cs" Link="BrackenStateReader.cs" />
   </ItemGroup>
 </Project>

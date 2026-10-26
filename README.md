@@ -13,6 +13,8 @@ Version 0.1.3 is a plugin foundation with optional runtime diagnostics and rig r
 It does not replace the Bracken or provide an aura or voice line yet.
 A Unity asset-project scaffold and exporter are included, but no final model, audio clip, aura prefab, AssetBundle, or installable release is included.
 
+The native Unity study now uses the same C# state rules as the plugin, with simulated anger, phase, kill/death, cleanup, and remote approximation controls. See [Unity study instructions](UnityProject/README.md#native-aura-study). Game attachment, rig adaptation, and release assets remain pending.
+
 Development proceeds in small review checkpoints. Staging, commits, and pushes are performed manually by the repository owner, including the initial commit.
 
 ## Preview without playing the game

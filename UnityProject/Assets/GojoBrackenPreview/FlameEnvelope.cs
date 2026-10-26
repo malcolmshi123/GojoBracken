@@ -28,9 +28,10 @@ namespace GojoBracken.Authoring
             return shell;
         }
 
-        public void SetStrength(float anger)
+        public void SetStrength(float anger, float intensity = 1f)
         {
             properties.SetFloat("_Strength", Mathf.Clamp01(anger));
+            properties.SetFloat("_Intensity", Mathf.Clamp(intensity, 0f, 3f));
             shellRenderer.SetPropertyBlock(properties);
         }
 

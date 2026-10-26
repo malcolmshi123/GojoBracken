@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace GojoBracken.Authoring
 {
-    // Editor study scene only. Never attached to the game's enemies or release prefabs.
+    // Authoring only: simulated inputs drive the same state machine compiled into the plugin.
     public sealed class AuraStudyController : MonoBehaviour
     {
         public enum PreviewPhase { Hunting, Retreat, Aggro, Dragging }
@@ -10,35 +10,61 @@ namespace GojoBracken.Authoring
         public AudioSource VoiceSource;
         [Range(0f, 1f)] public float Anger;
         public PreviewPhase Phase;
+        public bool UsePhaseApproximation;
+        public bool InKillAnimation;
+        public bool Dead;
+        [Range(0f, 3f)] public float AuraStrength = 1f;
 
-        private PreviewPhase previousPhase;
+        public int VoiceTriggerCount { get; private set; }
+        public float VisibleAuraLevel { get; private set; }
+        public bool EffectsStopped { get; private set; }
+        public string ObservedPhase { get; private set; }
+
         private bool active = true;
-        private int voiceTriggers;
         private FlameEnvelope envelope;
+        private BrackenV81Presentation presentation;
+        private Vector2 scroll;
 
         private void Awake()
         {
-            previousPhase = Phase;
             if (Aura != null) ConfigureFlames(Aura);
-            ApplyAura();
-            if (Aura != null) Aura.Play(true);
+            Step(0f);
         }
 
-        private void Update()
+        private void Update() { Step(Time.unscaledDeltaTime); }
+
+        public void Step(float deltaTime)
         {
             if (!active) return;
-            Anger = Mathf.Clamp01(Anger);
-            if (Phase != previousPhase && Phase == PreviewPhase.Aggro)
+            if (presentation == null)
+                presentation = new BrackenV81Presentation(BrackenV81Presentation.SupportedMvid);
+            Anger = Safe01(Anger);
+            int state = Phase == PreviewPhase.Hunting ? 0 : Phase == PreviewPhase.Aggro ? 2 : 1;
+            var input = new BrackenObservation(state, Anger * BrackenV81Presentation.DefaultSaturationAnger,
+                state == 2, Phase == PreviewPhase.Dragging, InKillAnimation, Dead);
+            var frame = presentation.Evaluate(input, !UsePhaseApproximation, deltaTime);
+            ObservedPhase = frame.Phase.ToString();
+            VisibleAuraLevel = frame.AuraLevel;
+            if (frame.StopEffects)
             {
-                voiceTriggers++;
+                if (!EffectsStopped) StopEffects();
+                EffectsStopped = true;
+                return;
+            }
+            EffectsStopped = false;
+            if (frame.PlayAggroVoice)
+            {
+                VoiceTriggerCount++;
                 if (VoiceSource != null && VoiceSource.clip != null)
                 {
                     VoiceSource.Stop();
                     VoiceSource.Play();
                 }
             }
-            previousPhase = Phase;
-            ApplyAura();
+            float visualAnger = Safe01((frame.AuraLevel - BrackenV81Presentation.BaselineAura)
+                / (1f - BrackenV81Presentation.BaselineAura));
+            ApplyAuraLevel(visualAnger);
+            if (Aura != null && !Aura.isPlaying) Aura.Play(true);
         }
 
         public static void ConfigureFlames(ParticleSystem aura)
@@ -101,42 +127,60 @@ namespace GojoBracken.Authoring
             renderer.velocityScale = 0.12f;
         }
 
-        public void ApplyAura()
+        // Static asset/render inspection keeps the established direct anger control.
+        public void ApplyAura() { ApplyAuraLevel(Safe01(Anger)); }
+
+        private void ApplyAuraLevel(float anger)
         {
             if (Aura == null) return;
-            float anger = Mathf.Clamp01(Anger);
+            float strength = float.IsNaN(AuraStrength) || float.IsInfinity(AuraStrength)
+                ? 1f : Mathf.Clamp(AuraStrength, 0f, 3f);
             if (envelope == null && active) envelope = FlameEnvelope.Create(Aura.transform);
-            if (envelope != null) { envelope.gameObject.SetActive(active); envelope.SetStrength(anger); }
+            if (envelope != null)
+            {
+                envelope.gameObject.SetActive(active);
+                envelope.SetStrength(anger, strength);
+            }
             var main = Aura.main;
             main.startSpeed = new ParticleSystem.MinMaxCurve(
                 Mathf.Lerp(0.05f, 0.35f, anger), Mathf.Lerp(0.15f, 1.0f, anger));
             main.startSize = new ParticleSystem.MinMaxCurve(
                 Mathf.Lerp(0.035f, 0.1f, anger), Mathf.Lerp(0.08f, 0.26f, anger));
-            main.startColor = new Color(0.65f, 0.85f, 1f, Mathf.Lerp(0.25f, 0.7f, anger));
+            main.startColor = new Color(0.65f, 0.85f, 1f, Mathf.Clamp01(Mathf.Lerp(0.25f, 0.7f, anger) * strength));
             var emission = Aura.emission;
-            emission.rateOverTime = active ? Mathf.Lerp(18f, 220f, anger * anger) : 0f;
+            emission.rateOverTime = active ? Mathf.Lerp(18f, 220f, anger * anger) * strength : 0f;
         }
 
-        private void StopPreview()
+        private void StopEffects()
         {
-            active = false;
             if (envelope != null) envelope.gameObject.SetActive(false);
             if (Aura != null) Aura.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
             if (VoiceSource != null) VoiceSource.Stop();
         }
 
-        private void ResetPreview()
+        public void EndPreview()
         {
-            StopPreview();
-            Anger = 0f;
-            Phase = previousPhase = PreviewPhase.Hunting;
-            voiceTriggers = 0;
-            active = true;
-            ApplyAura();
-            if (Aura != null) Aura.Play(true);
+            active = false;
+            presentation?.Reset();
+            StopEffects();
+            EffectsStopped = true;
+            VisibleAuraLevel = 0f;
         }
 
-        private void OnDisable() { StopPreview(); }
+        public void SimulateDeath() { Dead = true; Step(0f); }
+
+        public void ResetPreview()
+        {
+            EndPreview();
+            Anger = 0f;
+            Phase = PreviewPhase.Hunting;
+            InKillAnimation = Dead = UsePhaseApproximation = false;
+            VoiceTriggerCount = 0;
+            active = true;
+            Step(0f);
+        }
+
+        private void OnDisable() { EndPreview(); }
         private void OnDestroy()
         {
             if (envelope == null) return;
@@ -144,27 +188,38 @@ namespace GojoBracken.Authoring
             else DestroyImmediate(envelope.gameObject);
         }
 
+        private static float Safe01(float value)
+        {
+            return float.IsNaN(value) || float.IsInfinity(value) ? 0f : Mathf.Clamp01(value);
+        }
+
         private void OnGUI()
         {
-            GUILayout.BeginArea(new Rect(16f, 16f, 300f, 330f), GUI.skin.box);
-            GUILayout.Label("GojoBracken - native aura study");
-            GUILayout.Label("Stand-in only. No game or Bracken is running.");
-            GUILayout.Label("Authoring shader; game materials are pending.");
+            GUILayout.BeginArea(new Rect(16f, 16f, 330f, Mathf.Min(520f, Screen.height - 32f)), GUI.skin.box);
+            scroll = GUILayout.BeginScrollView(scroll);
+            GUILayout.Label("GojoBracken - connected cosmetic study");
+            GUILayout.Label("Simulated inputs; no game or Bracken is running.");
+            GUILayout.Label("Authoring materials; game integration is pending.");
             bool previousEnabled = GUI.enabled;
-            GUI.enabled = active;
+            GUI.enabled = active && !Dead;
             if (GUILayout.Button("Hunting")) Phase = PreviewPhase.Hunting;
             if (GUILayout.Button("Retreat")) Phase = PreviewPhase.Retreat;
             if (GUILayout.Button("Aggro")) Phase = PreviewPhase.Aggro;
             if (GUILayout.Button("Corpse dragging")) Phase = PreviewPhase.Dragging;
+            GUILayout.Label("Observed phase: " + ObservedPhase);
             GUILayout.Label("Simulated anger: " + Mathf.RoundToInt(Anger * 100f) + "%");
             Anger = GUILayout.HorizontalSlider(Anger, 0f, 1f);
-            GUILayout.Label("Aggro voice triggers: " + voiceTriggers);
-            GUILayout.Label(VoiceSource != null && VoiceSource.clip != null
-                ? "Voice clip assigned in Inspector."
-                : "No voice clip assigned.");
-            if (GUILayout.Button("End preview")) StopPreview();
+            UsePhaseApproximation = GUILayout.Toggle(UsePhaseApproximation, "Remote simulation: phase approximation");
+            InKillAnimation = GUILayout.Toggle(InKillAnimation, "Kill animation overlay");
+            GUILayout.Label("Aura strength: " + AuraStrength.ToString("0.0"));
+            AuraStrength = GUILayout.HorizontalSlider(AuraStrength, 0f, 3f);
+            GUILayout.Label("Aggro voice triggers: " + VoiceTriggerCount);
+            GUILayout.Label(VoiceSource != null && VoiceSource.clip != null ? "Local voice clip assigned." : "No voice clip assigned.");
+            if (GUILayout.Button("Simulate death")) SimulateDeath();
+            if (GUILayout.Button("End preview")) EndPreview();
             GUI.enabled = previousEnabled;
             if (GUILayout.Button("Reset preview")) ResetPreview();
+            GUILayout.EndScrollView();
             GUILayout.EndArea();
         }
     }

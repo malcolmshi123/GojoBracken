@@ -31,7 +31,7 @@ EnterAngerModeServerRpc(Single) references EnterAngerModeClientRpc(Single). The 
 
 ## Prepared read-only adapter
 
-src/GojoBracken/BrackenStateReader.cs binds the six observation fields by name and exact CLR type, including inherited EnemyAI fields. It returns a raw snapshot of state index, anger, anger-mode flag, carrying flag, kill-animation flag, and death flag. It does not keep enemy references, write fields, clamp an unverified anger range, translate state indices into phases, or infer ownership/authority.
+shared/GojoBracken.Presentation/Runtime/BrackenStateReader.cs binds the six observation fields by name and exact CLR type, including inherited EnemyAI fields. It returns a raw snapshot of state index, anger, anger-mode flag, carrying flag, kill-animation flag, and death flag. It does not keep enemy references, write fields, clamp an unverified anger range, translate state indices into phases, or infer ownership/authority.
 
 Missing/wrong fields and null/wrong-type instances return an unavailable result. NaN/infinite anger is rejected so later presentation code can fall back safely. Separate instances do not share presentation state.
 

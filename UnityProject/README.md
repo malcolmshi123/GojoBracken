@@ -12,7 +12,7 @@ Use **Unity 2022.3.62f2**, matching the player version reported from the v81 tes
 4. Import the actual assets and retain their .meta files. Review the additional project settings and package lock file Unity generates before committing them.
 5. Configure the material/render pipeline for the game's confirmed runtime settings before treating any materials as game-ready.
 
-Only built-in Unity modules are declared so far. No HDRP package patch or pipeline asset has been guessed. The report confirms HDRP assembly presence, not the active pipeline; startup-only diagnostics can establish the active pipeline without an enemy encounter. Pin matching rendering dependencies in a later increment.
+Built-in Unity modules, the pinned glTF importer, and a local shared C# rules package are declared. No HDRP package patch or pipeline asset has been guessed. The report confirms HDRP assembly presence, not the active pipeline; startup-only diagnostics can establish the active pipeline without an enemy encounter. Pin matching rendering dependencies in a later increment.
 
 ## Native aura study
 
@@ -22,7 +22,22 @@ The development laptop imported this project with Unity 2022.3.62f2 and generate
 - Move the normalized anger slider to change particle density, size, outward speed, and brightness. A continuous blue-white flame surrounds the body and emits outward-rising, tapered wisps. Both the envelope and wisps are strongest at 100%; wisp density, size, speed, and brightness increase with anger. At zero, a faint aura remains in every phase.
 - Entering aggro increments the voice-trigger counter once. Leave aggro and return to trigger it again.
 - No voice is supplied. Optionally assign your own local AudioClip to the AudioSource on **Preview controls - editor study only** before entering Play mode.
-- End preview stops particles and audio; Reset preview clears the simulated state.
+- Enable Remote simulation to use a faint aura outside aggro and a strong aura during aggro, regardless of the anger slider. This approximates phase; it does not simulate authoritative anger.
+- Kill animation overlay suppresses an aggro-entry voice event; finishing that overlay does not create a new entry.
+- Aura strength scales the envelope intensity and wisp emission from 0 to 3; 1 preserves the approved appearance.
+- Simulate death clears particles and stops audio. End preview keeps effects stopped; Reset preview clears state and counters and returns to hunting.
+
+The preview now compiles the same source files as the plugin from shared/GojoBracken.Presentation. Anger changes ease toward their target. This connects the visual study to the verified v81 rules; it does not attach cosmetics to game enemies. The browser preview remains a separate approximation.
+
+For the existing local Gojo study, open Assets/LocalModelStudy/GojoIdleStudy.unity and press Play. Stop Play and allow compilation after pulling these changes, then press Play again. No pose refresh is required.
+
+Run the repeatable native checks from the repository root in Windows PowerShell 5.1:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File .\scripts\Test-ConnectedCosmetics.ps1
+```
+
+The checks create an isolated ignored project under artifacts, use the pinned Editor, and need no game or downloaded Gojo model. They verify smoothing, phases, overlays, voice intent, strength, actual effect shutdown/reset, and independent controllers. No voice clip is included, so successful Japanese audio playback remains untested.
 
 The capsule is a neutral stand-in, not the Gojo model. Materials use Unity's built-in authoring shaders and do not establish compatibility with the game's rendering pipeline. This scene and its AuraStudy.prefab stay outside the release asset paths. The release exporter still requires the actual assets below.
 
