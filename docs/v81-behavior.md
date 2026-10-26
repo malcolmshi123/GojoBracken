@@ -58,7 +58,7 @@ BrackenV81Presentation consumes the read-only BrackenObservation. It is not atta
 - When detailed anger is not trusted, the caller selects an explicit phase approximation: faint outside raw state 2, strongest in raw state 2. Initial integration should select this conservative path for non-owner/unknown ownership.
 - Voice emits one event on the raw non-2 to 2 transition. Kill/corpse overlays suppress that event and cannot create another event merely by ending.
 - Death immediately returns zero aura with a stop-effects signal. Reset clears per-instance state for cleanup.
-- Strength configuration, Unity effect application, spatial audio, asset validation, and actual controller attachment remain later work.
+- A prepared [Unity effects controller](cosmetic-controller.md) now accepts strength/saturation parameters and applies these rules to particles and spatial audio. Bundle validation is also prepared. BepInEx configuration, actual game attachment, and final assets remain later work.
 
 Checks:
 

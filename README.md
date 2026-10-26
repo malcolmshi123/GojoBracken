@@ -17,6 +17,8 @@ The native Unity study now uses the same C# state rules as the plugin, with simu
 
 A runtime bundle loader and shared exporter addresses are prepared, with checks for missing/invalid assets and bundle cleanup. It is not invoked at startup yet. See [asset-loading checks and remaining integration](docs/asset-loading.md).
 
+A per-instance aura/audio controller is also prepared, with Unity Play-mode cleanup checks. It awaits the game adapter and final assets. See [controller behavior and validation](docs/cosmetic-controller.md).
+
 Development proceeds in small review checkpoints. Staging, commits, and pushes are performed manually by the repository owner, including the initial commit.
 
 ## Preview without playing the game
