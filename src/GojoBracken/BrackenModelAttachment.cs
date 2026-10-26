@@ -14,6 +14,7 @@ namespace GojoBracken
         private bool disposed;
         private bool committed;
         private GojoLocomotion locomotion;
+        private GojoActionPose actions;
         internal string MotionStatus { get; private set; }
 
         internal static BrackenModelAttachment Create(Transform host, Renderer[] originals, GameObject prefab, BrackenVisibility visibility)
@@ -39,7 +40,8 @@ namespace GojoBracken
                 attachment.renderers = clone.GetComponentsInChildren<Renderer>(true);
                 attachment.authoredVisible = Array.ConvertAll(attachment.renderers, renderer => renderer.enabled);
                 attachment.locomotion = GojoLocomotion.TryCreate(host, attachment.root.transform, out var status);
-                attachment.MotionStatus = status;
+                attachment.actions = GojoActionPose.TryCreate(host, attachment.root.transform, out var actionStatus);
+                attachment.MotionStatus = status + "; " + actionStatus;
                 // All validation and cloning finishes before the first vanilla rendering change.
                 attachment.Sync(visibility);
                 attachment.root.SetActive(true);
@@ -126,7 +128,9 @@ namespace GojoBracken
 
         internal void Animate(BrackenObservation observation, float deltaTime)
         {
+            actions?.Restore();
             locomotion?.Step(deltaTime, observation.InKillAnimation || observation.Dead);
+            actions?.Apply(observation, deltaTime);
         }
 
         public void Dispose()

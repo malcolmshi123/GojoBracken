@@ -19,7 +19,9 @@ public static class LocomotionChecks
             var calf = Bone(thigh, side + "Calf", new Vector3(0f, -.45f, 0f));
             var foot = Bone(calf, side + "Foot", new Vector3(0f, -.45f, 0f));
             Bone(foot, side + "FootToe", new Vector3(0f, 0f, .15f));
-            Bone(chest, side + "UpperArm", new Vector3(x * 2f, 0f, 0f));
+            var arm = Bone(chest, side + "UpperArm", new Vector3(x * 2f, 0f, 0f));
+            var forearm = Bone(arm, side + "Forearm", new Vector3(0f, -.3f, 0f));
+            Bone(forearm, side + "Hand", new Vector3(0f, -.3f, 0f));
         }
         var nodes = visual.GetComponentsInChildren<Transform>();
         var positions = nodes.Select(node => node.localPosition).ToArray();
@@ -75,6 +77,26 @@ public static class LocomotionChecks
         var incomplete = new GameObject("Unsupported rig");
         Require(GojoLocomotion.TryCreate(host.transform, incomplete.transform, out status) == null
             && status.Contains("standing fallback") && incomplete.transform.rotation == Quaternion.identity, "unsupported rig falls back without rotation changes");
+        gait.Reset();
+        var actions = GojoActionPose.TryCreate(host.transform, visual.transform, out status);
+        var otherActions = GojoActionPose.TryCreate(otherHost.transform, otherVisual.transform, out status);
+        Require(actions != null && otherActions != null, status);
+        Vector3 inputPosition = host.transform.position;
+        for (int i = 0; i < 60; i++) { actions.Restore(); actions.Apply(new BrackenObservation(2, 0f, true, false, false, false), 1f / 60f); }
+        Require(actions.ReadyBlend > .99f && !SamePose(nodes, positions, rotations) && otherActions.ReadyBlend == 0f,
+            "aggro pose changes owned arms independently");
+        for (int i = 0; i < 60; i++) { actions.Restore(); actions.Apply(new BrackenObservation(2, 0f, true, false, true, false), 1f / 60f); }
+        Require(actions.KillBlend > .99f && actions.ReadyBlend < .001f, "kill overrides ready pose");
+        for (int i = 0; i < 90; i++) { actions.Restore(); actions.Apply(new BrackenObservation(2, 0f, true, true, false, false), 1f / 60f); }
+        Require(actions.KillBlend == 0f && actions.ReadyBlend == 0f && SamePose(nodes, positions, rotations),
+            "corpse overlay fades actions to exact idle");
+        actions.Restore(); actions.Apply(new BrackenObservation(2, 0f, true, false, true, false), .1f);
+        Require(actions.KillBlend > .5f, "kill can reenter");
+        actions.Restore(); actions.Apply(new BrackenObservation(2, 0f, true, false, true, true), .1f);
+        Require(actions.KillBlend == 0f && SamePose(nodes, positions, rotations) && host.transform.position == inputPosition,
+            "death clears actions without moving host");
+        Require(GojoActionPose.TryCreate(host.transform, incomplete.transform, out status) == null, "missing action rig fallback");
+        Debug.Log("ACTION POSE PASS: aggro, kill priority/reentry, corpse recovery, death, exact idle, independent instances, unchanged host, missing-rig fallback.");
         UnityEngine.Object.Destroy(host); UnityEngine.Object.Destroy(otherHost); UnityEngine.Object.Destroy(incomplete);
         Debug.Log("LOCOMOTION PASS: exact idle/stop, movement-driven step/lift, level feet, unchanged torso/neck/host, kill suppression, teleport/nonfinite guards, independent/reverse motion, unsupported-rig fallback.");
     }

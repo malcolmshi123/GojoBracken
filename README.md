@@ -9,7 +9,7 @@ A cosmetic Lethal Company mod that will replace the Bracken with Gojo Satoru fro
 
 ## Current status
 
-Version 0.1.6 includes optional runtime diagnostics, rig reporting, development aura/audio binding, and an opt-in model attachment with movement-driven locomotion.
+Version 0.1.7 includes optional runtime diagnostics, rig reporting, development aura/audio binding, and an opt-in model attachment with movement-driven locomotion and aggro/kill arm poses.
 Development cosmetics require the inspected game assembly and a validated bundle; both development and model-preview flags default to disabled. Animation adaptation and actual game validation remain pending.
 A Unity asset project, native aura prefab, and exporter are included. The adapted model, audio clip, game-compatible materials, full AssetBundle, and installable release remain pending.
 
@@ -24,6 +24,8 @@ The aura adapter also [respects vanilla body visibility and camera layers](docs/
 The optional [standing-model attachment](docs/model-attachment.md) validates Gojo before masking selected vanilla renderers and restores their prior rendering masks on failure or cleanup. Original enabled/layer, animator, collider, and body-handling state are preserved.
 
 The [first locomotion pass](docs/locomotion.md) reads enemy movement, steps the cloned legs, swings its arms, and restores the approved pose at rest. The original idle prefab and torso/neck rotations remain unchanged.
+
+The [action pose pass](docs/action-poses.md) adds an aggro-ready pose and kill-flag reach on the owned arms. Victim alignment and game timing remain pending.
 
 The approved flame/wisps are now [baked as a native aura prefab](docs/native-aura.md), with no preview-script dependency. Rendering compatibility with the game remains pending.
 
@@ -78,7 +80,7 @@ Copy only that DLL into BepInEx/plugins/GojoBracken in a separate test profile.
 Start the game and check BepInEx/LogOutput.log for:
 
 ```text
-Gojo Bracken 0.1.6 loaded. Development cosmetics are opt-in; animation adaptation is incomplete.
+Gojo Bracken 0.1.7 loaded. Development cosmetics are opt-in; animation adaptation is incomplete.
 ```
 
 For command-line builds, LethalCompanyDir, BepInExCoreDir, and GameManagedDir can also be passed using -p:Name="path". GameManagedDir defaults to LethalCompanyDir/Lethal Company_Data/Managed; BepInExCoreDir defaults to LethalCompanyDir/BepInEx/core when not supplied.

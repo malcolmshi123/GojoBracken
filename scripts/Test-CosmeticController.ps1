@@ -27,7 +27,7 @@ foreach ($name in @('Aura.prefab', 'Aura.prefab.meta')) {
     Copy-Item -LiteralPath (Join-Path $repository ('UnityProject\Assets\GojoBracken\Prefabs\' + $name)) -Destination (Join-Path $project 'Assets\GojoBracken\Prefabs')
 }
 Copy-Item -LiteralPath (Join-Path $repository 'src\GojoBracken\BrackenCosmeticController.cs') -Destination (Join-Path $project 'Assets\Runtime')
-foreach ($name in @('BrackenGameBinding.cs', 'BrackenVisibilityReader.cs', 'BrackenModelAttachment.cs', 'GojoLocomotion.cs', 'DevelopmentEffects.cs', 'GojoAssetBundle.cs')) {
+foreach ($name in @('BrackenGameBinding.cs', 'BrackenVisibilityReader.cs', 'BrackenModelAttachment.cs', 'GojoLocomotion.cs', 'GojoActionPose.cs', 'DevelopmentEffects.cs', 'GojoAssetBundle.cs')) {
     Copy-Item -LiteralPath (Join-Path $repository ('src\GojoBracken\' + $name)) -Destination (Join-Path $project 'Assets\Runtime')
 }
 Get-ChildItem -LiteralPath (Join-Path $repository 'shared\GojoBracken.Presentation\Runtime') -Filter '*.cs' | Copy-Item -Destination (Join-Path $project 'Assets\Runtime')
@@ -64,5 +64,8 @@ if (-not (Select-String -LiteralPath $log -SimpleMatch -Quiet -Pattern 'MODEL AT
 }
 if (-not (Select-String -LiteralPath $log -SimpleMatch -Quiet -Pattern 'LOCOMOTION PASS:')) {
     throw "Unity did not confirm the locomotion checks. Read $log."
+}
+if (-not (Select-String -LiteralPath $log -SimpleMatch -Quiet -Pattern 'ACTION POSE PASS:')) {
+    throw "Unity did not confirm the action pose checks. Read $log."
 }
 Write-Output "Cosmetic controller Play-mode checks passed in Unity $version. Log: $log"

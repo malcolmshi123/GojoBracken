@@ -15,6 +15,8 @@ public sealed class LocalPrefabPreview : MonoBehaviour
     private GameObject model;
     private BrackenCosmeticController controller;
     private GojoLocomotion gait;
+    private GojoActionPose actions;
+    private string actionStatus;
     private string gaitStatus;
     private int travel;
     private Vector2 scroll;
@@ -38,6 +40,8 @@ public sealed class LocalPrefabPreview : MonoBehaviour
         public string colorSpace, skinWeights;
         public string locomotionStatus;
         public float locomotionBlend;
+        public string actionPoseStatus;
+        public float readyBlend, killBlend;
         public string[] checks;
     }
 
@@ -81,7 +85,7 @@ public sealed class LocalPrefabPreview : MonoBehaviour
     private void LateUpdate()
     {
         if (failure == null && !autoTesting)
-            try { gait?.Step(Time.deltaTime, killing || dead); }
+            try { Animate(Time.deltaTime); }
             catch (Exception exception) { Fail(exception); }
     }
 
@@ -93,6 +97,14 @@ public sealed class LocalPrefabPreview : MonoBehaviour
         foreach (var renderer in model.GetComponentsInChildren<Renderer>(true)) renderer.enabled = bodyVisible && !dead;
     }
 
+    private void Animate(float delta)
+    {
+        actions?.Restore();
+        gait?.Step(delta, killing || dead);
+        actions?.Apply(new BrackenObservation(phase == 3 ? 1 : phase, anger * 12f, phase == 2,
+            phase == 3, killing, dead), delta);
+    }
+
     private void ResetPreview()
     {
         if (anchor != null) { anchor.SetActive(false); Destroy(anchor); }
@@ -101,6 +113,7 @@ public sealed class LocalPrefabPreview : MonoBehaviour
         var visual = new GameObject("Owned motion visual"); visual.transform.SetParent(anchor.transform, false);
         model = Instantiate(ModelPrefab, visual.transform, false);
         gait = GojoLocomotion.TryCreate(anchor.transform, visual.transform, out gaitStatus);
+        actions = GojoActionPose.TryCreate(anchor.transform, visual.transform, out actionStatus);
         if (!BrackenCosmeticController.TryCreate(anchor.transform, BrackenV81Presentation.SupportedMvid,
             AuraPrefab, tone, 12f, strength, out controller, out var error)) throw new InvalidOperationException(error);
         anger = 0f; phase = 0; remote = killing = dead = false; bodyVisible = true; travel = 0;
@@ -148,6 +161,39 @@ public sealed class LocalPrefabPreview : MonoBehaviour
             yield return null;
         }
         try { Require(gait.Blend == 0f, "actual Gojo returns to idle"); }
+        catch (Exception exception) { Fail(exception); yield break; }
+        // Exercise the production action layer after Animator evaluation on the real native rig.
+        phase = 2;
+        for (int i = 0; i < 60; i++)
+        {
+            try { model.GetComponent<Animator>().Update(1f / 60f); Animate(1f / 60f); }
+            catch (Exception exception) { Fail(exception); yield break; }
+            yield return null;
+        }
+        try
+        {
+            Require(actions != null, actionStatus);
+            model.GetComponent<Animator>().Update(1f / 60f); Animate(1f / 60f);
+            Require(actions.ReadyBlend > .99f && actions.KillBlend == 0f, "actual Gojo aggro-ready pose");
+            Capture("aggro-render.png");
+        }
+        catch (Exception exception) { Fail(exception); yield break; }
+        killing = true;
+        for (int i = 0; i < 60; i++)
+        {
+            try { model.GetComponent<Animator>().Update(1f / 60f); Animate(1f / 60f); }
+            catch (Exception exception) { Fail(exception); yield break; }
+            yield return null;
+        }
+        try
+        {
+            model.GetComponent<Animator>().Update(1f / 60f); Animate(1f / 60f);
+            Require(actions.KillBlend > .99f && gait.Blend == 0f, "actual Gojo kill reach suppresses gait");
+            Capture("kill-render.png");
+            killing = false; phase = 0;
+            for (int i = 0; i < 90; i++) { model.GetComponent<Animator>().Update(1f / 60f); Animate(1f / 60f); }
+            Require(actions.KillBlend == 0f && actions.ReadyBlend == 0f, "action exit restores idle");
+        }
         catch (Exception exception) { Fail(exception); yield break; }
         try
         {
@@ -243,6 +289,8 @@ public sealed class LocalPrefabPreview : MonoBehaviour
             auraLevel = controller != null ? controller.LastFrame.AuraLevel : 0f, checks = passed.ToArray(),
             colorSpace = QualitySettings.activeColorSpace.ToString(), skinWeights = QualitySettings.skinWeights.ToString(),
             locomotionStatus = gaitStatus, locomotionBlend = gait != null ? gait.Blend : 0f,
+            actionPoseStatus = actionStatus, readyBlend = actions != null ? actions.ReadyBlend : 0f,
+            killBlend = actions != null ? actions.KillBlend : 0f,
             screenshot = "preview-render.png"
         };
         File.WriteAllText(ReportPath, JsonUtility.ToJson(report, true));
@@ -278,6 +326,7 @@ public sealed class LocalPrefabPreview : MonoBehaviour
             if (GUILayout.Button("Stop")) travel = 0;
             GUILayout.EndHorizontal();
             GUILayout.Label(gaitStatus);
+            GUILayout.Label(actionStatus);
             GUILayout.Label("Anger: " + Mathf.RoundToInt(anger * 100f) + "%");
             anger = GUILayout.HorizontalSlider(anger, 0f, 1f);
             GUILayout.Label("Strength: " + strength.ToString("0.0") + " (change then Reset)");

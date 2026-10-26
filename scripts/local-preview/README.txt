@@ -30,3 +30,8 @@ state discovery, Bracken animations, HDRP compatibility, or multiplayer.
 
 Downloaded Gojo data is included only for local evaluation. Its provenance review
 is unchanged. Keep this preview outside GitHub releases and Thunderstore.
+
+Aggro selects the arms-ready pose. Kill animation overlay selects the two-handed
+reach; toggle it off to inspect recovery. These are state-driven poses, without
+victim alignment or a synchronized neck snap. Automated tests also write
+aggro-render.png and kill-render.png; include those with the smoke report.
