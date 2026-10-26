@@ -79,6 +79,7 @@ namespace GojoBracken
                 pending.renderers = aura.GetComponentsInChildren<Renderer>(true);
                 pending.visible = Array.ConvertAll(pending.renderers, renderer => renderer.enabled);
                 pending.properties = Array.ConvertAll(pending.renderers, renderer => new MaterialPropertyBlock());
+                foreach (var renderer in pending.renderers) renderer.enabled = false;
                 pending.voice = pending.effects.AddComponent<AudioSource>();
                 pending.voice.playOnAwake = false;
                 pending.voice.loop = false;

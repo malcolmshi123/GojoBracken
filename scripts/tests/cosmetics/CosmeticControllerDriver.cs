@@ -9,7 +9,8 @@ public static class CosmeticControllerDriver
     public static void Run()
     {
         EditorSceneManager.NewScene(NewSceneSetup.EmptyScene);
-        new GameObject("Cosmetic checks").AddComponent<CosmeticControllerProbe>();
+        var probe = new GameObject("Cosmetic checks").AddComponent<CosmeticControllerProbe>();
+        probe.BakedAura = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/GojoBracken/Prefabs/Aura.prefab");
         EditorSceneManager.SaveScene(EditorSceneManager.GetActiveScene(), "Assets/CosmeticChecks.unity");
         SessionState.SetBool("GojoCosmeticChecks", true);
         SessionState.SetFloat("GojoCosmeticDeadline", (float)EditorApplication.timeSinceStartup + 60f);

@@ -21,6 +21,11 @@ foreach ($folder in @('Assets\Editor', 'Assets\Runtime', 'Packages', 'ProjectSet
     New-Item -ItemType Directory -Force (Join-Path $project $folder) | Out-Null
 }
 Copy-Item -LiteralPath (Join-Path $repository 'UnityProject\ProjectSettings\ProjectVersion.txt') -Destination (Join-Path $project 'ProjectSettings\ProjectVersion.txt')
+New-Item -ItemType Directory -Force (Join-Path $project 'Assets\GojoBracken\Prefabs') | Out-Null
+Copy-Item -LiteralPath (Join-Path $repository 'UnityProject\Assets\GojoBracken\Effects') -Destination (Join-Path $project 'Assets\GojoBracken') -Recurse
+foreach ($name in @('Aura.prefab', 'Aura.prefab.meta')) {
+    Copy-Item -LiteralPath (Join-Path $repository ('UnityProject\Assets\GojoBracken\Prefabs\' + $name)) -Destination (Join-Path $project 'Assets\GojoBracken\Prefabs')
+}
 Copy-Item -LiteralPath (Join-Path $repository 'src\GojoBracken\BrackenCosmeticController.cs') -Destination (Join-Path $project 'Assets\Runtime')
 foreach ($name in @('BrackenGameBinding.cs', 'DevelopmentEffects.cs', 'GojoAssetBundle.cs')) {
     Copy-Item -LiteralPath (Join-Path $repository ('src\GojoBracken\' + $name)) -Destination (Join-Path $project 'Assets\Runtime')

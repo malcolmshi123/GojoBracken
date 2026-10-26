@@ -141,13 +141,18 @@ namespace GojoBracken.Authoring
                 envelope.gameObject.SetActive(active);
                 envelope.SetStrength(anger, strength);
             }
-            var main = Aura.main;
+            ConfigureWisps(Aura, anger, strength, active);
+        }
+
+        public static void ConfigureWisps(ParticleSystem aura, float anger, float strength, bool active = true)
+        {
+            var main = aura.main;
             main.startSpeed = new ParticleSystem.MinMaxCurve(
                 Mathf.Lerp(0.05f, 0.35f, anger), Mathf.Lerp(0.15f, 1.0f, anger));
             main.startSize = new ParticleSystem.MinMaxCurve(
                 Mathf.Lerp(0.035f, 0.1f, anger), Mathf.Lerp(0.08f, 0.26f, anger));
             main.startColor = new Color(0.65f, 0.85f, 1f, Mathf.Clamp01(Mathf.Lerp(0.25f, 0.7f, anger) * strength));
-            var emission = Aura.emission;
+            var emission = aura.emission;
             emission.rateOverTime = active ? Mathf.Lerp(18f, 220f, anger * anger) * strength : 0f;
         }
 

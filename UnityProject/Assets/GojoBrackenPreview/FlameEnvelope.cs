@@ -35,7 +35,7 @@ namespace GojoBracken.Authoring
             shellRenderer.SetPropertyBlock(properties);
         }
 
-        private static Mesh BuildMesh()
+        public static Mesh BuildMesh()
         {
             const int rings = 40;
             const int sides = 64;

@@ -11,13 +11,15 @@ A cosmetic Lethal Company mod that will replace the Bracken with Gojo Satoru fro
 
 Version 0.1.4 includes optional runtime diagnostics, rig reporting, and opt-in development aura/audio binding.
 It does not replace the Bracken model. Development effects require the inspected game assembly and a validated bundle; they default to disabled.
-A Unity asset-project scaffold and exporter are included, but no final model, audio clip, aura prefab, AssetBundle, or installable release is included.
+A Unity asset project, native aura prefab, and exporter are included. The adapted model, audio clip, game-compatible materials, full AssetBundle, and installable release remain pending.
 
 The native Unity study now uses the same C# state rules as the plugin, with simulated anger, phase, kill/death, cleanup, and remote approximation controls. See [Unity study instructions](UnityProject/README.md#native-aura-study). Game validation, rig adaptation, and release assets remain pending.
 
 A runtime bundle loader and shared exporter addresses are prepared, with checks for missing/invalid assets and bundle cleanup. See [asset-loading checks and remaining integration](docs/asset-loading.md).
 
 A per-instance aura/audio controller now has an opt-in game adapter, with Unity Play-mode checks. It awaits final assets and game validation. See [development-mode behavior and validation](docs/development-effects.md).
+
+The approved flame/wisps are now [baked as a native aura prefab](docs/native-aura.md), with no preview-script dependency. Rendering compatibility with the game remains pending.
 
 Development proceeds in small review checkpoints. Staging, commits, and pushes are performed manually by the repository owner, including the initial commit.
 
@@ -153,10 +155,10 @@ The old malcolmshi123/GojoBracken source at commit aab524b was inspected and bac
 
 The new plugin will load AssetBundles through Unity directly, using BepInEx 5 and Harmony for integration. LC_API, terminal edits, and neck-snap sound replacements are not part of this rebuild. Harmony is referenced now for the later integration; the foundation applies no patches.
 
-Required assets, none included yet:
+Required release assets:
 
 - A rigged Gojo model with textures, materials, and animations adapted to the Bracken. The original wing2 listing is deleted. See [current model research](UnityProject/README.md#required-assets) for the next rigged candidate and the pending download/import checks.
-- A blue-white aura prefab using shaders compatible with the game's render pipeline.
+- The blue-white aura prefab is included; its shaders still need validation/adaptation for the game's render pipeline.
 - The original Japanese voice clip, with source/provenance recorded separately from the code license.
 - A reproducible Unity project that exports the model, effects, and audio in a Windows x64 AssetBundle.
 

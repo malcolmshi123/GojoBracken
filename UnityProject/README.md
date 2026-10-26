@@ -1,6 +1,6 @@
 # Unity asset project
 
-This is the source scaffold for GojoBracken's real Unity AssetBundle. It contains a separate native aura study, but no Gojo model, voice clip, game-ready aura prefab, or finished bundle.
+This is the source project for GojoBracken's Unity AssetBundle. It contains the approved aura study and a baked native aura prefab. The adapted Gojo model, voice clip, verified game materials, and finished bundle remain pending.
 
 ## Editor and project setup
 
@@ -46,6 +46,8 @@ Flame settings are applied automatically when entering Play mode, including in t
 The scene is already generated. The **GojoBracken > Create native aura study** menu creates it in a fresh checkout only when the study outputs are absent; it refuses to overwrite existing work.
 
 ## Required assets
+
+Assets/GojoBracken/Prefabs/Aura.prefab is now included with native components and persistent dependencies. See [the bake and verification details](../docs/native-aura.md). Its built-in authoring materials still require game-pipeline validation.
 
 | Project-relative path | Requirements |
 | --- | --- |

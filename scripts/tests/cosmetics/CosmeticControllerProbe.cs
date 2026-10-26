@@ -5,6 +5,7 @@ using UnityEngine;
 
 public sealed class CosmeticControllerProbe : MonoBehaviour
 {
+    public GameObject BakedAura;
     private IEnumerator Start()
     {
         try { CheckRulesAndEffects(); }
@@ -68,6 +69,28 @@ public sealed class CosmeticControllerProbe : MonoBehaviour
         inactive.AddComponent<ParticleSystem>();
         inactive.SetActive(false);
         clip = AudioClip.Create("Synthetic silence - not the Japanese line", 96000, 1, 48000, false);
+        Require(BakedAura != null, "actual baked aura fixture assigned");
+        var nativeHost = new GameObject("Native baked aura host");
+        Require(BrackenCosmeticController.TryCreate(nativeHost.transform, BrackenV81Presentation.SupportedMvid,
+            BakedAura, clip, 12f, 1f, out var native, out var nativeError), nativeError);
+        Require(Array.TrueForAll(nativeHost.GetComponentsInChildren<Renderer>(true), renderer => !renderer.enabled),
+            "native shell and particles wait for first observation");
+        native.Apply(Input(2, 12f), true, 10f);
+        var nativeShell = nativeHost.GetComponentInChildren<MeshRenderer>();
+        var nativeProperties = new MaterialPropertyBlock();
+        nativeShell.GetPropertyBlock(nativeProperties);
+        Require(nativeShell.enabled && Mathf.Abs(nativeProperties.GetFloat("_Strength") - 1f) < .0001f
+            && Mathf.Abs(nativeProperties.GetFloat("_Intensity") - 1f) < .0001f
+            && Mathf.Abs(nativeHost.GetComponentInChildren<ParticleSystem>().emission.rateOverTime.constant - 220f) < .001f,
+            "actual baked shell and wisps driven at approved maximum: enabled=" + nativeShell.enabled
+            + "; shape=" + nativeProperties.GetFloat("_Strength") + "; intensity=" + nativeProperties.GetFloat("_Intensity")
+            + "; rate=" + nativeHost.GetComponentInChildren<ParticleSystem>().emission.rateOverTime.constant);
+        native.Apply(Input(0, 0f), true, 10f);
+        Require(Mathf.Abs(nativeHost.GetComponentInChildren<ParticleSystem>().emission.rateOverTime.constant - 33f) < .001f,
+            "actual baked constant emission scales to runtime baseline");
+        native.Shutdown();
+        Destroy(nativeHost);
+        Require(BakedAura.GetComponentInChildren<MeshRenderer>().enabled, "source prefab renderer unchanged");
         GameBindingChecks.Run(template, clip);
         first = new GameObject("First enemy anchor");
         first.transform.position = new Vector3(2f, 0f, 3f);
