@@ -13,11 +13,12 @@ namespace GojoBracken
     {
         public const string PluginGuid = "FreakyFriday.GojoBracken";
         public const string PluginName = "Gojo Bracken";
-        public const string PluginVersion = "0.1.3";
+        public const string PluginVersion = "0.1.4";
 
         private RuntimeDiagnostics diagnostics;
         private BrackenRigReport rigReport;
         private Coroutine observations;
+        private DevelopmentEffects effects;
         private readonly Stopwatch clock = new Stopwatch();
 
         private void Awake()
@@ -32,8 +33,24 @@ namespace GojoBracken
                     Path.Combine(Paths.ConfigPath, "GojoBracken"), PluginVersion,
                     message => Logger.LogInfo(message), message => Logger.LogWarning(message));
 
-            Logger.LogInfo($"{PluginName} {PluginVersion} loaded. Plugin foundation only; cosmetics are not implemented yet.");
-            if (!enableDiagnostics && !exportRig) return;
+            bool enableEffects = Config.Bind("DevelopmentEffects", "Enabled", false,
+                "Development aura/audio only; retains the vanilla model. Requires the inspected v81 assembly and a validated bundle. Restart after changing.").Value;
+            float saturation = Config.Bind("DevelopmentEffects", "AngerSaturation", 12f,
+                "Positive cosmetic saturation threshold, not a game anger limit. Restart after changing.").Value;
+            float strength = Config.Bind("DevelopmentEffects", "AuraStrength", 1f,
+                "Aura intensity from 0 to 3; zero hides the aura but keeps voice events. Restart after changing.").Value;
+            if (enableEffects)
+            {
+                try
+                {
+                    effects = DevelopmentEffects.Start(AccessTools.TypeByName("FlowermanAI"),
+                        Path.GetDirectoryName(Info.Location), saturation, strength,
+                        message => Logger.LogInfo(message), message => Logger.LogWarning(message));
+                }
+                catch (Exception exception) { Logger.LogWarning("[Effects] Disabled: " + exception.Message); }
+            }
+            Logger.LogInfo($"{PluginName} {PluginVersion} loaded. Model replacement is not implemented; development effects are opt-in.");
+            if (!enableDiagnostics && !exportRig && effects == null) return;
 
             Logger.LogInfo($"[Observer] Starting; diagnostics={enableDiagnostics}; rigReport={exportRig}; enabled={enabled}; active={gameObject.activeInHierarchy}");
             clock.Start();
@@ -46,6 +63,8 @@ namespace GojoBracken
             {
                 Logger.LogWarning($"[Observer] Could not start: {exception.GetType().Name}: {exception.Message}");
                 rigReport?.Cancel("observer could not start");
+                effects?.Dispose();
+                effects = null;
             }
         }
 
@@ -55,6 +74,16 @@ namespace GojoBracken
             while (true)
             {
                 float now = (float)clock.Elapsed.TotalSeconds;
+                if (effects != null)
+                {
+                    try { effects.Scan(); }
+                    catch (Exception exception)
+                    {
+                        effects.Dispose();
+                        effects = null;
+                        Logger.LogWarning("[Effects] Scanning stopped: " + exception.Message);
+                    }
+                }
                 if (diagnostics != null)
                 {
                     try { diagnostics.Update(now); }
@@ -79,6 +108,8 @@ namespace GojoBracken
 
         private void StopObservations(string reason)
         {
+            effects?.Dispose();
+            effects = null;
             if (observations == null) return;
             StopCoroutine(observations);
             observations = null;

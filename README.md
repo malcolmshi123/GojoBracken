@@ -9,15 +9,15 @@ A cosmetic Lethal Company mod that will replace the Bracken with Gojo Satoru fro
 
 ## Current status
 
-Version 0.1.3 is a plugin foundation with optional runtime diagnostics and rig reporting for the testing PC.
-It does not replace the Bracken or provide an aura or voice line yet.
+Version 0.1.4 includes optional runtime diagnostics, rig reporting, and opt-in development aura/audio binding.
+It does not replace the Bracken model. Development effects require the inspected game assembly and a validated bundle; they default to disabled.
 A Unity asset-project scaffold and exporter are included, but no final model, audio clip, aura prefab, AssetBundle, or installable release is included.
 
-The native Unity study now uses the same C# state rules as the plugin, with simulated anger, phase, kill/death, cleanup, and remote approximation controls. See [Unity study instructions](UnityProject/README.md#native-aura-study). Game attachment, rig adaptation, and release assets remain pending.
+The native Unity study now uses the same C# state rules as the plugin, with simulated anger, phase, kill/death, cleanup, and remote approximation controls. See [Unity study instructions](UnityProject/README.md#native-aura-study). Game validation, rig adaptation, and release assets remain pending.
 
-A runtime bundle loader and shared exporter addresses are prepared, with checks for missing/invalid assets and bundle cleanup. It is not invoked at startup yet. See [asset-loading checks and remaining integration](docs/asset-loading.md).
+A runtime bundle loader and shared exporter addresses are prepared, with checks for missing/invalid assets and bundle cleanup. See [asset-loading checks and remaining integration](docs/asset-loading.md).
 
-A per-instance aura/audio controller is also prepared, with Unity Play-mode cleanup checks. It awaits the game adapter and final assets. See [controller behavior and validation](docs/cosmetic-controller.md).
+A per-instance aura/audio controller now has an opt-in game adapter, with Unity Play-mode checks. It awaits final assets and game validation. See [development-mode behavior and validation](docs/development-effects.md).
 
 Development proceeds in small review checkpoints. Staging, commits, and pushes are performed manually by the repository owner, including the initial commit.
 
@@ -66,7 +66,7 @@ Copy only that DLL into BepInEx/plugins/GojoBracken in a separate test profile.
 Start the game and check BepInEx/LogOutput.log for:
 
 ```text
-Gojo Bracken 0.1.3 loaded. Plugin foundation only; cosmetics are not implemented yet.
+Gojo Bracken 0.1.4 loaded. Model replacement is not implemented; development effects are opt-in.
 ```
 
 For command-line builds, LethalCompanyDir, BepInExCoreDir, and GameManagedDir can also be passed using -p:Name="path". GameManagedDir defaults to LethalCompanyDir/Lethal Company_Data/Managed; BepInExCoreDir defaults to LethalCompanyDir/BepInEx/core when not supplied.
@@ -130,7 +130,7 @@ Version 0.1.2 adds opt-in ExportBrackenRig diagnostics. It reads an already-load
 
 See [testing-PC instructions and verification limits](docs/testing-pc-rig-report.md). If the prefab is not loaded at the main menu, return the timeout message instead of seeking an encounter. The 0.1.2 testing-PC attempt produced startup lines but no report or pipeline line. That handoff is paused; no further launch is requested. Version 0.1.3 adds immediate coroutine sampling and explicit progress/cancellation logs. See [the investigation and offline metadata reader](docs/observer-investigation.md). The testing-PC cause remains unconfirmed.
 
-The supplied offline metadata report matches the logged v81 game assembly MVID. The supplied DLL also matches its MVID and hash. Read-only inputs and a v81-specific cosmetic state machine are prepared; they are not attached to enemies yet. See [verified phase mapping, anger/RPC findings, and checks](docs/v81-behavior.md). See [confirmed members, checks, and remaining evidence](docs/v81-metadata-contract.md).
+The supplied offline metadata report matches the logged v81 game assembly MVID. The supplied DLL also matches its MVID and hash. Read-only inputs and the v81-specific state machine now feed an opt-in development effects adapter; actual game validation remains pending. See [verified phase mapping, anger/RPC findings, and checks](docs/v81-behavior.md). See [confirmed members, checks, and remaining evidence](docs/v81-metadata-contract.md).
 
 ## Author the real Unity assets
 

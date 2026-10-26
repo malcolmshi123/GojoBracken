@@ -22,10 +22,16 @@ foreach ($folder in @('Assets\Editor', 'Assets\Runtime', 'Packages', 'ProjectSet
 }
 Copy-Item -LiteralPath (Join-Path $repository 'UnityProject\ProjectSettings\ProjectVersion.txt') -Destination (Join-Path $project 'ProjectSettings\ProjectVersion.txt')
 Copy-Item -LiteralPath (Join-Path $repository 'src\GojoBracken\BrackenCosmeticController.cs') -Destination (Join-Path $project 'Assets\Runtime')
+foreach ($name in @('BrackenGameBinding.cs', 'DevelopmentEffects.cs', 'GojoAssetBundle.cs')) {
+    Copy-Item -LiteralPath (Join-Path $repository ('src\GojoBracken\' + $name)) -Destination (Join-Path $project 'Assets\Runtime')
+}
 Get-ChildItem -LiteralPath (Join-Path $repository 'shared\GojoBracken.Presentation\Runtime') -Filter '*.cs' | Copy-Item -Destination (Join-Path $project 'Assets\Runtime')
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'tests\cosmetics\CosmeticControllerProbe.cs') -Destination (Join-Path $project 'Assets\Runtime')
+Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'tests\cosmetics\GameBindingChecks.cs') -Destination (Join-Path $project 'Assets\Runtime')
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'tests\cosmetics\CosmeticControllerDriver.cs') -Destination (Join-Path $project 'Assets\Editor')
 $manifest = @{ dependencies = @{
+    'com.unity.modules.assetbundle' = '1.0.0'
+    'com.unity.modules.animation' = '1.0.0'
     'com.unity.modules.audio' = '1.0.0'
     'com.unity.modules.particlesystem' = '1.0.0'
     'com.unity.modules.physics' = '1.0.0'
@@ -39,5 +45,8 @@ $process = Start-Process -FilePath $UnityEditorPath -ArgumentList $arguments -Wi
 if ($process.ExitCode -ne 0) { throw "Cosmetic controller checks failed. Read $log." }
 if (-not (Select-String -LiteralPath $log -SimpleMatch -Quiet -Pattern 'COSMETIC CONTROLLER PASS:')) {
     throw "Unity did not confirm the checks. Read $log."
+}
+if (-not (Select-String -LiteralPath $log -SimpleMatch -Quiet -Pattern 'GAME BINDING PASS:')) {
+    throw "Unity did not confirm the binding checks. Read $log."
 }
 Write-Output "Cosmetic controller Play-mode checks passed in Unity $version. Log: $log"

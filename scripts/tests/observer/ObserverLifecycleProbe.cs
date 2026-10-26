@@ -55,6 +55,14 @@ public sealed class ObserverLifecycleProbe : MonoBehaviour
             new GameObject("DisabledOptionsHost").AddComponent<Plugin>();
             Require(capture.Lines.Count(line => line.Contains("[Observer] Starting;")) == startCount, "no observer when options disabled");
             Debug.Log("OBSERVER LIFECYCLE PASS: disabled options do not start observer");
+            File.WriteAllText(Path.Combine(Directory.GetParent(Application.dataPath).FullName, Plugin.PluginGuid + ".cfg"),
+                "[Diagnostics]\nEnabled = false\nExportBrackenRig = false\n[DevelopmentEffects]\nEnabled = true");
+            new GameObject("VersionRejectedEffectsHost").AddComponent<Plugin>();
+            Require(capture.Lines.Any(line => line.Contains("[Effects] Disabled: FlowermanAI does not match")),
+                "actual Release DLL rejects synthetic game module before loading assets");
+            Require(capture.Lines.Count(line => line.Contains("[Observer] Starting;")) == startCount,
+                "rejected effects start no scan when diagnostics disabled");
+            Debug.Log("OBSERVER LIFECYCLE PASS: effects opt-in rejects wrong module without starting scans");
             Time.timeScale = 1f;
             UnityEditor.EditorApplication.Exit(0);
         }

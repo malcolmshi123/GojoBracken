@@ -1,6 +1,6 @@
 # Per-instance effects checkpoint
 
-BrackenCosmeticController creates and owns an aura clone and a spatial AudioSource beneath a supplied visual anchor. It consumes BrackenObservation snapshots through Apply and uses the same v81 presentation rules as the Unity study. The plugin does not discover enemies or attach this component yet. No model replacement or adapted animations are included in this checkpoint.
+BrackenCosmeticController creates and owns an aura clone and a spatial AudioSource beneath a supplied visual anchor. It consumes BrackenObservation snapshots through Apply and uses the same v81 presentation rules as the Unity study. The plugin now has a default-off [game adapter](development-effects.md) for this component. No model replacement or adapted animations are included.
 
 TryCreate requires the observed game assembly MVID, an aura prefab, a nonempty voice clip, an anger saturation value, and strength from 0 to 3. The future adapter must pass assets from the validated bundle and an upright visual anchor, supply actual observations, and select detailed anger only for trusted local ownership. It must not pass the Bracken animationContainer rotation directly during corpse carrying. Duplicate controllers on the same anchor are rejected.
 

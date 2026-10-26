@@ -1,6 +1,6 @@
 # Asset loading checkpoint
 
-GojoAssetBundle is the prepared runtime loader. The plugin does not call it yet: this increment does not attach cosmetics, hide vanilla renderers, change AI, or produce a release bundle. The approved Unity pose and aura preview are unchanged.
+GojoAssetBundle is the runtime loader. The plugin calls it only through the default-off [development effects mode](development-effects.md). It does not hide vanilla renderers, change AI, or produce a release bundle. The approved Unity pose and aura preview are unchanged.
 
 The future attachment code will call TryLoad with the directory beside GojoBracken.dll. It expects one Windows bundle named gojobracken, using the shared GojoAssetContract addresses:
 
@@ -17,7 +17,7 @@ The exporter now embeds CREDITS.txt as asset_credits and still emits ASSET-CREDI
 
 A missing, unreadable, corrupt, or structurally invalid bundle returns no asset set and a diagnostic saying to keep the vanilla Bracken visible. An opened bundle is unloaded on validation failure. No prefab is instantiated while loading. The future attachment code must finish its own rig/material checks before hiding vanilla visuals; this loader alone does not make a replacement safe to display.
 
-A successful asset set owns its loaded assets. Destroy all cosmetic instances before disposing it; Dispose unloads the bundle and its assets and can be called repeatedly. No bundle is loaded at plugin startup in this checkpoint. Unity documents the asset lifetime behavior in [AssetBundle.Unload](https://docs.unity3d.com/2022.3/Documentation/ScriptReference/AssetBundle.Unload.html) and file loading in [AssetBundle.LoadFromFile](https://docs.unity3d.com/2022.3/Documentation/ScriptReference/AssetBundle.LoadFromFile.html).
+A successful asset set owns its loaded assets. Stop/deactivate cosmetic instances and schedule their destruction before disposing it; Dispose unloads the bundle and its assets and can be called repeatedly. With development effects disabled, no bundle is loaded at startup. Unity documents the asset lifetime behavior in [AssetBundle.Unload](https://docs.unity3d.com/2022.3/Documentation/ScriptReference/AssetBundle.Unload.html) and file loading in [AssetBundle.LoadFromFile](https://docs.unity3d.com/2022.3/Documentation/ScriptReference/AssetBundle.LoadFromFile.html).
 
 From the repository root, in Windows PowerShell 5.1:
 

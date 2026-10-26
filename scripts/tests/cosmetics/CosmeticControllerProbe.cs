@@ -68,6 +68,7 @@ public sealed class CosmeticControllerProbe : MonoBehaviour
         inactive.AddComponent<ParticleSystem>();
         inactive.SetActive(false);
         clip = AudioClip.Create("Synthetic silence - not the Japanese line", 96000, 1, 48000, false);
+        GameBindingChecks.Run(template, clip);
         first = new GameObject("First enemy anchor");
         first.transform.position = new Vector3(2f, 0f, 3f);
         first.AddComponent<MeshRenderer>();

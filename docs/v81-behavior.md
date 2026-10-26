@@ -50,7 +50,7 @@ The DLL does not contain the loaded prefab's bone hierarchy or its actual render
 
 ## Prepared cosmetic state machine
 
-BrackenV81Presentation consumes the read-only BrackenObservation. It is not attached to game enemies yet and does not load the model, aura, or voice clip.
+BrackenV81Presentation consumes the read-only BrackenObservation. The default-off [development adapter](development-effects.md) now connects it to scene enemies and validated aura/audio assets. Actual game validation is pending; the presentation class itself does not load assets or replace models.
 
 - Construction rejects an uninspected game MVID.
 - It resolves the verified indices plus death, kill, and corpse overlays.
@@ -58,7 +58,7 @@ BrackenV81Presentation consumes the read-only BrackenObservation. It is not atta
 - When detailed anger is not trusted, the caller selects an explicit phase approximation: faint outside raw state 2, strongest in raw state 2. Initial integration should select this conservative path for non-owner/unknown ownership.
 - Voice emits one event on the raw non-2 to 2 transition. Kill/corpse overlays suppress that event and cannot create another event merely by ending.
 - Death immediately returns zero aura with a stop-effects signal. Reset clears per-instance state for cleanup.
-- A prepared [Unity effects controller](cosmetic-controller.md) now accepts strength/saturation parameters and applies these rules to particles and spatial audio. Bundle validation is also prepared. BepInEx configuration, actual game attachment, and final assets remain later work.
+- The [Unity effects controller](cosmetic-controller.md) accepts strength/saturation parameters and applies these rules to particles and spatial audio. Bundle validation, BepInEx configuration, and an opt-in attachment path are implemented. Final assets and game/multiplayer validation remain later work.
 
 Checks:
 

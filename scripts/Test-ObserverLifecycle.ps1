@@ -44,7 +44,7 @@ foreach ($name in @('FlowermanAI.cs', 'ObserverLifecycleProbe.cs')) {
     Copy-Item (Join-Path $PSScriptRoot ('tests\observer\' + $name)) -Destination (Join-Path $project 'Assets\Fixtures')
 }
 Copy-Item (Join-Path $PSScriptRoot 'tests\observer\ObserverLifecycleDriver.cs') -Destination (Join-Path $project 'Assets\Editor')
-[IO.File]::WriteAllText((Join-Path $project 'Packages\manifest.json'), '{"dependencies":{"com.unity.modules.animation":"1.0.0"}}')
+[IO.File]::WriteAllText((Join-Path $project 'Packages\manifest.json'), '{"dependencies":{"com.unity.modules.animation":"1.0.0","com.unity.modules.assetbundle":"1.0.0","com.unity.modules.audio":"1.0.0","com.unity.modules.particlesystem":"1.0.0"}}')
 $log = Join-Path $run 'unity-lifecycle.log'
 # The Play-mode fixture exits Unity itself and has an Editor watchdog; do not pass -quit.
 $arguments = @('-batchmode', '-nographics', '-projectPath', ('"' + $project + '"'),
@@ -52,7 +52,8 @@ $arguments = @('-batchmode', '-nographics', '-projectPath', ('"' + $project + '"
 $process = Start-Process -FilePath $UnityEditorPath -ArgumentList $arguments -WindowStyle Hidden -Wait -PassThru
 if ($process.ExitCode -ne 0) { throw "Observer lifecycle check failed. Read $log." }
 foreach ($marker in @('OBSERVER LIFECYCLE PASS: real Plugin Awake, paused-time coroutine, pipeline, report, no spawn',
-    'OBSERVER LIFECYCLE PASS: disable logged', 'OBSERVER LIFECYCLE PASS: disabled options do not start observer')) {
+    'OBSERVER LIFECYCLE PASS: disable logged', 'OBSERVER LIFECYCLE PASS: disabled options do not start observer',
+    'OBSERVER LIFECYCLE PASS: effects opt-in rejects wrong module without starting scans')) {
     if (-not (Select-String -LiteralPath $log -SimpleMatch -Quiet -Pattern $marker)) {
         throw "Unity did not confirm all lifecycle checks. Read $log."
     }

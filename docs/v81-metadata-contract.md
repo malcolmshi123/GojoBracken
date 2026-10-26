@@ -35,7 +35,7 @@ shared/GojoBracken.Presentation/Runtime/BrackenStateReader.cs binds the six obse
 
 Missing/wrong fields and null/wrong-type instances return an unavailable result. NaN/infinite anger is rejected so later presentation code can fall back safely. Separate instances do not share presentation state.
 
-The adapter is prepared for the cosmetic controller; it is not attached to enemies or wired into the plugin yet. Existing runtime behavior is unchanged.
+The reader now feeds the controller through a default-off [development effects adapter](development-effects.md). The default installation still leaves gameplay and visuals unchanged; actual game validation remains pending.
 
 Verification:
 
