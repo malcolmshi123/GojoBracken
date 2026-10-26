@@ -12,6 +12,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Reference Include="UnityEngine.AssetBundleModule">
+      <HintPath>$(GameManagedDir)/UnityEngine.AssetBundleModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.AudioModule">
+      <HintPath>$(GameManagedDir)/UnityEngine.AudioModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.ParticleSystemModule">
+      <HintPath>$(GameManagedDir)/UnityEngine.ParticleSystemModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
     <Reference Include="BepInEx">
       <HintPath>$(BepInExCoreDir)/BepInEx.dll</HintPath>
       <Private>false</Private>
@@ -39,6 +51,8 @@
   </ItemGroup>
 
   <Target Name="ValidateLocalReferences" BeforeTargets="ResolveAssemblyReferences" Condition="'$(DesignTimeBuild)' != 'true'">
+    <Error Condition="!Exists('$(GameManagedDir)/UnityEngine.AssetBundleModule.dll') or !Exists('$(GameManagedDir)/UnityEngine.AudioModule.dll') or !Exists('$(GameManagedDir)/UnityEngine.ParticleSystemModule.dll')"
+           Text="GameManagedDir must include UnityEngine.AssetBundleModule.dll, UnityEngine.AudioModule.dll, and UnityEngine.ParticleSystemModule.dll for asset loading." />
     <Error Condition="'$(BepInExCoreDir)' == ''"
            Text="Set LethalCompanyDir and BepInExCoreDir in local.props (see local.props.example), or pass them as MSBuild properties." />
     <Error Condition="'$(GameManagedDir)' == ''"

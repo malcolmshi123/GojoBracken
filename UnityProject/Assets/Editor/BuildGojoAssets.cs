@@ -9,7 +9,7 @@ namespace GojoBracken.Editor
     public static class BuildGojoAssets
     {
         public const string RequiredUnityVersion = "2022.3.62f2";
-        public const string BundleName = "gojobracken";
+        public const string BundleName = GojoAssetContract.BundleName;
         private const string Root = "Assets/GojoBracken/";
         private const string ModelPath = Root + "Prefabs/Gojo.prefab";
         private const string AuraPath = Root + "Prefabs/Aura.prefab";
@@ -45,11 +45,15 @@ namespace GojoBracken.Editor
                 throw new BuildFailedException("Gojo.prefab needs a skinned mesh; a stand-in is not a release model.");
             foreach (var mesh in meshes)
             {
-                if (mesh.sharedMesh == null || mesh.sharedMesh.vertexCount == 0 || mesh.bones.Length == 0)
+                if (mesh.sharedMesh == null || mesh.sharedMesh.vertexCount == 0 || mesh.bones.Length == 0
+                    || mesh.sharedMesh.bindposes.Length != mesh.bones.Length || Array.Exists(mesh.bones, bone => bone == null))
                     throw new BuildFailedException("Gojo.prefab has an empty or unrigged skinned mesh: " + mesh.name);
             }
             if (model.GetComponentInChildren<Animator>(true) == null)
                 throw new BuildFailedException("Gojo.prefab needs an Animator. Rig/animation adaptation still requires manual validation.");
+            foreach (var animator in model.GetComponentsInChildren<Animator>(true))
+                if (animator.runtimeAnimatorController == null)
+                    throw new BuildFailedException("Gojo.prefab Animator needs an animation controller: " + animator.name);
             if (aura.GetComponentsInChildren<ParticleSystem>(true).Length == 0)
                 throw new BuildFailedException("Aura.prefab needs at least one ParticleSystem.");
             if (voice.samples <= 0 || voice.length <= 0)
@@ -83,6 +87,8 @@ namespace GojoBracken.Editor
 
             foreach (var renderer in prefab.GetComponentsInChildren<Renderer>(true))
             {
+                if (renderer.sharedMaterials.Length == 0)
+                    throw new BuildFailedException("Renderer has no materials in " + path + ": " + renderer.name);
                 foreach (var material in renderer.sharedMaterials)
                 {
                     if (material == null || material.shader == null || material.shader.name == "Hidden/InternalErrorShader")
@@ -103,8 +109,9 @@ namespace GojoBracken.Editor
             var definition = new AssetBundleBuild
             {
                 assetBundleName = BundleName,
-                assetNames = new[] { ModelPath, AuraPath, VoicePath },
-                addressableNames = new[] { "gojo", "aura", "domain_expansion" }
+                assetNames = new[] { ModelPath, AuraPath, VoicePath, CreditsPath },
+                addressableNames = new[] { GojoAssetContract.Model, GojoAssetContract.Aura,
+                    GojoAssetContract.Voice, GojoAssetContract.Credits }
             };
             var manifest = BuildPipeline.BuildAssetBundles(output, new[] { definition },
                 BuildAssetBundleOptions.ChunkBasedCompression | BuildAssetBundleOptions.StrictMode,
@@ -118,9 +125,10 @@ namespace GojoBracken.Editor
                 throw new BuildFailedException("Built bundle could not be reopened.");
             try
             {
-                if (bundle.LoadAsset<GameObject>("gojo") == null ||
-                    bundle.LoadAsset<GameObject>("aura") == null ||
-                    bundle.LoadAsset<AudioClip>("domain_expansion") == null)
+                if (bundle.LoadAsset<GameObject>(GojoAssetContract.Model) == null ||
+                    bundle.LoadAsset<GameObject>(GojoAssetContract.Aura) == null ||
+                    bundle.LoadAsset<AudioClip>(GojoAssetContract.Voice) == null ||
+                    bundle.LoadAsset<TextAsset>(GojoAssetContract.Credits) == null)
                     throw new BuildFailedException("Built bundle is missing an expected asset name or type.");
             }
             finally

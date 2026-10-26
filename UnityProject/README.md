@@ -56,6 +56,8 @@ The scene is already generated. The **GojoBracken > Create native aura study** m
 
 Prefabs must use native Unity components only, with no custom or missing scripts and no missing materials/shaders. Runtime mod code will be attached by the plugin later. Referenced model textures, materials, animation controllers, and clips are included as bundle dependencies by Unity.
 
+Skinned meshes must have matching bind poses and valid bones. Each Animator must have a controller; this structural requirement does not replace animation adaptation. CREDITS.txt is now embedded as asset_credits as well as copied beside the bundle. The runtime loader uses the same asset addresses as the exporter. See [runtime loading and isolated bundle tests](../docs/asset-loading.md).
+
 Model research checked on 2026-10-25:
 
 - The original [wing2 candidate](https://sketchfab.com/3d-models/gojo-satoru-1e19a0308d474704a04b662b65bf7f40) now displays Model deleted in the live page. Older search results still advertise it; it is not an available source.

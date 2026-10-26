@@ -15,6 +15,8 @@ A Unity asset-project scaffold and exporter are included, but no final model, au
 
 The native Unity study now uses the same C# state rules as the plugin, with simulated anger, phase, kill/death, cleanup, and remote approximation controls. See [Unity study instructions](UnityProject/README.md#native-aura-study). Game attachment, rig adaptation, and release assets remain pending.
 
+A runtime bundle loader and shared exporter addresses are prepared, with checks for missing/invalid assets and bundle cleanup. It is not invoked at startup yet. See [asset-loading checks and remaining integration](docs/asset-loading.md).
+
 Development proceeds in small review checkpoints. Staging, commits, and pushes are performed manually by the repository owner, including the initial commit.
 
 ## Preview without playing the game
