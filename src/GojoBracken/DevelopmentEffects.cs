@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace GojoBracken
 {
-    // Opt-in effects only. The vanilla model remains visible throughout this development stage.
+    // Default-off cosmetics; optional standing-model preview has reversible vanilla rendering masks.
     internal sealed class DevelopmentEffects : IDisposable
     {
         private readonly Type enemyType;
@@ -17,9 +17,10 @@ namespace GojoBracken
         private readonly Dictionary<Component, BrackenGameBinding> attempted = new Dictionary<Component, BrackenGameBinding>();
         private readonly Dictionary<Component, int> discovered = new Dictionary<Component, int>();
         private bool stopped;
+        private readonly bool standingModelPreview;
 
         private DevelopmentEffects(Type enemyType, GojoAssetBundle assets, float saturation, float strength,
-            Action<string> info, Action<string> warning)
+            Action<string> info, Action<string> warning, bool standingModelPreview)
         {
             this.enemyType = enemyType;
             this.assets = assets;
@@ -27,11 +28,12 @@ namespace GojoBracken
             this.strength = strength;
             this.info = info;
             this.warning = warning;
+            this.standingModelPreview = standingModelPreview;
             visibilityReader = new BrackenVisibilityReader(enemyType);
         }
 
         internal static DevelopmentEffects Start(Type enemyType, string directory, float saturation, float strength,
-            Action<string> info, Action<string> warning)
+            Action<string> info, Action<string> warning, bool standingModelPreview = false)
         {
             if (enemyType == null || !typeof(Component).IsAssignableFrom(enemyType)
                 || enemyType.Module.ModuleVersionId != BrackenV81Presentation.SupportedMvid)
@@ -48,8 +50,9 @@ namespace GojoBracken
                 warning("[Effects] Disabled: " + error);
                 return null;
             }
-            info("[Effects] Development aura/audio enabled; vanilla model retained. Non-owner/unknown anger uses phase approximation.");
-            return new DevelopmentEffects(enemyType, assets, saturation, strength, info, warning);
+            info("[Effects] Development cosmetics enabled; standingModelPreview=" + standingModelPreview
+                + ". Non-owner/unknown anger uses phase approximation. Animation adaptation is incomplete.");
+            return new DevelopmentEffects(enemyType, assets, saturation, strength, info, warning, standingModelPreview);
         }
 
         // Called by the plugin's existing 0.5-second real-time coroutine; bindings sample each LateUpdate.
@@ -78,10 +81,11 @@ namespace GojoBracken
                 try
                 {
                     var binding = BrackenGameBinding.Attach(enemy, enemyType.Module.ModuleVersionId,
-                        assets.Aura, assets.Voice, saturation, strength, warning);
+                        assets.Aura, assets.Voice, saturation, strength, warning, standingModelPreview ? assets.Model : null);
                     attempted[enemy] = binding;
                     if (binding != null)
-                        info("[Effects] Attached local aura/audio to Bracken " + enemy.GetInstanceID() + "; vanilla model retained.");
+                        info("[Effects] Attached cosmetics to Bracken " + enemy.GetInstanceID()
+                            + "; standingModelPreview=" + standingModelPreview);
                 }
                 catch (Exception exception)
                 {

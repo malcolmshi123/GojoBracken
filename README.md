@@ -9,8 +9,8 @@ A cosmetic Lethal Company mod that will replace the Bracken with Gojo Satoru fro
 
 ## Current status
 
-Version 0.1.4 includes optional runtime diagnostics, rig reporting, and opt-in development aura/audio binding.
-It does not replace the Bracken model. Development effects require the inspected game assembly and a validated bundle; they default to disabled.
+Version 0.1.5 includes optional runtime diagnostics, rig reporting, development aura/audio binding, and a separate opt-in standing-model attachment.
+Development cosmetics require the inspected game assembly and a validated bundle; both development and model-preview flags default to disabled. Animation adaptation and actual game validation remain pending.
 A Unity asset project, native aura prefab, and exporter are included. The adapted model, audio clip, game-compatible materials, full AssetBundle, and installable release remain pending.
 
 The native Unity study now uses the same C# state rules as the plugin, with simulated anger, phase, kill/death, cleanup, and remote approximation controls. See [Unity study instructions](UnityProject/README.md#native-aura-study). Game validation, rig adaptation, and release assets remain pending.
@@ -19,7 +19,9 @@ A runtime bundle loader and shared exporter addresses are prepared, with checks 
 
 A per-instance aura/audio controller now has an opt-in game adapter, with Unity Play-mode checks. It awaits final assets and game validation. See [development-mode behavior and validation](docs/development-effects.md).
 
-The adapter also [respects vanilla body visibility and camera layers](docs/game-visibility.md), without including carried-body renderers or changing original visual state.
+The aura adapter also [respects vanilla body visibility and camera layers](docs/game-visibility.md), without including carried-body renderers or changing original visual state.
+
+The optional [standing-model attachment](docs/model-attachment.md) validates Gojo before masking selected vanilla renderers and restores their prior rendering masks on failure or cleanup. Original enabled/layer, animator, collider, and body-handling state are preserved.
 
 The approved flame/wisps are now [baked as a native aura prefab](docs/native-aura.md), with no preview-script dependency. Rendering compatibility with the game remains pending.
 
@@ -74,7 +76,7 @@ Copy only that DLL into BepInEx/plugins/GojoBracken in a separate test profile.
 Start the game and check BepInEx/LogOutput.log for:
 
 ```text
-Gojo Bracken 0.1.4 loaded. Model replacement is not implemented; development effects are opt-in.
+Gojo Bracken 0.1.5 loaded. Development cosmetics are opt-in; animation adaptation is incomplete.
 ```
 
 For command-line builds, LethalCompanyDir, BepInExCoreDir, and GameManagedDir can also be passed using -p:Name="path". GameManagedDir defaults to LethalCompanyDir/Lethal Company_Data/Managed; BepInExCoreDir defaults to LethalCompanyDir/BepInEx/core when not supplied.
@@ -163,7 +165,7 @@ The new plugin will load AssetBundles through Unity directly, using BepInEx 5 an
 
 Required release assets:
 
-- A rigged Gojo model with textures, materials, and animations adapted to the Bracken. The original wing2 listing is deleted. See [current model research](UnityProject/README.md#required-assets) for the next rigged candidate and the pending download/import checks.
+- A rigged Gojo model with textures, materials, and animations adapted to the Bracken. The selected candidate has a local native standing bake; underlying credits and movement/attack/corpse adaptation remain pending. See [model evaluation](docs/model-evaluation.md).
 - The blue-white aura prefab is included; its shaders still need validation/adaptation for the game's render pipeline.
 - The original Japanese voice clip, with source/provenance recorded separately from the code license.
 - A reproducible Unity project that exports the model, effects, and audio in a Windows x64 AssetBundle.

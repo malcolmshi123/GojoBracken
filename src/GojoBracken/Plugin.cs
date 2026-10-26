@@ -13,7 +13,7 @@ namespace GojoBracken
     {
         public const string PluginGuid = "FreakyFriday.GojoBracken";
         public const string PluginName = "Gojo Bracken";
-        public const string PluginVersion = "0.1.4";
+        public const string PluginVersion = "0.1.5";
 
         private RuntimeDiagnostics diagnostics;
         private BrackenRigReport rigReport;
@@ -34,7 +34,9 @@ namespace GojoBracken
                     message => Logger.LogInfo(message), message => Logger.LogWarning(message));
 
             bool enableEffects = Config.Bind("DevelopmentEffects", "Enabled", false,
-                "Development aura/audio only; retains the vanilla model. Requires the inspected v81 assembly and a validated bundle. Restart after changing.").Value;
+                "Enable development cosmetics. Requires inspected v81 and a validated bundle. Model preview is a separate opt-in. Restart after changing.").Value;
+            bool standingModel = Config.Bind("DevelopmentEffects", "StandingModelPreview", false,
+                "Experimental standing Gojo visual with vanilla restoration. Attack/kill/corpse animations are NOT adapted. Requires Enabled=true. Restart after changing.").Value;
             float saturation = Config.Bind("DevelopmentEffects", "AngerSaturation", 12f,
                 "Positive cosmetic saturation threshold, not a game anger limit. Restart after changing.").Value;
             float strength = Config.Bind("DevelopmentEffects", "AuraStrength", 1f,
@@ -45,11 +47,11 @@ namespace GojoBracken
                 {
                     effects = DevelopmentEffects.Start(AccessTools.TypeByName("FlowermanAI"),
                         Path.GetDirectoryName(Info.Location), saturation, strength,
-                        message => Logger.LogInfo(message), message => Logger.LogWarning(message));
+                        message => Logger.LogInfo(message), message => Logger.LogWarning(message), standingModel);
                 }
                 catch (Exception exception) { Logger.LogWarning("[Effects] Disabled: " + exception.Message); }
             }
-            Logger.LogInfo($"{PluginName} {PluginVersion} loaded. Model replacement is not implemented; development effects are opt-in.");
+            Logger.LogInfo($"{PluginName} {PluginVersion} loaded. Development cosmetics are opt-in; animation adaptation is incomplete.");
             if (!enableDiagnostics && !exportRig && effects == null) return;
 
             Logger.LogInfo($"[Observer] Starting; diagnostics={enableDiagnostics}; rigReport={exportRig}; enabled={enabled}; active={gameObject.activeInHierarchy}");

@@ -1,17 +1,18 @@
 # Opt-in game-state binding
 
-Version 0.1.4 connects the prepared bundle loader and per-instance effects controller behind DevelopmentEffects.Enabled, which defaults to false. This mode adds local aura/audio only. It deliberately retains the vanilla Bracken model: Gojo rig adaptation and model replacement are still pending. The current authoring study is not an installable release bundle.
+DevelopmentEffects.Enabled connects the bundle loader and per-instance effects controller and defaults to false. Aura-only mode retains the vanilla model. Version 0.1.5 adds a separate default-off [standing-model preview](model-attachment.md) with rendering rollback; animation adaptation and actual game validation remain pending. The current authoring study is not an installable release bundle.
 
 No testing-PC launch or Bracken encounter is requested for this checkpoint. The following settings document the future integration path, after the actual assets and materials are ready. Leave the feature disabled for now:
 
 ```ini
 [DevelopmentEffects]
 Enabled = false
+StandingModelPreview = false
 AngerSaturation = 12
 AuraStrength = 1
 ```
 
-These settings require a restart. Saturation must be positive/finite and is a cosmetic threshold, not a game limit. Strength ranges from 0 to 3; zero hides aura while leaving voice events independent. Enabling requires the inspected v81 FlowermanAI module MVID and the validated gojobracken bundle beside the plugin DLL, including model, aura, voice, and embedded credits. The model is validated but not instantiated in this mode.
+These settings require a restart. Saturation must be positive/finite and is a cosmetic threshold, not a game limit. Strength ranges from 0 to 3; zero hides aura while leaving voice events independent. Enabling requires the inspected v81 FlowermanAI module MVID and the validated gojobracken bundle beside the plugin DLL, including model, aura, voice, and embedded credits. The model is instantiated only when StandingModelPreview is also true.
 
 The plugin's existing real-time coroutine scans for active scene Brackens every 0.5 seconds, without instantiating enemies or searching prefab assets. Each bound instance then reads the six verified fields in LateUpdate, after the enemy's Update. The anchor is the enemy root, not its rolling animationContainer; final visual height and placement still need calibration.
 
@@ -21,7 +22,7 @@ IsOwner=true selects detailed local anger. IsOwner=false selects faint-outside-a
 
 Already-dead or disabled enemies are skipped. Read failures stop that binding and warn once. Death, disable, despawn, scene cleanup, plugin disable, and startup/scan failure stop owned effects. The session attempts each existing instance once to avoid repeated errors or attachment loops; reactivating a pooled instance does not start a new cosmetic session in this increment. Destroyed instance records are removed on later scans. A future pooling adapter must explicitly create a fresh session if required by the game.
 
-When enabled, startup logs either a disabled reason or the development-mode notice. Successful attachments log their local instance ID. No patches, AI calls, enemy field writes, renderer hiding, or network messages are added. A missing bundle or rejected version leaves vanilla visuals visible. With all development/diagnostic options disabled, no observation coroutine or enemy scan starts.
+When enabled, startup logs either a disabled reason or the development-mode notice. Successful attachments log their local instance ID and standing-model mode. No patches, AI calls, enemy field writes, or network messages are added. Only the optional model mode applies reversible rendering masks. A missing bundle or rejected version leaves vanilla visuals visible. With all development/diagnostic options disabled, no observation coroutine or enemy scan starts.
 
 Validation commands from the repository root in Windows PowerShell 5.1:
 

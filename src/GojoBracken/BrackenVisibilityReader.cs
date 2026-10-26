@@ -30,7 +30,17 @@ namespace GojoBracken
             return skins.GetValue(enemy) != null && meshes.GetValue(enemy) != null;
         }
 
-        internal bool TryRead(Component enemy, out BrackenVisibility visibility, out string error)
+        internal Renderer[] SnapshotRenderers(Component enemy)
+        {
+            var skinArray = (SkinnedMeshRenderer[])skins.GetValue(enemy);
+            var meshArray = (MeshRenderer[])meshes.GetValue(enemy);
+            var result = new Renderer[skinArray.Length + meshArray.Length];
+            Array.Copy(skinArray, 0, result, 0, skinArray.Length);
+            Array.Copy(meshArray, 0, result, skinArray.Length, meshArray.Length);
+            return result;
+        }
+
+        internal bool TryRead(Component enemy, out BrackenVisibility visibility, out string error, Func<Renderer, bool> forceHidden = null)
         {
             visibility = default;
             error = null;
@@ -45,8 +55,8 @@ namespace GojoBracken
                 bool visible = false;
                 int layer = -1;
                 int fallbackLayer = -1;
-                Accumulate(skinArray, enemy.transform, ref visible, ref layer, ref fallbackLayer);
-                Accumulate(meshArray, enemy.transform, ref visible, ref layer, ref fallbackLayer);
+                Accumulate(skinArray, enemy.transform, forceHidden, ref visible, ref layer, ref fallbackLayer);
+                Accumulate(meshArray, enemy.transform, forceHidden, ref visible, ref layer, ref fallbackLayer);
                 visibility = new BrackenVisibility(visible, visible ? layer : fallbackLayer);
                 return true;
             }
@@ -57,14 +67,15 @@ namespace GojoBracken
             }
         }
 
-        private static void Accumulate(Renderer[] group, Transform enemy, ref bool visible, ref int layer, ref int fallbackLayer)
+        private static void Accumulate(Renderer[] group, Transform enemy, Func<Renderer, bool> forceHidden, ref bool visible, ref int layer, ref int fallbackLayer)
         {
             foreach (var renderer in group)
             {
                 if (renderer == null || !renderer.transform.IsChildOf(enemy))
                     throw new InvalidOperationException("Bracken body renderer is missing or outside its hierarchy.");
                 if (fallbackLayer < 0) fallbackLayer = renderer.gameObject.layer;
-                if (!renderer.enabled || !renderer.gameObject.activeInHierarchy || renderer.forceRenderingOff) continue;
+                bool hidden = forceHidden != null ? forceHidden(renderer) : renderer.forceRenderingOff;
+                if (!renderer.enabled || !renderer.gameObject.activeInHierarchy || hidden) continue;
                 int current = renderer.gameObject.layer;
                 if (layer >= 0 && layer != current)
                     throw new InvalidOperationException("Visible Bracken body renderers use mixed layers; no safe single aura layer.");
