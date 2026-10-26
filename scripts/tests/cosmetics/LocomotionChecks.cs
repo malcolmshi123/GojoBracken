@@ -88,12 +88,26 @@ public static class LocomotionChecks
         for (int i = 0; i < 60; i++) { actions.Restore(); actions.Apply(new BrackenObservation(2, 0f, true, false, true, false), 1f / 60f); }
         Require(actions.KillBlend > .99f && actions.ReadyBlend < .001f, "kill overrides ready pose");
         for (int i = 0; i < 90; i++) { actions.Restore(); actions.Apply(new BrackenObservation(2, 0f, true, true, false, false), 1f / 60f); }
-        Require(actions.KillBlend == 0f && actions.ReadyBlend == 0f && SamePose(nodes, positions, rotations),
-            "corpse overlay fades actions to exact idle");
+        Require(actions.KillBlend == 0f && actions.ReadyBlend == 0f && actions.CarryBlend > .99f,
+            "corpse overlay overrides aggro and kill poses");
+        Require(nodes.First(node => node.name == "leftUpperArm").localRotation == Quaternion.identity
+            && Quaternion.Angle(nodes.First(node => node.name == "rightUpperArm").localRotation, Quaternion.identity) > 10f,
+            "drag pose changes only the right arm");
+        for (int i = 0; i < 60; i++)
+        {
+            host.transform.position += Vector3.forward * .02f;
+            actions.Restore(); gait.Step(1f / 60f, false);
+            actions.Apply(new BrackenObservation(1, 0f, false, true, false, false), 1f / 60f);
+        }
+        Require(gait.Blend > .9f && actions.CarryBlend > .99f, "walking continues during carrying");
+        gait.Reset();
+        for (int i = 0; i < 90; i++) { actions.Restore(); actions.Apply(new BrackenObservation(0, 0f, false, false, false, false), 1f / 60f); }
+        Require(actions.CarryBlend == 0f && SamePose(nodes, positions, rotations), "body drop restores exact idle");
+        inputPosition = host.transform.position;
         actions.Restore(); actions.Apply(new BrackenObservation(2, 0f, true, false, true, false), .1f);
         Require(actions.KillBlend > .5f, "kill can reenter");
         actions.Restore(); actions.Apply(new BrackenObservation(2, 0f, true, false, true, true), .1f);
-        Require(actions.KillBlend == 0f && SamePose(nodes, positions, rotations) && host.transform.position == inputPosition,
+        Require(actions.KillBlend == 0f && actions.CarryBlend == 0f && SamePose(nodes, positions, rotations) && host.transform.position == inputPosition,
             "death clears actions without moving host");
         Require(GojoActionPose.TryCreate(host.transform, incomplete.transform, out status) == null, "missing action rig fallback");
         Debug.Log("ACTION POSE PASS: aggro, kill priority/reentry, corpse recovery, death, exact idle, independent instances, unchanged host, missing-rig fallback.");

@@ -13,7 +13,7 @@ Unity 2022.3.62f2 with Windows build support and the ignored local native model 
 On the testing PC, in Windows PowerShell 5.1:
 
 ```powershell
-$zip = Join-Path $env:USERPROFILE 'Downloads\GojoBrackenActionPreview.zip'
+$zip = Join-Path $env:USERPROFILE 'Downloads\GojoBrackenCarryPreview.zip'
 $target = Join-Path $env:USERPROFILE ('Documents\GojoBrackenPreview-' + (Get-Date -Format 'yyyyMMdd-HHmmss'))
 Expand-Archive -LiteralPath $zip -DestinationPath $target
 powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File (Join-Path $target 'Run-PreviewChecks.ps1')
@@ -32,4 +32,4 @@ Reports are written under:
 
 Return smoke-report.json, a manual preview-render.png, and a short description of visual/audio issues to Testing PC: GojoBracken compatibility report. A manual preview-report.json uses automated=false and smokePassed=false because no automated sequence ran in that session; that alone is not an error. The preserved smoke report carries the automated result. Its checks include voice requests before reset, so the final voice counter can correctly be zero.
 
-The report records Unity version, graphics device/API, color space, skin weights, source digest, current simulated state, and completed checks. Locomotion builds add gait status/blend and actual-rig walking/stop checks. An automatic pass is not a visual-quality verdict. It does not verify real game state discovery, renderer-array handling in v81, Bracken attacks/corpse animations, active game rendering pipeline, or vanilla-compatible multiplayer. Existing Unity fixtures cover adapter logic separately. Action-pose builds also save aggro-render.png and kill-render.png. Review Aggro and Kill animation overlay at low anger from multiple angles. The next increment after action-pose approval is corpse-carry presentation.
+The report records Unity version, graphics device/API, color space, skin weights, source digest, current simulated state, and completed checks. Locomotion builds add gait status/blend and actual-rig walking/stop checks. An automatic pass is not a visual-quality verdict. It does not verify real game state discovery, renderer-array handling in v81, Bracken attacks/corpse animations, active game rendering pipeline, or vanilla-compatible multiplayer. Existing Unity fixtures cover adapter logic separately. Action-pose builds also save aggro-render.png and kill-render.png. Review Aggro and Kill animation overlay at low anger from multiple angles. Carry builds also save carry-render.png: select Corpse dragging and Walk to inspect the right-arm pose, then Hunting to review recovery. No actual body is included; grip alignment remains pending. The next increment is game-compatible material preparation.

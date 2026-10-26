@@ -41,7 +41,7 @@ public sealed class LocalPrefabPreview : MonoBehaviour
         public string locomotionStatus;
         public float locomotionBlend;
         public string actionPoseStatus;
-        public float readyBlend, killBlend;
+        public float readyBlend, killBlend, carryBlend;
         public string[] checks;
     }
 
@@ -195,6 +195,27 @@ public sealed class LocalPrefabPreview : MonoBehaviour
             Require(actions.KillBlend == 0f && actions.ReadyBlend == 0f, "action exit restores idle");
         }
         catch (Exception exception) { Fail(exception); yield break; }
+        phase = 3;
+        for (int i = 0; i < 60; i++)
+        {
+            try
+            {
+                anchor.transform.position += anchor.transform.forward * .02f;
+                model.GetComponent<Animator>().Update(1f / 60f); Animate(1f / 60f);
+            }
+            catch (Exception exception) { Fail(exception); yield break; }
+            yield return null;
+        }
+        try
+        {
+            model.GetComponent<Animator>().Update(1f / 60f); Animate(1f / 60f);
+            Require(actions.CarryBlend > .99f && gait.Blend > .8f, "actual Gojo drag pose with walking");
+            Capture("carry-render.png");
+            phase = 0;
+            for (int i = 0; i < 90; i++) { model.GetComponent<Animator>().Update(1f / 60f); Animate(1f / 60f); }
+            Require(actions.CarryBlend == 0f && gait.Blend == 0f, "body drop and stop restore idle");
+        }
+        catch (Exception exception) { Fail(exception); yield break; }
         try
         {
             Require(SystemInfo.graphicsDeviceType != UnityEngine.Rendering.GraphicsDeviceType.Null, "graphics device active");
@@ -291,6 +312,7 @@ public sealed class LocalPrefabPreview : MonoBehaviour
             locomotionStatus = gaitStatus, locomotionBlend = gait != null ? gait.Blend : 0f,
             actionPoseStatus = actionStatus, readyBlend = actions != null ? actions.ReadyBlend : 0f,
             killBlend = actions != null ? actions.KillBlend : 0f,
+            carryBlend = actions != null ? actions.CarryBlend : 0f,
             screenshot = "preview-render.png"
         };
         File.WriteAllText(ReportPath, JsonUtility.ToJson(report, true));

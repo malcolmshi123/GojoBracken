@@ -35,3 +35,7 @@ Aggro selects the arms-ready pose. Kill animation overlay selects the two-handed
 reach; toggle it off to inspect recovery. These are state-driven poses, without
 victim alignment or a synchronized neck snap. Automated tests also write
 aggro-render.png and kill-render.png; include those with the smoke report.
+
+Corpse dragging selects the right-arm drag pose while walking remains available.
+No actual corpse is included and live grip alignment is not calibrated. Select
+Hunting to review drop recovery. Include carry-render.png with the smoke report.

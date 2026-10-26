@@ -56,7 +56,7 @@ if ($process.ExitCode -ne 0 -or -not (Select-String -LiteralPath $log -SimpleMat
 $player = Join-Path $run 'Player'
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'local-preview\Run-PreviewChecks.ps1') -Destination $player
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'local-preview\README.txt') -Destination $player
-$zip = Join-Path $run 'GojoBrackenActionPreview.zip'
+$zip = Join-Path $run 'GojoBrackenCarryPreview.zip'
 Compress-Archive -Path (Join-Path $player '*') -DestinationPath $zip
 Write-Output "Built local preview ZIP: $zip"
 Write-Output "Source digest: $digest"
