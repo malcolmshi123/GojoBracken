@@ -37,6 +37,8 @@ Development proceeds in small review checkpoints. Staging, commits, and pushes a
 
 ## Preview without playing the game
 
+The [rendering preflight](docs/rendering-preflight.md) inventories the actual native materials and collects installed-file/existing-log evidence on the testing PC without a game launch. Game material conversion awaits a confirmed render pipeline.
+
 A [standalone Windows prefab preview](docs/testing-pc-preview.md) is now available for testing the actual Gojo/aura assets on the other PC without Unity or a game encounter. Build it on the development laptop and privately transfer the generated ZIP; model data is not in Git. The browser study below remains a schematic prototype.
 
 Open preview/index.html in a browser. In Windows PowerShell 5.1, from the repository root:
