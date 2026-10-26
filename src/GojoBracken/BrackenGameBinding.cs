@@ -9,6 +9,7 @@ namespace GojoBracken
     {
         private Component enemy;
         private BrackenStateReader reader;
+        private BrackenVisibilityReader visibilityReader;
         private PropertyInfo owner;
         private BrackenCosmeticController controller;
         private Action<string> warning;
@@ -22,6 +23,8 @@ namespace GojoBracken
             var reader = new BrackenStateReader(enemy.GetType());
             if (!reader.TryRead(enemy, out var initial, out var error)) throw new InvalidOperationException(error);
             if (initial.Dead) return null;
+            var visibilityReader = new BrackenVisibilityReader(enemy.GetType());
+            if (!visibilityReader.TryRead(enemy, out _, out error)) throw new InvalidOperationException(error);
             if (!BrackenCosmeticController.TryCreate(enemy.transform, gameMvid, aura, voice, saturation, strength,
                 out var controller, out error)) throw new InvalidOperationException(error);
             BrackenGameBinding binding = null;
@@ -30,6 +33,7 @@ namespace GojoBracken
                 binding = enemy.gameObject.AddComponent<BrackenGameBinding>();
                 binding.enemy = enemy;
                 binding.reader = reader;
+                binding.visibilityReader = visibilityReader;
                 binding.controller = controller;
                 binding.warning = warning;
                 var property = enemy.GetType().GetProperty("IsOwner", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
@@ -59,6 +63,10 @@ namespace GojoBracken
                 { Stop(); return; }
                 if (!reader.TryRead(enemy, out var observation, out var error))
                     throw new InvalidOperationException(error);
+                if (observation.Dead) { controller.Apply(observation, false, deltaTime); Stop(); return; }
+                if (!visibilityReader.TryRead(enemy, out var visibility, out error))
+                    throw new InvalidOperationException(error);
+                controller.SetVisibility(visibility);
                 bool detailed = false;
                 try
                 {
@@ -67,7 +75,6 @@ namespace GojoBracken
                 }
                 catch { WarnOwnership(); }
                 controller.Apply(observation, detailed, deltaTime);
-                if (observation.Dead) Stop();
             }
             catch (Exception exception)
             {

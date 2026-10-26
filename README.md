@@ -19,6 +19,8 @@ A runtime bundle loader and shared exporter addresses are prepared, with checks 
 
 A per-instance aura/audio controller now has an opt-in game adapter, with Unity Play-mode checks. It awaits final assets and game validation. See [development-mode behavior and validation](docs/development-effects.md).
 
+The adapter also [respects vanilla body visibility and camera layers](docs/game-visibility.md), without including carried-body renderers or changing original visual state.
+
 The approved flame/wisps are now [baked as a native aura prefab](docs/native-aura.md), with no preview-script dependency. Rendering compatibility with the game remains pending.
 
 The approved standing pose is also [baked into a local-only native Gojo prefab](docs/local-native-gojo.md). It has a constant idle controller and no dance/root motion; downloaded model data remains ignored pending provenance review.
@@ -26,6 +28,8 @@ The approved standing pose is also [baked into a local-only native Gojo prefab](
 Development proceeds in small review checkpoints. Staging, commits, and pushes are performed manually by the repository owner, including the initial commit.
 
 ## Preview without playing the game
+
+A [standalone Windows prefab preview](docs/testing-pc-preview.md) is now available for testing the actual Gojo/aura assets on the other PC without Unity or a game encounter. Build it on the development laptop and privately transfer the generated ZIP; model data is not in Git. The browser study below remains a schematic prototype.
 
 Open preview/index.html in a browser. In Windows PowerShell 5.1, from the repository root:
 

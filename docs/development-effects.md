@@ -15,6 +15,8 @@ These settings require a restart. Saturation must be positive/finite and is a co
 
 The plugin's existing real-time coroutine scans for active scene Brackens every 0.5 seconds, without instantiating enemies or searching prefab assets. Each bound instance then reads the six verified fields in LateUpdate, after the enemy's Update. The anchor is the enemy root, not its rolling animationContainer; final visual height and placement still need calibration.
 
+The session waits for the game's cached body renderer arrays to initialize. The aura then mirrors their live visibility and camera layer, without writing original renderer state or including carried-body descendants. Unavailable or ambiguous body visibility stops the binding. See [visibility findings and checks](game-visibility.md).
+
 IsOwner=true selects detailed local anger. IsOwner=false selects faint-outside-aggro/strong-in-aggro approximation. An unavailable or throwing getter also selects approximation and logs once per instance. Ownership is checked each sample, so transfers change which input is used. This is a conservative presentation policy, not proof of network authority or synchronized anger.
 
 Already-dead or disabled enemies are skipped. Read failures stop that binding and warn once. Death, disable, despawn, scene cleanup, plugin disable, and startup/scan failure stop owned effects. The session attempts each existing instance once to avoid repeated errors or attachment loops; reactivating a pooled instance does not start a new cosmetic session in this increment. Destroyed instance records are removed on later scans. A future pooling adapter must explicitly create a fresh session if required by the game.

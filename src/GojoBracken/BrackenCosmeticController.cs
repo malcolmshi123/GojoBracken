@@ -19,6 +19,8 @@ namespace GojoBracken
         private AudioSource voice;
         private float strength;
         private bool stopped;
+        private bool visibleByGame = true;
+        private int gameLayer;
         internal int VoiceRequests { get; private set; }
         internal BrackenCosmeticFrame LastFrame { get; private set; }
 
@@ -131,7 +133,8 @@ namespace GojoBracken
             {
                 var renderer = renderers[i];
                 if (renderer == null) { Shutdown(); return; }
-                renderer.enabled = visible[i] && amount > 0f;
+                renderer.enabled = visible[i] && amount > 0f && visibleByGame;
+                renderer.gameObject.layer = gameLayer;
                 // Preserve existing property overrides; only compatible aura materials use these controls.
                 renderer.GetPropertyBlock(properties[i]);
                 properties[i].SetFloat("_Strength", visualAnger);
@@ -160,6 +163,14 @@ namespace GojoBracken
                 effects.SetActive(false);
                 Destroy(effects);
             }
+        }
+
+        internal void SetVisibility(BrackenVisibility visibility)
+        {
+            if (visibility.Layer < 0 || visibility.Layer > 31)
+                throw new ArgumentOutOfRangeException(nameof(visibility));
+            visibleByGame = visibility.Visible;
+            gameLayer = visibility.Layer;
         }
 
         private void OnDisable() { Shutdown(); }

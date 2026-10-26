@@ -13,7 +13,9 @@ namespace GojoBracken
         private readonly float strength;
         private readonly Action<string> info;
         private readonly Action<string> warning;
+        private readonly BrackenVisibilityReader visibilityReader;
         private readonly Dictionary<Component, BrackenGameBinding> attempted = new Dictionary<Component, BrackenGameBinding>();
+        private readonly Dictionary<Component, int> discovered = new Dictionary<Component, int>();
         private bool stopped;
 
         private DevelopmentEffects(Type enemyType, GojoAssetBundle assets, float saturation, float strength,
@@ -25,6 +27,7 @@ namespace GojoBracken
             this.strength = strength;
             this.info = info;
             this.warning = warning;
+            visibilityReader = new BrackenVisibilityReader(enemyType);
         }
 
         internal static DevelopmentEffects Start(Type enemyType, string directory, float saturation, float strength,
@@ -56,13 +59,22 @@ namespace GojoBracken
             var removed = new List<Component>();
             foreach (var entry in attempted)
                 if (entry.Key == null) removed.Add(entry.Key);
-            foreach (var key in removed) attempted.Remove(key);
+            foreach (var entry in discovered)
+                if (entry.Key == null) removed.Add(entry.Key);
+            foreach (var key in removed) { attempted.Remove(key); discovered.Remove(key); }
             foreach (var found in UnityEngine.Object.FindObjectsOfType(enemyType))
             {
                 var enemy = found as Component;
                 if (enemy == null || attempted.ContainsKey(enemy)) continue;
-                if (enemy is Behaviour behaviour && !behaviour.isActiveAndEnabled) continue;
+                if (enemy is Behaviour behaviour && !behaviour.isActiveAndEnabled) { discovered.Remove(enemy); continue; }
+                // The arrays are serialized and can already be non-null on a prefab. Never attach in
+                // its discovery frame: EnemyAI.Start must first cache the original body, not our aura.
+                if (!discovered.TryGetValue(enemy, out int seenFrame))
+                { discovered.Add(enemy, Time.frameCount); continue; }
+                if (Time.frameCount <= seenFrame) continue;
+                if (!visibilityReader.IsReady(enemy)) continue;
                 attempted.Add(enemy, null); // Fail once per instance, without a repeated log/attachment loop.
+                discovered.Remove(enemy);
                 try
                 {
                     var binding = BrackenGameBinding.Attach(enemy, enemyType.Module.ModuleVersionId,
@@ -89,6 +101,7 @@ namespace GojoBracken
                     UnityEngine.Object.Destroy(binding);
                 }
             attempted.Clear();
+            discovered.Clear();
             // Stop/deactivate and schedule destruction of all clones before releasing bundle assets.
             assets.Dispose();
         }
