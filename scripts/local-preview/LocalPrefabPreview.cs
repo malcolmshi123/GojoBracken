@@ -14,6 +14,10 @@ public sealed class LocalPrefabPreview : MonoBehaviour
     private GameObject anchor;
     private GameObject model;
     private BrackenCosmeticController controller;
+    private GojoLocomotion gait;
+    private string gaitStatus;
+    private int travel;
+    private Vector2 scroll;
     private AudioClip tone;
     private float anger, strength = 1f, yaw = 30f, distance = 6.2f;
     private int phase;
@@ -32,6 +36,8 @@ public sealed class LocalPrefabPreview : MonoBehaviour
         public int modelSkins, voiceRequests;
         public float anger, strength, auraLevel;
         public string colorSpace, skinWeights;
+        public string locomotionStatus;
+        public float locomotionBlend;
         public string[] checks;
     }
 
@@ -57,13 +63,26 @@ public sealed class LocalPrefabPreview : MonoBehaviour
         if (failure != null) return;
         try
         {
-            ViewCamera.transform.position = new Vector3(Mathf.Sin(yaw * Mathf.Deg2Rad) * distance, 2.4f,
+            if (!autoTesting && !dead && !killing && travel != 0)
+            {
+                Vector3 local = travel == 1 ? Vector3.forward : travel == 2 ? Vector3.back : Vector3.right;
+                anchor.transform.position += anchor.transform.TransformDirection(local) * (1.2f * Time.deltaTime);
+                if (anchor.transform.position.sqrMagnitude > 9f) anchor.transform.position = Vector3.zero;
+            }
+            ViewCamera.transform.position = anchor.transform.position + new Vector3(Mathf.Sin(yaw * Mathf.Deg2Rad) * distance, 2.4f,
                 -Mathf.Cos(yaw * Mathf.Deg2Rad) * distance);
-            ViewCamera.transform.LookAt(new Vector3(0f, 1.1f, 0f));
+            ViewCamera.transform.LookAt(anchor.transform.position + new Vector3(0f, 1.1f, 0f));
             AudioListener.volume = testTone ? 1f : 0f;
             if (!autoTesting) Step(Time.unscaledDeltaTime);
         }
         catch (Exception exception) { Fail(exception); }
+    }
+
+    private void LateUpdate()
+    {
+        if (failure == null && !autoTesting)
+            try { gait?.Step(Time.deltaTime, killing || dead); }
+            catch (Exception exception) { Fail(exception); }
     }
 
     private void Step(float delta)
@@ -78,16 +97,58 @@ public sealed class LocalPrefabPreview : MonoBehaviour
     {
         if (anchor != null) { anchor.SetActive(false); Destroy(anchor); }
         anchor = new GameObject("Simulated enemy anchor");
-        model = Instantiate(ModelPrefab, anchor.transform, false);
+        anchor.transform.rotation = Quaternion.Euler(0f, 180f, 0f);
+        var visual = new GameObject("Owned motion visual"); visual.transform.SetParent(anchor.transform, false);
+        model = Instantiate(ModelPrefab, visual.transform, false);
+        gait = GojoLocomotion.TryCreate(anchor.transform, visual.transform, out gaitStatus);
         if (!BrackenCosmeticController.TryCreate(anchor.transform, BrackenV81Presentation.SupportedMvid,
             AuraPrefab, tone, 12f, strength, out controller, out var error)) throw new InvalidOperationException(error);
-        anger = 0f; phase = 0; remote = killing = dead = false; bodyVisible = true;
+        anger = 0f; phase = 0; remote = killing = dead = false; bodyVisible = true; travel = 0;
         Step(0f);
     }
 
     private IEnumerator SmokeTest()
     {
         yield return null;
+        Transform walkingCalf = null;
+        Quaternion idleCalf = Quaternion.identity;
+        try
+        {
+            if (gait == null) throw new InvalidOperationException(gaitStatus);
+            walkingCalf = Array.Find(model.GetComponentsInChildren<Transform>(), bone => bone.name == "leftCalf");
+            idleCalf = walkingCalf.localRotation;
+        }
+        catch (Exception exception) { Fail(exception); yield break; }
+        for (int i = 0; i < 60; i++)
+        {
+            try
+            {
+                if (gait == null) throw new InvalidOperationException(gaitStatus);
+                anchor.transform.position += anchor.transform.forward * .02f;
+                model.GetComponent<Animator>().Update(1f / 60f);
+                gait.Step(1f / 60f, false);
+            }
+            catch (Exception exception) { Fail(exception); yield break; }
+            yield return null;
+        }
+        try
+        {
+            model.GetComponent<Animator>().Update(1f / 60f);
+            anchor.transform.position += anchor.transform.forward * .02f;
+            gait.Step(1f / 60f, false);
+            Require(gait.Blend > .9f && Quaternion.Angle(walkingCalf.localRotation, idleCalf) > 1f,
+                "actual Gojo movement-driven gait changes the rig");
+            Capture("walk-render.png");
+        }
+        catch (Exception exception) { Fail(exception); yield break; }
+        for (int i = 0; i < 90; i++)
+        {
+            try { model.GetComponent<Animator>().Update(1f / 60f); gait.Step(1f / 60f, false); }
+            catch (Exception exception) { Fail(exception); yield break; }
+            yield return null;
+        }
+        try { Require(gait.Blend == 0f, "actual Gojo returns to idle"); }
+        catch (Exception exception) { Fail(exception); yield break; }
         try
         {
             Require(SystemInfo.graphicsDeviceType != UnityEngine.Rendering.GraphicsDeviceType.Null, "graphics device active");
@@ -143,7 +204,7 @@ public sealed class LocalPrefabPreview : MonoBehaviour
         passed.Add(label);
     }
 
-    private void Capture()
+    private void Capture(string filename = "preview-render.png")
     {
         Directory.CreateDirectory(Application.persistentDataPath);
         var target = new RenderTexture(960, 640, 24);
@@ -159,7 +220,7 @@ public sealed class LocalPrefabPreview : MonoBehaviour
             RenderTexture.active = target;
             pixels.ReadPixels(new Rect(0, 0, 960, 640), 0, 0);
             pixels.Apply();
-            File.WriteAllBytes(Path.Combine(Application.persistentDataPath, "preview-render.png"), pixels.EncodeToPNG());
+            File.WriteAllBytes(Path.Combine(Application.persistentDataPath, filename), pixels.EncodeToPNG());
         }
         finally
         {
@@ -181,6 +242,7 @@ public sealed class LocalPrefabPreview : MonoBehaviour
             voiceRequests = controller != null ? controller.VoiceRequests : 0, anger = anger, strength = strength,
             auraLevel = controller != null ? controller.LastFrame.AuraLevel : 0f, checks = passed.ToArray(),
             colorSpace = QualitySettings.activeColorSpace.ToString(), skinWeights = QualitySettings.skinWeights.ToString(),
+            locomotionStatus = gaitStatus, locomotionBlend = gait != null ? gait.Blend : 0f,
             screenshot = "preview-render.png"
         };
         File.WriteAllText(ReportPath, JsonUtility.ToJson(report, true));
@@ -197,6 +259,7 @@ public sealed class LocalPrefabPreview : MonoBehaviour
     private void OnGUI()
     {
         GUILayout.BeginArea(new Rect(12f, 12f, 340f, Screen.height - 24f), GUI.skin.box);
+        scroll = GUILayout.BeginScrollView(scroll);
         GUILayout.Label("GojoBracken - LOCAL PREFAB PREVIEW");
         GUILayout.Label("Actual native prefabs; simulated enemy inputs.");
         GUILayout.Label("No game integration or Japanese voice included.");
@@ -208,6 +271,13 @@ public sealed class LocalPrefabPreview : MonoBehaviour
             if (GUILayout.Button("Retreat")) phase = 1;
             if (GUILayout.Button("Aggro")) phase = 2;
             if (GUILayout.Button("Corpse dragging")) phase = 3;
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("Walk")) travel = 1;
+            if (GUILayout.Button("Back")) travel = 2;
+            if (GUILayout.Button("Strafe")) travel = 3;
+            if (GUILayout.Button("Stop")) travel = 0;
+            GUILayout.EndHorizontal();
+            GUILayout.Label(gaitStatus);
             GUILayout.Label("Anger: " + Mathf.RoundToInt(anger * 100f) + "%");
             anger = GUILayout.HorizontalSlider(anger, 0f, 1f);
             GUILayout.Label("Strength: " + strength.ToString("0.0") + " (change then Reset)");
@@ -227,6 +297,7 @@ public sealed class LocalPrefabPreview : MonoBehaviour
         GUI.enabled = true;
         GUILayout.Label("Report folder:\n" + Application.persistentDataPath);
         if (GUILayout.Button("Quit")) Application.Quit();
+        GUILayout.EndScrollView();
         GUILayout.EndArea();
     }
 }

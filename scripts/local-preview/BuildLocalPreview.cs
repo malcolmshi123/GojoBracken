@@ -25,6 +25,12 @@ public static class BuildLocalPreview
         var floor = GameObject.CreatePrimitive(PrimitiveType.Plane);
         UnityEngine.Object.DestroyImmediate(floor.GetComponent<Collider>());
         var material = new Material(Shader.Find("Standard")) { color = new Color(.55f, .6f, .65f) };
+        var grid = new Texture2D(32, 32, TextureFormat.RGB24, false) { filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Repeat };
+        for (int y = 0; y < 32; y++)
+            for (int x = 0; x < 32; x++) grid.SetPixel(x, y, x == 0 || y == 0 ? new Color(.72f, .72f, .72f) : Color.white);
+        grid.Apply();
+        AssetDatabase.CreateAsset(grid, "Assets/FloorGrid.asset");
+        material.mainTexture = grid; material.mainTextureScale = Vector2.one * 10f;
         AssetDatabase.CreateAsset(material, "Assets/Floor.mat");
         floor.GetComponent<Renderer>().sharedMaterial = material;
         var light = new GameObject("Preview light").AddComponent<Light>();

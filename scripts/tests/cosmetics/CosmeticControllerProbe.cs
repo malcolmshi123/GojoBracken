@@ -71,6 +71,7 @@ public sealed class CosmeticControllerProbe : MonoBehaviour
         inactive.SetActive(false);
         clip = AudioClip.Create("Synthetic silence - not the Japanese line", 96000, 1, 48000, false);
         ModelAttachmentChecks.Run(ModelFixture, BakedAura, clip);
+        LocomotionChecks.Run();
         Require(BakedAura != null, "actual baked aura fixture assigned");
         var nativeHost = new GameObject("Native baked aura host");
         Require(BrackenCosmeticController.TryCreate(nativeHost.transform, BrackenV81Presentation.SupportedMvid,

@@ -17,6 +17,7 @@ namespace GojoBracken
         private bool stopped;
         private BrackenModelAttachment replacement;
         private Func<Renderer, bool> forceHidden;
+        internal string ModelMotionStatus => replacement != null ? replacement.MotionStatus : "model disabled";
 
         // The session verifies the actual type/module identity before calling this binding.
         internal static BrackenGameBinding Attach(Component enemy, Guid gameMvid, GameObject aura, AudioClip voice,
@@ -77,6 +78,7 @@ namespace GojoBracken
                 if (!visibilityReader.TryRead(enemy, out var visibility, out error, forceHidden))
                     throw new InvalidOperationException(error);
                 replacement?.Sync(visibility);
+                replacement?.Animate(observation, deltaTime);
                 controller.SetVisibility(visibility);
                 bool detailed = false;
                 try

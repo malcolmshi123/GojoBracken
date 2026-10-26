@@ -13,6 +13,8 @@ namespace GojoBracken
         private bool[] authoredVisible;
         private bool disposed;
         private bool committed;
+        private GojoLocomotion locomotion;
+        internal string MotionStatus { get; private set; }
 
         internal static BrackenModelAttachment Create(Transform host, Renderer[] originals, GameObject prefab, BrackenVisibility visibility)
         {
@@ -36,6 +38,8 @@ namespace GojoBracken
                 foreach (var animator in clone.GetComponentsInChildren<Animator>(true)) animator.applyRootMotion = false;
                 attachment.renderers = clone.GetComponentsInChildren<Renderer>(true);
                 attachment.authoredVisible = Array.ConvertAll(attachment.renderers, renderer => renderer.enabled);
+                attachment.locomotion = GojoLocomotion.TryCreate(host, attachment.root.transform, out var status);
+                attachment.MotionStatus = status;
                 // All validation and cloning finishes before the first vanilla rendering change.
                 attachment.Sync(visibility);
                 attachment.root.SetActive(true);
@@ -118,6 +122,11 @@ namespace GojoBracken
                 if (renderer == null) throw new InvalidOperationException("A vanilla body renderer was removed.");
                 renderer.forceRenderingOff = true;
             }
+        }
+
+        internal void Animate(BrackenObservation observation, float deltaTime)
+        {
+            locomotion?.Step(deltaTime, observation.InKillAnimation || observation.Dead);
         }
 
         public void Dispose()

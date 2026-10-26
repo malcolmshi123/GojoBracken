@@ -85,7 +85,7 @@ namespace GojoBracken
                     attempted[enemy] = binding;
                     if (binding != null)
                         info("[Effects] Attached cosmetics to Bracken " + enemy.GetInstanceID()
-                            + "; standingModelPreview=" + standingModelPreview);
+                            + "; standingModelPreview=" + standingModelPreview + "; " + binding.ModelMotionStatus);
                 }
                 catch (Exception exception)
                 {

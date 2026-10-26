@@ -26,7 +26,7 @@ Copy-Item -LiteralPath (Join-Path $repository 'UnityProject\Assets\GojoBracken\E
 foreach ($name in @('Aura.prefab', 'Aura.prefab.meta')) {
     Copy-Item -LiteralPath (Join-Path $repository ('UnityProject\Assets\GojoBracken\Prefabs\' + $name)) -Destination (Join-Path $project 'Assets\GojoBracken\Prefabs')
 }
-foreach ($name in @('BrackenCosmeticController.cs', 'BrackenVisibilityReader.cs')) {
+foreach ($name in @('BrackenCosmeticController.cs', 'BrackenVisibilityReader.cs', 'GojoLocomotion.cs')) {
     Copy-Item -LiteralPath (Join-Path $repository ('src\GojoBracken\' + $name)) -Destination (Join-Path $project 'Assets\Runtime')
 }
 Get-ChildItem -LiteralPath (Join-Path $repository 'shared\GojoBracken.Presentation\Runtime') -Filter '*.cs' | Copy-Item -Destination (Join-Path $project 'Assets\Runtime')
@@ -56,7 +56,7 @@ if ($process.ExitCode -ne 0 -or -not (Select-String -LiteralPath $log -SimpleMat
 $player = Join-Path $run 'Player'
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'local-preview\Run-PreviewChecks.ps1') -Destination $player
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'local-preview\README.txt') -Destination $player
-$zip = Join-Path $run 'GojoBrackenLocalPreview.zip'
+$zip = Join-Path $run 'GojoBrackenLocomotionPreview.zip'
 Compress-Archive -Path (Join-Path $player '*') -DestinationPath $zip
 Write-Output "Built local preview ZIP: $zip"
 Write-Output "Source digest: $digest"
