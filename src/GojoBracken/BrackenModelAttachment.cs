@@ -51,7 +51,7 @@ namespace GojoBracken
             catch { attachment.Dispose(); throw; }
         }
 
-        private static void Validate(GameObject prefab)
+        internal static void Validate(GameObject prefab)
         {
             if (prefab == null || !prefab.activeSelf) throw new ArgumentException("The Gojo model prefab is missing or inactive.");
             foreach (var node in prefab.GetComponentsInChildren<Transform>(true))

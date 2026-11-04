@@ -8,12 +8,14 @@ using BepInEx;
 using BepInEx.Logging;
 using GojoBracken;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 public sealed class ObserverLifecycleProbe : MonoBehaviour
 {
     public GameObject LoadedPrefab;
     private readonly CaptureLogs capture = new CaptureLogs();
     private Plugin plugin;
+    private Camera soloPreviewCamera;
 
     private void Start()
     {
@@ -46,6 +48,13 @@ public sealed class ObserverLifecycleProbe : MonoBehaviour
             Require(capture.Lines.Any(line => line.Contains("[RigReport] Exported loaded prefab report:")), "prefab exported");
             Require(UnityEngine.Object.FindObjectsOfType<FlowermanAI>().Length == 0, "no enemy spawned");
             Debug.Log("OBSERVER LIFECYCLE PASS: real Plugin Awake, paused-time coroutine, pipeline, report, no spawn");
+            string previewDirectory = Path.Combine(Directory.GetParent(Application.dataPath).FullName, "PreviewFixture");
+            Directory.CreateDirectory(previewDirectory);
+            var runner = typeof(Plugin).Assembly.GetType("GojoBracken.InGameRenderPreviewRunner", true);
+            runner.GetMethod("StartPreview", BindingFlags.Static | BindingFlags.NonPublic).Invoke(null,
+                new object[] { previewDirectory, (Func<Camera>)(() => soloPreviewCamera),
+                    (Action<string>)(message => capture.Lines.Add(message)),
+                    (Action<string>)(message => capture.Lines.Add(message)) });
             plugin.enabled = false;
             Require(capture.Lines.Any(line => line.Contains("[Observer] Stopped: plugin disabled")), "disable accounted for");
             Debug.Log("OBSERVER LIFECYCLE PASS: disable logged");
@@ -63,10 +72,64 @@ public sealed class ObserverLifecycleProbe : MonoBehaviour
             Require(capture.Lines.Count(line => line.Contains("[Observer] Starting;")) == startCount,
                 "rejected effects start no scan when diagnostics disabled");
             Debug.Log("OBSERVER LIFECYCLE PASS: effects opt-in rejects wrong module without starting scans");
-            Time.timeScale = 1f;
-            UnityEditor.EditorApplication.Exit(0);
+            StartCoroutine(CheckPreviewRunner(previewDirectory));
         }
         catch (Exception exception) { Fail(exception); }
+    }
+
+    private IEnumerator CheckPreviewRunner(string directory)
+    {
+        string request = Path.Combine(directory, "gojobracken-preview.request");
+        File.WriteAllText(request, "clear");
+        var runnerType = typeof(Plugin).Assembly.GetType("GojoBracken.InGameRenderPreviewRunner", true);
+        var onCameraRendered = (Action<ScriptableRenderContext, Camera>)runnerType
+            .GetField("cameraRendered", BindingFlags.Static | BindingFlags.NonPublic).GetValue(null);
+        var camera = new GameObject("Late gameplay camera").AddComponent<Camera>();
+        onCameraRendered(default, camera);
+        yield return new WaitForSecondsRealtime(.6f);
+        try
+        {
+            Require(GameObject.Find("GojoBracken render preview runner") == null && File.Exists(request),
+                "startup camera cannot create the runner or consume its request");
+            soloPreviewCamera = camera;
+            onCameraRendered(default, camera);
+        }
+        catch (Exception exception) { Fail(exception); yield break; }
+
+        yield return new WaitForSecondsRealtime(.6f);
+        try
+        {
+            Require(capture.Lines.Any(line => line.EndsWith("watching: " + request, StringComparison.Ordinal)),
+                "gameplay camera starts a runner on the exact request path");
+            Require(capture.Lines.Any(line => line.Contains(" poll 1, active scene="))
+                && !File.Exists(request), "runner polls after the gameplay camera becomes active");
+            var runner = GameObject.Find("GojoBracken render preview runner");
+            Require(runner != null, "preview runner exists after its first poll");
+            Destroy(runner);
+        }
+        catch (Exception exception) { Fail(exception); yield break; }
+
+        yield return new WaitForSecondsRealtime(.6f);
+        try
+        {
+            Require(capture.Lines.Any(line => line.Contains(" disabled after "))
+                && capture.Lines.Any(line => line.Contains(" destroyed after ")), "runner teardown is logged");
+            File.WriteAllText(request, "clear");
+            onCameraRendered(default, camera);
+        }
+        catch (Exception exception) { Fail(exception); yield break; }
+
+        yield return new WaitForSecondsRealtime(.6f);
+        try
+        {
+            Require(!File.Exists(request) && capture.Lines.Count(line => line.Contains(" poll 1, active scene=")) == 2,
+                "a later gameplay render recreates the destroyed runner and polls again");
+        }
+        catch (Exception exception) { Fail(exception); yield break; }
+
+        Debug.Log("OBSERVER LIFECYCLE PASS: late solo camera starts and recreates a polling preview runner.");
+        Time.timeScale = 1f;
+        UnityEditor.EditorApplication.Exit(0);
     }
 
     private static void Require(bool condition, string message)

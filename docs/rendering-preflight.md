@@ -55,3 +55,5 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Capture-HdrpPr
 The script runs the existing aura controller against the HDRP prefab copies. It renders 0 and 12 anger with the same camera, fixed exposure, lighting and particle seed. The images are saved in the run's renders directory as hdrp-calm.png and hdrp-full.png.
 
 The calibrated body retains the dark uniform and white hair. The HDRP flame uses lower peak opacity so the face and torso remain legible at full strength. The scene uses fixed exposure and bloom disabled for comparison. Game lighting, exposure and camera behavior still need a controlled in-game check.
+
+Use the [solo in-game HDRP preview](ingame-hdrp-preview.md) to check the same materials with the game camera and lighting.

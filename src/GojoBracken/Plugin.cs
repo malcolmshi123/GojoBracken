@@ -13,7 +13,7 @@ namespace GojoBracken
     {
         public const string PluginGuid = "FreakyFriday.GojoBracken";
         public const string PluginName = "Gojo Bracken";
-        public const string PluginVersion = "0.1.8";
+        public const string PluginVersion = "0.1.12";
 
         private RuntimeDiagnostics diagnostics;
         private BrackenRigReport rigReport;
@@ -51,6 +51,23 @@ namespace GojoBracken
                 }
                 catch (Exception exception) { Logger.LogWarning("[Effects] Disabled: " + exception.Message); }
             }
+            bool preview = Config.Bind("RenderPreview", "Enabled", false,
+                "Enable local HDRP render checks via request files. Use a solo test profile.").Value;
+            if (preview)
+            {
+                try
+                {
+                    var enemyType = AccessTools.TypeByName("FlowermanAI");
+                    if (enableEffects || Application.unityVersion != "2022.3.62f2"
+                        || enemyType?.Module.ModuleVersionId != BrackenV81Presentation.SupportedMvid)
+                        throw new InvalidOperationException("Requires inspected v81, Unity 2022.3.62f2 and DevelopmentEffects disabled.");
+                    InGameRenderPreviewRunner.StartPreview(Path.GetDirectoryName(Info.Location),
+                        InGameRenderPreview.BindSoloCamera(enemyType.Assembly),
+                        message => Logger.LogInfo(message), message => Logger.LogWarning(message));
+                }
+                catch (Exception exception) { Logger.LogWarning("[RenderPreview] Disabled: " + exception.Message); }
+            }
+
             Logger.LogInfo($"{PluginName} {PluginVersion} loaded. Development cosmetics are opt-in; animation adaptation is incomplete.");
             if (!enableDiagnostics && !exportRig && effects == null) return;
 
