@@ -40,6 +40,18 @@ Run from the repository root in Windows PowerShell 5.1 with the local native Goj
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-HdrpMaterials.ps1
 ~~~
 
-The script uses Unity 2022.3.62f2 and HDRP 14.0.12 as a local validation target. It creates a fresh ignored Unity project under artifacts/hdrp, with separate Gojo and aura prefab copies under Assets/HdrpCandidates. The converted body uses HDRP Lit with the existing albedo, metallic and roughness values. The wisps use additive blending with the particle color and alpha. The flame ports the approved vertex motion and retains _Strength and _Intensity.
+The script uses Unity 2022.3.62f2 and HDRP 14.0.12 as a local validation target. It creates a fresh ignored Unity project under artifacts/hdrp, with separate Gojo and aura prefab copies under Assets/HdrpCandidates. The converted body uses HDRP Lit with the original albedo textures. A low specular color and a 0.25 smoothness cap correct the mirror finish seen in the first HDRP captures. The wisps use additive blending with the particle color and alpha. The flame ports the approved vertex motion and retains _Strength and _Intensity.
 
-A successful run compiles the materials and reopens a Windows verification bundle containing the two prefabs. Check the Unity log for HDRP MATERIALS PASS. This fixture covers material, texture and rig serialization. Visual calibration under HDRP and in-game rendering remain separate checks. The next increment is an HDRP render preview for calm and full-strength aura.
+A successful run compiles the materials and reopens a Windows verification bundle containing the two prefabs. Check the Unity log for HDRP MATERIALS PASS. This fixture covers material, texture and rig serialization. Visual calibration under HDRP and in-game rendering remain separate checks.
+
+## Capture the HDRP preview
+
+Pass the generated project directory from the material build.
+
+~~~powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Capture-HdrpPreview.ps1 -CandidateProject .\artifacts\hdrp\<run>\u
+~~~
+
+The script runs the existing aura controller against the HDRP prefab copies. It renders 0 and 12 anger with the same camera, fixed exposure, lighting and particle seed. The images are saved in the run's renders directory as hdrp-calm.png and hdrp-full.png.
+
+The calibrated body retains the dark uniform and white hair. The HDRP flame uses lower peak opacity so the face and torso remain legible at full strength. The scene uses fixed exposure and bloom disabled for comparison. Game lighting, exposure and camera behavior still need a controlled in-game check.

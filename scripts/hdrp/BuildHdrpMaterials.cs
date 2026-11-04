@@ -95,8 +95,12 @@ public static class BuildHdrpMaterials
         material.SetTextureScale("_BaseColorMap", source.GetTextureScale("baseColorTexture"));
         material.SetTextureOffset("_BaseColorMap", source.GetTextureOffset("baseColorTexture"));
         material.SetColor("_BaseColor", source.GetColor("baseColorFactor"));
-        material.SetFloat("_Metallic", source.GetFloat("metallicFactor"));
-        material.SetFloat("_Smoothness", 1f - source.GetFloat("roughnessFactor"));
+        Require(source.GetFloat("metallicFactor") == 0f, "Expected a nonmetallic Gojo material: " + source.name);
+        // HDRP Lit MaterialID 4 selects explicit specular color.
+        const int specularColorMaterial = 4;
+        material.SetFloat("_MaterialID", specularColorMaterial);
+        material.SetColor("_SpecularColor", new Color(.003f, .003f, .003f));
+        material.SetFloat("_Smoothness", Mathf.Min(.25f, 1f - source.GetFloat("roughnessFactor")));
         material.SetFloat("_DoubleSidedEnable", source.doubleSidedGI ? 1f : 0f);
         Require(HDMaterial.ValidateMaterial(material), "Could not validate HDRP Lit");
         return material;

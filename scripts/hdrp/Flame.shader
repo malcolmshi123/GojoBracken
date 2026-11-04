@@ -46,7 +46,7 @@ Shader "GojoBracken/HDRP/Flame"
                 float flow = 0.5 + 0.5 * sin(angle * 6 + sin(i.uv.y * 13 - _Time.y * 4) + i.uv.y * 9 - _Time.y * 3);
                 float baseFade = smoothstep(0, 0.08, i.uv.y);
                 float tipFade = 1 - smoothstep(0.82, 1, i.uv.y);
-                float opacity = lerp(0.025, 0.75, _Strength * _Strength);
+                float opacity = lerp(0.025, 0.58, _Strength * _Strength);
                 float edgeFade = smoothstep(0, 0.3, 1 - rim);
                 float alpha = edgeFade * opacity * (0.35 + rim * 0.65) * (0.4 + flow * 0.6) * baseFade * tipFade;
                 float3 blue = float3(0.04, 0.22, 1);
