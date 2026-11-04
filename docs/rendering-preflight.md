@@ -1,6 +1,6 @@
 # Rendering preflight
 
-The game render pipeline is still unknown. Earlier logs did not contain a completed pipeline observation. HDRP assembly presence alone does not prove which pipeline/settings were active. Do not select a package patch from an assembly major version or convert the approved authoring assets on that basis.
+A main-menu run with GojoBracken 0.1.8 reported HDRenderPipelineAsset on the inspected v81 build using Unity 2022.3.62f2. The reported assembly version was 0.0.0.0, so the game HDRP package patch remains unknown.
 
 ## Actual native material audit
 
@@ -32,4 +32,14 @@ For a mod-manager profile, pass its existing LogOutput.log using -BepInExLogPath
 
 Return the generated JSON, not the game binaries or complete logs. The collector exports selected rendering lines and file versions/hashes only. It refuses to overwrite existing reports. PowerShell 5.1 fixture checks passed for selected-line filtering, absent assemblies/logs, a historical HDRP observation and an unknown result.
 
-This checkpoint prepares evidence and a conversion map; it does not pin HDRP, convert materials or produce a game-ready bundle. Next increment: review the returned pipeline evidence and implement the appropriate material conversion in a separate asset set. If evidence remains unknown, resolve that before claiming game-compatible rendering.
+## Build the HDRP material candidates
+
+Run from the repository root in Windows PowerShell 5.1 with the local native Gojo prefab present.
+
+~~~powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-HdrpMaterials.ps1
+~~~
+
+The script uses Unity 2022.3.62f2 and HDRP 14.0.12 as a local validation target. It creates a fresh ignored Unity project under artifacts/hdrp, with separate Gojo and aura prefab copies under Assets/HdrpCandidates. The converted body uses HDRP Lit with the existing albedo, metallic and roughness values. The wisps use additive blending with the particle color and alpha. The flame ports the approved vertex motion and retains _Strength and _Intensity.
+
+A successful run compiles the materials and reopens a Windows verification bundle containing the two prefabs. Check the Unity log for HDRP MATERIALS PASS. This fixture covers material, texture and rig serialization. Visual calibration under HDRP and in-game rendering remain separate checks. The next increment is an HDRP render preview for calm and full-strength aura.

@@ -37,7 +37,7 @@ Development proceeds in small review checkpoints. Staging, commits, and pushes a
 
 ## Preview without playing the game
 
-The [rendering preflight](docs/rendering-preflight.md) inventories the actual native materials and collects installed-file/existing-log evidence on the testing PC without a game launch. Game material conversion awaits a confirmed render pipeline.
+The [rendering preflight](docs/rendering-preflight.md) inventories the actual native materials and collects installed-file/existing-log evidence on the testing PC without a game launch. A v81 main-menu run confirmed HDRP. The preflight includes instructions for building the separate HDRP material candidates.
 
 A [standalone Windows prefab preview](docs/testing-pc-preview.md) is now available for testing the actual Gojo/aura assets on the other PC without Unity or a game encounter. Build it on the development laptop and privately transfer the generated ZIP; model data is not in Git. The browser study below remains a schematic prototype.
 
