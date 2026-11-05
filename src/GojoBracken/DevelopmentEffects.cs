@@ -128,7 +128,7 @@ namespace GojoBracken
                     attempted[enemy] = binding;
                     if (binding != null)
                         info("[Effects] Attached cosmetics to Bracken " + enemy.GetInstanceID()
-                            + "; standingModelPreview=" + standingModelPreview + "; " + binding.ModelMotionStatus
+                            + "; standingModelPreview=" + standingModelPreview + "; " + binding.ModelPoseStatus
                             + (soloLiveTest ? "; trial height=3.000 m; wisps=1.250; flame width/depth=1.250; flame height=1.750" : ""));
                     else TraceCandidate(enemy, "skipped: Bracken was already dead");
                 }

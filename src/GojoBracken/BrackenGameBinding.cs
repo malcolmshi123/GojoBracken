@@ -21,7 +21,7 @@ namespace GojoBracken
         private bool motionLogged;
         private Vector3? previousVisiblePosition;
         private float sampledTravel;
-        internal string ModelMotionStatus => replacement != null ? replacement.MotionStatus : "model disabled";
+        internal string ModelPoseStatus => replacement != null ? "fixed standing pose" : "model disabled";
 
         // The session verifies the actual type/module identity before calling this binding.
         internal static BrackenGameBinding Attach(Component enemy, Guid gameMvid, GameObject aura, AudioClip voice,
@@ -86,7 +86,6 @@ namespace GojoBracken
                 if (!visibilityReader.TryRead(enemy, out var visibility, out error, forceHidden, traceVisibleLayers))
                     throw new InvalidOperationException(error);
                 replacement?.Sync(visibility);
-                replacement?.Animate(observation, deltaTime);
                 controller.SetVisibility(visibility);
                 bool detailed = false;
                 try
@@ -130,7 +129,7 @@ namespace GojoBracken
             if (sampledTravel < .25f) return;
             motionLogged = true;
             traceVisibleLayers(FormattableString.Invariant(
-                $"[Effects] Motion sample: Bracken id={enemy.GetInstanceID()}, horizontal travel={sampledTravel:F3} m, gait blend={replacement.GaitBlend:F3}, model anchor offset={Vector3.Distance(current, replacement.WorldPosition):F3} m, aura anchor offset={Vector3.Distance(current, controller.WorldPosition):F3} m."));
+                $"[Effects] Motion sample: Bracken id={enemy.GetInstanceID()}, horizontal travel={sampledTravel:F3} m, model anchor offset={Vector3.Distance(current, replacement.WorldPosition):F3} m, aura anchor offset={Vector3.Distance(current, controller.WorldPosition):F3} m."));
         }
 
         private void WarnOwnership()

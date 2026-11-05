@@ -13,10 +13,6 @@ namespace GojoBracken
         private bool[] authoredVisible;
         private bool disposed;
         private bool committed;
-        private GojoLocomotion locomotion;
-        private GojoActionPose actions;
-        internal string MotionStatus { get; private set; }
-        internal float GaitBlend => locomotion?.Blend ?? 0f;
         internal Vector3 WorldPosition => root.transform.position;
 
         internal static BrackenModelAttachment Create(Transform host, Renderer[] originals, GameObject prefab, BrackenVisibility visibility, float modelScale = 1f)
@@ -39,12 +35,9 @@ namespace GojoBracken
                 attachment.root.transform.localScale = Vector3.one * modelScale;
                 var clone = UnityEngine.Object.Instantiate(prefab, attachment.root.transform, false);
                 clone.SetActive(true);
-                foreach (var animator in clone.GetComponentsInChildren<Animator>(true)) animator.applyRootMotion = false;
+                UseStandingPose(attachment.root.transform);
                 attachment.renderers = clone.GetComponentsInChildren<Renderer>(true);
                 attachment.authoredVisible = Array.ConvertAll(attachment.renderers, renderer => renderer.enabled);
-                attachment.locomotion = GojoLocomotion.TryCreate(host, attachment.root.transform, out var status);
-                attachment.actions = GojoActionPose.TryCreate(host, attachment.root.transform, out var actionStatus);
-                attachment.MotionStatus = status + "; " + actionStatus;
                 // All validation and cloning finishes before the first vanilla rendering change.
                 attachment.Sync(visibility);
                 attachment.root.SetActive(true);
@@ -129,11 +122,25 @@ namespace GojoBracken
             }
         }
 
-        internal void Animate(BrackenObservation observation, float deltaTime)
+        internal static void UseStandingPose(Transform visual)
         {
-            actions?.Restore();
-            locomotion?.Step(deltaTime, observation.InKillAnimation || observation.Dead);
-            actions?.Apply(observation, deltaTime);
+            // The native prefab already serializes the approved standing pose on its bones.
+            foreach (var animator in visual.GetComponentsInChildren<Animator>(true))
+                animator.enabled = false;
+
+            var bones = visual.GetComponentsInChildren<Transform>(true);
+            var left = Array.Find(bones, bone => bone.name == "leftFoot");
+            var right = Array.Find(bones, bone => bone.name == "rightFoot");
+            var leftToe = Array.Find(bones, bone => bone.name == "leftFootToe");
+            var rightToe = Array.Find(bones, bone => bone.name == "rightFootToe");
+            if (left == null || right == null || leftToe == null || rightToe == null) return;
+
+            var facing = Vector3.ProjectOnPlane(leftToe.position - left.position
+                + rightToe.position - right.position, Vector3.up);
+            var forward = Vector3.ProjectOnPlane(visual.forward, Vector3.up);
+            if (facing.sqrMagnitude > .0001f && forward.sqrMagnitude > .0001f)
+                visual.rotation = Quaternion.AngleAxis(Vector3.SignedAngle(facing, forward, Vector3.up),
+                    Vector3.up) * visual.rotation;
         }
 
         public void Dispose()

@@ -13,6 +13,17 @@ namespace GojoBracken
         internal const string BundleName = "gojobracken-hdrp-material-check";
         private const float AuraReferenceHeight = 2.10f;
         private const string RequestName = "gojobracken-preview.request";
+        private static readonly (int state, float anger, bool carrying)[] CyclePhases =
+        {
+            (0, 0f, false),
+            (1, 4f, false),
+            (2, 12f, false),
+            (2, 6f, true),
+            (1, 2f, false),
+            (2, 12f, false),
+            (0, 0f, false)
+        };
+
         private readonly string directory;
         private readonly Func<Camera> soloCamera;
         private readonly Action<string> info;
@@ -21,11 +32,17 @@ namespace GojoBracken
         private GameObject anchor;
         private GameObject visual;
         private RaycastHit deck;
-        private AudioClip silence;
+        private AudioClip previewClip;
         private Camera camera;
         private int sceneHandle;
         private bool waitingLogged;
         private BrackenCosmeticController controller;
+        private bool walking;
+        private float walkTime, maxAuraOffset;
+        private Vector3 walkStart, walkEnd;
+        private int cycleIndex = -1, cycleVoiceAtStart;
+        private float cycleTime, cycleAggroHold;
+        private string cycleAudio;
 
         internal InGameRenderPreview(string directory, Func<Camera> soloCamera, Action<string> info, Action<string> warning)
         {
@@ -33,7 +50,7 @@ namespace GojoBracken
             this.soloCamera = soloCamera;
             this.info = info;
             this.warning = warning;
-            info("[RenderPreview] Ready for calm, full, height, or clear requests beside the plugin DLL.");
+            info("[RenderPreview] Ready for calm, full, walk, cycle, height, or clear requests beside the plugin DLL.");
         }
 
         internal static Func<Camera> BindSoloCamera(Assembly game)
@@ -65,8 +82,7 @@ namespace GojoBracken
             string request = RequestPath;
             try
             {
-                if (anchor != null && (camera == null || !camera.isActiveAndEnabled || camera != soloCamera()
-                    || SceneManager.GetActiveScene().handle != sceneHandle))
+                if (anchor != null && !IsCurrentSession())
                     Clear();
                 if (!File.Exists(request))
                 {
@@ -76,7 +92,7 @@ namespace GojoBracken
 
                 string command = File.ReadAllText(request).Trim().ToLowerInvariant();
                 if (!waitingLogged) info("[RenderPreview] Found request file.");
-                if (command == "calm" || command == "full")
+                if (command == "calm" || command == "full" || command == "walk" || command == "cycle")
                 {
                     var current = soloCamera();
                     if (current == null || !current.isActiveAndEnabled)
@@ -92,10 +108,12 @@ namespace GojoBracken
                 {
                     case "calm": Show(0f); break;
                     case "full": Show(12f); break;
+                    case "walk": StartWalk(); break;
+                    case "cycle": StartCycle(); break;
                     case "clear": Clear(); info("[RenderPreview] Cleared."); break;
                     default:
                         if (command.StartsWith("height ", StringComparison.Ordinal)) ChangeHeight(command.Substring(7));
-                        else warning("[RenderPreview] Expected calm, full, height <metres>, or clear.");
+                        else warning("[RenderPreview] Expected calm, full, walk, cycle, height <metres>, or clear.");
                         break;
                 }
             }
@@ -103,20 +121,22 @@ namespace GojoBracken
             catch (Exception error) { Clear(); warning("[RenderPreview] Preview failed: " + error.Message); }
         }
 
-        private void Show(float anger)
+        private void Show(float anger, bool testTone = false)
         {
+            walking = false;
+            cycleIndex = -1;
             var pipeline = GraphicsSettings.currentRenderPipeline;
             if (pipeline == null || pipeline.GetType().FullName
                 != "UnityEngine.Rendering.HighDefinition.HDRenderPipelineAsset")
                 throw new InvalidOperationException("An active HDRP camera is required.");
 
-            if (anchor == null) Create();
+            if (anchor == null) Create(testTone);
             controller.Apply(new BrackenObservation(0, anger, false, false, false, false), true, 10f);
             info($"[RenderPreview] Applied anger {anger:0}/12, aura {controller.LastFrame.AuraLevel:0.00}, " +
                 $"scene={SceneManager.GetActiveScene().name}, HDRP, {QualitySettings.activeColorSpace}, {SystemInfo.graphicsDeviceType}.");
         }
 
-        private void Create()
+        private void Create(bool testTone)
         {
             camera = soloCamera();
             if (camera == null || !camera.isActiveAndEnabled)
@@ -145,14 +165,144 @@ namespace GojoBracken
             visual = new GameObject("Owned preview model");
             visual.transform.SetParent(anchor.transform, false);
             UnityEngine.Object.Instantiate(model, visual.transform, false);
-            GojoLocomotion.TryCreate(anchor.transform, visual.transform, out var facingStatus);
+            BrackenModelAttachment.UseStandingPose(visual.transform);
             float height = AlignHeight(3.000f);
-            silence = AudioClip.Create("Silent render fixture", 480, 1, 48000, false);
+            var bundledVoice = testTone && bundle.Contains("voice_source")
+                ? bundle.LoadAsset<AudioClip>(GojoAssetContract.Voice) : null;
+            if (testTone && bundle.Contains("voice_source") && (bundledVoice == null || bundledVoice.samples <= 0))
+                throw new InvalidOperationException("The preview bundle declares a voice source but has no valid domain_expansion clip.");
+
+            if (bundledVoice == null) previewClip = CreatePreviewClip(testTone);
+            cycleAudio = bundledVoice == null ? "synthetic tone" : "imported voice clip";
+            cycleAggroHold = bundledVoice == null ? 2.5f : Mathf.Max(2.5f, bundledVoice.length + .25f);
             if (!BrackenCosmeticController.TryCreate(anchor.transform, BrackenV81Presentation.SupportedMvid,
-                aura, silence, 12f, 1f, out controller, out var error))
+                aura, bundledVoice ?? previewClip, 12f, 1f, out controller, out var error))
                 throw new InvalidOperationException(error);
             ScaleAura(height);
-            info("[RenderPreview] Placed local model: " + facingStatus);
+            info("[RenderPreview] Placed local model: fixed standing pose.");
+        }
+
+        private static AudioClip CreatePreviewClip(bool testTone)
+        {
+            const int sampleRate = 48000;
+            if (!testTone) return AudioClip.Create("Silent render fixture", 480, 1, sampleRate, false);
+
+            var samples = new float[sampleRate / 2];
+            for (int i = 0; i < samples.Length; i++)
+                samples[i] = Mathf.Sin(2f * Mathf.PI * 440f * i / sampleRate) * .08f
+                    * Mathf.Sin(Mathf.PI * i / samples.Length);
+
+            var clip = AudioClip.Create("Synthetic aggro test tone", samples.Length, 1, sampleRate, false);
+            if (clip.SetData(samples, 0)) return clip;
+            UnityEngine.Object.Destroy(clip);
+            throw new InvalidOperationException("Could not initialize the preview test tone.");
+        }
+
+        private void StartCycle()
+        {
+            Clear();
+            Show(0f, testTone: true);
+            cycleIndex = 0;
+            cycleTime = -4f;
+            cycleVoiceAtStart = 0;
+            info($"[RenderPreview] Phase cycle queued. Audio source: {cycleAudio}. Listen on each aggro entry.");
+        }
+
+        internal void TickCycle(float deltaTime)
+        {
+            if (cycleIndex < 0 || deltaTime <= 0f) return;
+
+            try
+            {
+                if (!IsCurrentSession())
+                {
+                    Clear();
+                    return;
+                }
+
+                float step = Mathf.Min(deltaTime, .1f);
+                cycleTime += step;
+                if (cycleTime <= 0f) return;
+
+                var phase = CyclePhases[cycleIndex];
+                controller.Apply(new BrackenObservation(phase.state, phase.anger, phase.state == 2,
+                    phase.carrying, false, false), true, step);
+                if (cycleTime < (phase.state == 2 && !phase.carrying ? cycleAggroHold : 2.5f)) return;
+
+                int voiceTotal = controller.VoiceRequests;
+                info(FormattableString.Invariant(
+                    $"[RenderPreview] Phase sample: {controller.LastFrame.Phase}, anger={phase.anger:0}/12, aura={controller.LastFrame.AuraLevel:F2}, new voice requests={voiceTotal - cycleVoiceAtStart}."));
+                cycleVoiceAtStart = voiceTotal;
+                cycleTime = 0f;
+                if (++cycleIndex < CyclePhases.Length) return;
+
+                cycleIndex = -1;
+                info($"[RenderPreview] Phase cycle complete: {voiceTotal} voice requests ({cycleAudio}).");
+            }
+            catch (Exception error)
+            {
+                Clear();
+                warning("[RenderPreview] Phase cycle failed: " + error.Message);
+            }
+        }
+
+        private bool IsCurrentSession() =>
+            anchor != null && camera != null && camera.isActiveAndEnabled && camera == soloCamera()
+            && SceneManager.GetActiveScene().handle == sceneHandle;
+
+        private void StartWalk()
+        {
+            Clear();
+            Show(12f);
+            walkStart = anchor.transform.position;
+            walkEnd = walkStart + anchor.transform.forward * 1.2f;
+            for (int i = 1; i <= 2; i++)
+            {
+                Vector3 sample = deck.point + (walkEnd - walkStart) * (i / 2f);
+                if (!Physics.Raycast(sample + Vector3.up * .15f, Vector3.down, out var hit, .25f,
+                        Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore)
+                    || hit.collider != deck.collider || hit.normal.y < .8f || Mathf.Abs(hit.point.y - sample.y) > .05f)
+                    throw new InvalidOperationException("The walk needs a clear, level deck. Face down the ship aisle.");
+            }
+
+            walkTime = -4f;
+            maxAuraOffset = 0f;
+            walking = true;
+            info("[RenderPreview] Walk queued: return to the game for a 1.2 m pass with full aura.");
+        }
+
+        internal void TickWalk(float deltaTime)
+        {
+            if (!walking || deltaTime <= 0f) return;
+
+            try
+            {
+                if (!IsCurrentSession())
+                {
+                    Clear();
+                    return;
+                }
+
+                // Limit movement steps after a frame hitch.
+                float step = Mathf.Min(deltaTime, .1f);
+                walkTime += step;
+                if (walkTime <= 0f) return;
+
+                const float duration = 2f;
+                anchor.transform.position = Vector3.Lerp(walkStart, walkEnd, walkTime / duration);
+                maxAuraOffset = Mathf.Max(maxAuraOffset,
+                    Vector3.Distance(anchor.transform.position, controller.WorldPosition));
+                if (walkTime < duration) return;
+
+                walking = false;
+                info(FormattableString.Invariant(
+                    $"[RenderPreview] Walk complete: travel={Vector3.Distance(walkStart, anchor.transform.position):F3} m, max aura anchor offset={maxAuraOffset:F3} m."));
+            }
+            catch (Exception error)
+            {
+                Clear();
+                warning("[RenderPreview] Walk failed: " + error.Message);
+            }
         }
 
         private void ChangeHeight(string value)
@@ -168,6 +318,7 @@ namespace GojoBracken
                 warning("[RenderPreview] Place Gojo with calm before changing height.");
                 return;
             }
+            walking = false;
             ScaleAura(AlignHeight(height));
         }
 
@@ -306,16 +457,18 @@ namespace GojoBracken
 
         private void Clear()
         {
+            walking = false;
+            cycleIndex = -1;
             if (anchor != null)
             {
                 anchor.SetActive(false);
                 UnityEngine.Object.Destroy(anchor);
             }
-            if (silence != null) UnityEngine.Object.Destroy(silence);
+            if (previewClip != null) UnityEngine.Object.Destroy(previewClip);
             anchor = null;
             visual = null;
             deck = default;
-            silence = null;
+            previewClip = null;
             camera = null;
             controller = null;
         }
@@ -465,6 +618,12 @@ namespace GojoBracken
                     $"active scene={SceneManager.GetActiveScene().name}, request present={File.Exists(preview.RequestPath)}.");
             }
             preview.Poll();
+        }
+
+        private void LateUpdate()
+        {
+            preview?.TickWalk(Time.deltaTime);
+            preview?.TickCycle(Time.deltaTime);
         }
 
         private void OnSceneLoaded(Scene scene, LoadSceneMode mode)

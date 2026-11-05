@@ -11,7 +11,19 @@ dotnet build .\src\GojoBracken\GojoBracken.csproj -c Release
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-SoloLiveTestBundle.ps1 -CandidateProject .\artifacts\hdrp\<run>\u
 ~~~
 
-The bundle includes the Gojo and aura prefabs, provenance notes, and a generated silent test clip. The voice and release asset clearance remain pending.
+The default bundle includes the Gojo and aura prefabs, provenance notes, and a generated silent test clip. An optional private build accepts a local Japanese voice clip. Release asset clearance remains pending.
+
+## Build with a local voice clip
+
+Use a trimmed mono WAV, up to ten seconds, containing the Japanese line. Keep the WAV and its source note outside the checkout. In the note, record the episode or recording, language, time range, edits, and permission or license details. The official source reference is [Jujutsu Kaisen episode 7, “Assault”](https://www.crunchyroll.com/watch/GY1QKKMZR/assault).
+
+With the HDRP candidate project already built, pass its u directory and the two local files.
+
+~~~powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-SoloLiveTestBundle.ps1 -CandidateProject $candidateProject -VoiceWav $voiceWav -VoiceCredits $voiceCredits
+~~~
+
+The builder exports live-test-voice-bundle/gojobracken next to the candidate project. For a private solo ship check, copy that file beside the plugin as gojobracken-hdrp-material-check, use the preview config, and send cycle once. The log identifies imported voice clip as the audio source. Listen for the full line once on each of the two aggro entries. The live test uses the same bundle under its original gojobracken filename.
 
 With the game closed, use a separate solo test profile and disposable save. Back up the profile's existing GojoBracken DLL and configuration. Put GojoBracken.dll and gojobracken together in the GojoBracken plugin folder, with one DLL copy. Put the supplied FreakyFriday.GojoBracken.cfg in BepInEx/config. It enables DevelopmentEffects, StandingModelPreview, and SoloLiveTest. RenderPreview stays disabled. No request file is needed.
 
@@ -31,4 +43,4 @@ The observed v81 layout selects cached renderers on Enemies under FlowermanModel
 
 For an unexpected renderer such as ParticleCollision, return the complete attachment warning. It includes the renderer type, full scene hierarchy path, layer, and enabled/active state. The disabled layer-15 MeshRenderer at FlowermanModel/AnimContainer/ParticleCollision is left untouched. A different layout or enabled renderer retains the vanilla fallback. Its function remains unverified.
 
-For the movement checkpoint, use an ordinary facility and watch one Bracken move. Return the Motion sample line if it appears. It records sampled horizontal travel, the gait blend, and model and aura anchor offsets. Describe the visible gait and aura separately.
+For the movement checkpoint, use an ordinary facility and watch one Bracken move. Return the Motion sample line if it appears. It records sampled horizontal travel and model and aura anchor offsets. Check that Gojo holds his standing pose while the aura follows.

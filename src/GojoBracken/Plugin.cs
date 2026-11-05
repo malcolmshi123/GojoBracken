@@ -13,7 +13,7 @@ namespace GojoBracken
     {
         public const string PluginGuid = "FreakyFriday.GojoBracken";
         public const string PluginName = "Gojo Bracken";
-        public const string PluginVersion = "0.1.29";
+        public const string PluginVersion = "0.1.34";
 
         private RuntimeDiagnostics diagnostics;
         private BrackenRigReport rigReport;
@@ -36,7 +36,7 @@ namespace GojoBracken
             bool enableEffects = Config.Bind("DevelopmentEffects", "Enabled", false,
                 "Enable development cosmetics. Requires inspected v81 and a validated bundle. Model preview is a separate opt-in. Restart after changing.").Value;
             bool standingModel = Config.Bind("DevelopmentEffects", "StandingModelPreview", false,
-                "Experimental Gojo model preview (legacy setting name), with visual locomotion and vanilla restoration. Aggro-ready and kill-reach poses included; right-arm drag pose included; victim/corpse alignment is NOT calibrated. Requires Enabled=true. Restart after changing.").Value;
+                "Experimental Gojo model replacement with a fixed standing pose and vanilla restoration. Requires Enabled=true. Restart after changing.").Value;
             float saturation = Config.Bind("DevelopmentEffects", "AngerSaturation", 12f,
                 "Positive cosmetic saturation threshold, not a game anger limit. Restart after changing.").Value;
             float strength = Config.Bind("DevelopmentEffects", "AuraStrength", 1f,
@@ -75,7 +75,7 @@ namespace GojoBracken
                 catch (Exception exception) { Logger.LogWarning("[RenderPreview] Disabled: " + exception.Message); }
             }
 
-            Logger.LogInfo($"{PluginName} {PluginVersion} loaded. Development cosmetics are opt-in; animation adaptation is incomplete.");
+            Logger.LogInfo($"{PluginName} {PluginVersion} loaded. Development cosmetics are opt-in.");
             if (!enableDiagnostics && !exportRig && effects == null) return;
 
             Logger.LogInfo($"[Observer] Starting; diagnostics={enableDiagnostics}; rigReport={exportRig}; enabled={enabled}; active={gameObject.activeInHierarchy}");

@@ -2,7 +2,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory)] [string] $PluginDirectory,
-    [Parameter(Mandatory)] [ValidateSet('calm','full','height','clear')] [string] $Command,
+    [Parameter(Mandatory)] [ValidateSet('calm','full','walk','cycle','height','clear')] [string] $Command,
     [ValidateRange(1.0, 3.0)] [double] $Height
 )
 Set-StrictMode -Version Latest
