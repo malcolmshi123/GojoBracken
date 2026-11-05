@@ -3,7 +3,8 @@
 param(
     [Parameter(Mandatory)] [string] $BundleDirectory,
     [Parameter(Mandatory)] [string] $IconPath,
-    [string] $OutputDirectory
+    [string] $OutputDirectory,
+    [switch] $IncludeSoloConfig
 )
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
@@ -46,6 +47,11 @@ $files = [ordered]@{
     'ASSET-CREDITS.txt' = $credits
     'BepInEx/plugins/GojoBracken/GojoBracken.dll' = $dll
     'BepInEx/plugins/GojoBracken/gojobracken' = $bundle
+}
+
+if ($IncludeSoloConfig) {
+    $files['BepInEx/config/FreakyFriday.GojoBracken.cfg'] =
+        Join-Path $repo 'packaging/solo/FreakyFriday.GojoBracken.cfg'
 }
 
 if ([string]::IsNullOrWhiteSpace($OutputDirectory)) {
