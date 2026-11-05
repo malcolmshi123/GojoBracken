@@ -1,6 +1,6 @@
 # Solo in-game HDRP preview
 
-Use this check with the inspected v81 game and Unity 2022.3.62f2. GojoBracken 0.1.20 provides the opt-in RenderPreview setting. The test bundle contains the calibrated Gojo and aura prefabs for local evaluation.
+Use this check with the inspected v81 game and Unity 2022.3.62f2. GojoBracken 0.1.29 provides the opt-in RenderPreview setting. The test bundle contains the calibrated Gojo and aura prefabs for local evaluation.
 
 With the game closed, back up any existing GojoBracken DLL and config outside the profile's plugin folder. Place the test GojoBracken.dll and gojobracken-hdrp-material-check together in the existing GojoBracken plugin directory. Keep one GojoBracken.dll in the profile. Put the supplied FreakyFriday.GojoBracken.cfg in the profile's BepInEx/config directory. It enables RenderPreview and disables DevelopmentEffects and the rig report.
 
@@ -32,4 +32,4 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Request-HdrpPreview.ps
 
 This command accepts 1.000 to 3.000 m, keeps the same horizontal placement and aura state, and realigns the scaled mesh to the original deck point. Use the same command with 3.000 to go back. Both log lines report the result. The 2.400 m setting is a visual trial.
 
-The flame and wisps scale with the measured standing height relative to the 2.100 m authoring reference. The geometry scale is capped at 1.25, including at 3.000 m. Height changes clear wisps emitted at the old scale, so allow a moment for new particles to appear.
+The flame and wisps scale with the measured standing height relative to the 2.100 m authoring reference. At 3.000 m the wisps and the flame shell width/depth scale by 1.250, while the flame shell height scales by 1.750. Height changes clear wisps emitted at the old scale, so allow a moment for new particles to appear.

@@ -16,8 +16,10 @@ namespace GojoBracken
         private GojoLocomotion locomotion;
         private GojoActionPose actions;
         internal string MotionStatus { get; private set; }
+        internal float GaitBlend => locomotion?.Blend ?? 0f;
+        internal Vector3 WorldPosition => root.transform.position;
 
-        internal static BrackenModelAttachment Create(Transform host, Renderer[] originals, GameObject prefab, BrackenVisibility visibility)
+        internal static BrackenModelAttachment Create(Transform host, Renderer[] originals, GameObject prefab, BrackenVisibility visibility, float modelScale = 1f)
         {
             if (host == null || originals == null || originals.Length == 0)
                 throw new ArgumentException("A live anchor and explicit vanilla body renderers are required.");
@@ -34,6 +36,7 @@ namespace GojoBracken
                 attachment.root = new GameObject("GojoBracken model");
                 attachment.root.SetActive(false);
                 attachment.root.transform.SetParent(host, false);
+                attachment.root.transform.localScale = Vector3.one * modelScale;
                 var clone = UnityEngine.Object.Instantiate(prefab, attachment.root.transform, false);
                 clone.SetActive(true);
                 foreach (var animator in clone.GetComponentsInChildren<Animator>(true)) animator.applyRootMotion = false;

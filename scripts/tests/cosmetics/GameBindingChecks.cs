@@ -70,8 +70,21 @@ public static class GameBindingChecks
         Require(Array.TrueForAll(auraRenderers, renderer => !renderer.enabled), "inactive body hides aura");
         body.gameObject.SetActive(true);
         body.gameObject.layer = 19;
-        enemy.meshRenderers = new[] { body, corpseRenderer };
-        Require(!visibilityReader.TryRead(enemy, out _, out var mixedError) && mixedError.Contains("mixed layers"), "ambiguous body layers fail closed");
+        var detail = new GameObject("Additional body detail").AddComponent<MeshRenderer>();
+        detail.transform.SetParent(body.transform, false);
+        detail.gameObject.layer = 19;
+        var hiddenDetail = new GameObject("Hidden detail").AddComponent<MeshRenderer>();
+        hiddenDetail.transform.SetParent(host.transform, false);
+        hiddenDetail.forceRenderingOff = true;
+        enemy.meshRenderers = new[] { body, corpseRenderer, detail, hiddenDetail };
+        var layerTrace = new List<string>();
+        Require(!visibilityReader.TryRead(enemy, out _, out var mixedError, traceVisibleLayers: layerTrace.Add)
+            && mixedError.Contains("mixed layers"), "ambiguous body layers fail closed");
+        Require(layerTrace.Count == 3
+            && layerTrace.Exists(line => line.Contains("layer=7") && line.Contains("Unrelated carried body renderer"))
+            && layerTrace.Exists(line => line.Contains("layer=19") && line.Contains("]/Additional body detail["))
+            && !layerTrace.Exists(line => line.Contains("Hidden detail")),
+            "mixed-layer trace includes all visible body layers and nested paths only");
         enemy.meshRenderers = new MeshRenderer[] { null };
         Require(!visibilityReader.TryRead(enemy, out _, out _), "missing body renderer fails closed");
         var external = new GameObject("Renderer outside the enemy hierarchy");

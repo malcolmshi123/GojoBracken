@@ -195,9 +195,13 @@ namespace GojoBracken
 
         private void ScaleAura(float height)
         {
-            float scale = Mathf.Min(height / AuraReferenceHeight, 1.25f);
-            controller.SetEffectScale(scale);
-            info(FormattableString.Invariant($"[RenderPreview] Aura geometry scale: {scale:F3} at standing height {height:F3} m."));
+            float ratio = height / AuraReferenceHeight;
+            float wispScale = Mathf.Min(ratio, 1.25f);
+            float flameHeightScale = ratio <= 1f ? ratio
+                : Mathf.Lerp(1f, 1.75f, Mathf.InverseLerp(AuraReferenceHeight, 3f, height));
+            controller.SetEffectScale(wispScale, flameHeightScale);
+            info(FormattableString.Invariant(
+                $"[RenderPreview] Aura geometry scale: wisps={wispScale:F3}, flame width/depth={wispScale:F3}, flame height={flameHeightScale:F3} at {height:F3} m."));
         }
 
         private RaycastHit FindDeck(Vector3 estimatedFeet)
@@ -329,6 +333,13 @@ namespace GojoBracken
     {
         private static InGameRenderPreviewRunner instance;
         private InGameRenderPreview preview;
+        private Func<DevelopmentEffects> openLive;
+        private Action<string> liveWarning;
+        private Func<Camera> soloCamera;
+        private DevelopmentEffects live;
+        private bool attemptedLive;
+        private bool liveWasReady;
+        private string logTag;
         private Action<string> info;
         private float nextPoll;
         private float nextHeartbeat;
@@ -338,6 +349,30 @@ namespace GojoBracken
 
         internal static void StartPreview(string directory, Func<Camera> soloCamera,
             Action<string> info, Action<string> warning)
+        {
+            Arm("[RenderPreview]", soloCamera, info, warning, runner =>
+            {
+                runner.preview = new InGameRenderPreview(directory, soloCamera, info, warning);
+
+                info($"[RenderPreview] Solo gameplay camera rendered in {SceneManager.GetActiveScene().name}. " +
+                    $"Runner {runner.GetInstanceID()} watching: {runner.preview.RequestPath}");
+            });
+        }
+
+        internal static void StartLiveTest(Func<Camera> soloCamera, Func<DevelopmentEffects> openLive,
+            Action<string> info, Action<string> warning)
+        {
+            Arm("[LiveTest]", soloCamera, info, warning, runner =>
+            {
+                runner.soloCamera = soloCamera;
+                runner.openLive = openLive;
+                runner.liveWarning = warning;
+                info("[LiveTest] Solo camera rendered. Waiting for live Bracken attachment.");
+            });
+        }
+
+        private static void Arm(string tag, Func<Camera> soloCamera, Action<string> info, Action<string> warning,
+            Action<InGameRenderPreviewRunner> configure)
         {
             if (cameraRendered != null) return;
             float nextAttempt = 0f;
@@ -361,21 +396,20 @@ namespace GojoBracken
                     DontDestroyOnLoad(host);
                     instance = host.AddComponent<InGameRenderPreviewRunner>();
                     instance.info = info;
-                    instance.preview = new InGameRenderPreview(directory, soloCamera, info, warning);
+                    instance.logTag = tag;
                     SceneManager.sceneLoaded += instance.OnSceneLoaded;
-                    info($"[RenderPreview] Solo gameplay camera rendered in {SceneManager.GetActiveScene().name}. " +
-                        $"Runner {instance.GetInstanceID()} watching: {instance.preview.RequestPath}");
+                    configure(instance);
                 }
                 catch (Exception error)
                 {
                     nextAttempt = now + 1f;
-                    warning("[RenderPreview] Camera bootstrap failed: " + error.Message);
+                    warning(tag + " Camera bootstrap failed: " + error.Message);
                 }
             };
 
             RenderPipelineManager.endCameraRendering += cameraRendered;
             Application.quitting += StopBootstrap;
-            info("[RenderPreview] Armed. Waiting for the solo gameplay camera to render.");
+            info(tag + " Armed. Waiting for the solo gameplay camera to render.");
         }
 
         private static void StopBootstrap()
@@ -388,8 +422,41 @@ namespace GojoBracken
         private void Update()
         {
             float now = Time.unscaledTime;
-            if (preview == null || now < nextPoll) return;
+            if (now < nextPoll) return;
             nextPoll = now + .5f;
+            if (openLive != null)
+            {
+                try
+                {
+                    if (soloCamera() == null)
+                    {
+                        live?.Dispose();
+                        live = null;
+                        attemptedLive = false;
+                        if (liveWasReady) info("[LiveTest] Scan suspended: solo gameplay camera unavailable.");
+                        liveWasReady = false;
+                        return;
+                    }
+                    if (!liveWasReady) info("[LiveTest] Solo gameplay camera available. Starting scan loop.");
+                    liveWasReady = true;
+                    if (!attemptedLive)
+                    {
+                        attemptedLive = true;
+                        live = openLive();
+                    }
+                    pollCount++;
+                    live?.Scan();
+                }
+                catch (Exception error)
+                {
+                    live?.Dispose();
+                    live = null;
+                    openLive = null;
+                    liveWarning("[LiveTest] Stopped: " + error.Message);
+                }
+                return;
+            }
+            if (preview == null) return;
             pollCount++;
             if (pollCount == 1 || now >= nextHeartbeat)
             {
@@ -402,19 +469,21 @@ namespace GojoBracken
 
         private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
-            info($"[RenderPreview] Runner {GetInstanceID()} saw scene load: {scene.name} ({mode}). Polls so far: {pollCount}.");
+            info($"{logTag} Runner {GetInstanceID()} saw scene load: {scene.name} ({mode}). Polls so far: {pollCount}.");
             nextHeartbeat = 0f;
         }
 
         private void OnDisable()
         {
-            info?.Invoke($"[RenderPreview] Runner {GetInstanceID()} disabled after {pollCount} polls, active scene={SceneManager.GetActiveScene().name}.");
+            live?.Dispose();
+            live = null;
+            info?.Invoke($"{logTag} Runner {GetInstanceID()} disabled after {pollCount} polls, active scene={SceneManager.GetActiveScene().name}.");
         }
 
         private void OnDestroy()
         {
             SceneManager.sceneLoaded -= OnSceneLoaded;
-            info?.Invoke($"[RenderPreview] Runner {GetInstanceID()} destroyed after {pollCount} polls.");
+            info?.Invoke($"{logTag} Runner {GetInstanceID()} destroyed after {pollCount} polls.");
             preview?.Dispose();
             if (instance == this) instance = null;
         }

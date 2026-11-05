@@ -94,7 +94,89 @@ public static class ModelAttachmentChecks
         removedBinding.Sample(.1f);
         Require(!removedBody.forceRenderingOff, "externally disabled model restores vanilla");
         UnityEngine.Object.Destroy(removedHost);
+        CheckV81Layout(model, aura, voice, warnings);
         Debug.Log("MODEL ATTACHMENT PASS: validated native clone, exact vanilla mask rollback, unchanged enabled/layers/animator/collider/arrays/corpse, root following, visibility, invalid asset, failure, death and disable.");
+    }
+
+    private static void CheckV81Layout(GameObject model, GameObject aura, AudioClip voice, List<string> warnings)
+    {
+        var host = MakeEnemy(out var enemy, out var body, out var eye, out var rig);
+        rig.name = "FlowermanModel";
+        body.name = "LOD1";
+        eye.name = "LeftEye";
+        eye.enabled = true;
+        eye.forceRenderingOff = false;
+        var scan = new GameObject("ScanNode").AddComponent<MeshRenderer>();
+        scan.transform.SetParent(host.transform, false);
+        scan.gameObject.layer = 22;
+        var radar = new GameObject("MapDot (2)").AddComponent<MeshRenderer>();
+        radar.transform.SetParent(host.transform, false);
+        radar.gameObject.layer = 14;
+        var animation = new GameObject("AnimContainer").transform;
+        animation.SetParent(rig, false);
+        var collision = new GameObject("ParticleCollision").AddComponent<MeshRenderer>();
+        collision.transform.SetParent(animation, false);
+        collision.gameObject.layer = 15;
+        collision.enabled = false;
+        enemy.meshRenderers = new[] { body, eye, scan, radar, collision };
+
+        var trace = new List<string>();
+        var binding = BrackenGameBinding.Attach(enemy, BrackenV81Presentation.SupportedMvid,
+            aura, voice, 12f, 1f, warnings.Add, model, traceVisibleLayers: trace.Add, useV81BodyLayout: true);
+        var replacement = host.transform.Find("GojoBracken model").GetComponentInChildren<SkinnedMeshRenderer>();
+        var effects = host.transform.Find("GojoBracken cosmetics").GetComponentsInChildren<Renderer>(true);
+        Require(body.forceRenderingOff && eye.forceRenderingOff && replacement.gameObject.layer == 19
+            && Array.TrueForAll(effects, renderer => renderer.gameObject.layer == 19), "selected v81 body and eyes are replaced on Enemies");
+        Require(!scan.forceRenderingOff && !radar.forceRenderingOff && scan.enabled && radar.enabled
+            && scan.gameObject.layer == 22 && radar.gameObject.layer == 14, "scan and radar markers are untouched");
+        Require(!collision.enabled && !collision.forceRenderingOff && collision.gameObject.layer == 15
+            && collision.gameObject.activeInHierarchy, "the exact auxiliary renderer is left untouched");
+        binding.Sample(.1f);
+        host.transform.position += Vector3.right * 2f;
+        binding.Sample(.1f);
+        Require(!trace.Exists(line => line.Contains("Motion sample:")), "a large jump alone cannot satisfy motion evidence");
+        for (int i = 0; i < 6; i++)
+        {
+            host.transform.position += Vector3.right * .1f;
+            binding.Sample(.1f);
+        }
+        Require(trace.FindAll(line => line.Contains("Motion sample:")
+            && line.Contains("model anchor offset=0.000") && line.Contains("aura anchor offset=0.000")).Count == 1,
+            "movement logs a single sample with model and aura anchored");
+        body.gameObject.layer = eye.gameObject.layer = 23;
+        binding.Sample(.1f);
+        Require(replacement.gameObject.layer == 23 && Array.TrueForAll(effects, renderer => renderer.gameObject.layer == 23),
+            "selected v81 body tracks later camera layer changes");
+        body.enabled = eye.enabled = false;
+        binding.Sample(.1f);
+        Require(!replacement.enabled && Array.TrueForAll(effects, renderer => !renderer.enabled) && scan.enabled && radar.enabled,
+            "markers cannot keep a hidden body visible");
+        body.enabled = eye.enabled = true;
+        eye.transform.SetParent(host.transform, false);
+        binding.Sample(.1f);
+        Require(!body.forceRenderingOff && !eye.forceRenderingOff && !scan.forceRenderingOff && !radar.forceRenderingOff,
+            "unexpected runtime layout restores only the body masks");
+
+        body.gameObject.layer = eye.gameObject.layer = 19;
+        eye.transform.SetParent(rig, false);
+        var effectsRoot = new GameObject("Fixture effect group");
+        effectsRoot.transform.SetParent(host.transform, false);
+        collision.transform.SetParent(effectsRoot.transform, false);
+        bool rejected = false;
+        try
+        {
+            BrackenGameBinding.Attach(enemy, BrackenV81Presentation.SupportedMvid,
+                aura, voice, 12f, 1f, warnings.Add, model, traceVisibleLayers: trace.Add, useV81BodyLayout: true);
+        }
+        catch (InvalidOperationException error)
+        {
+            Require(error.Message.Contains("Fixture effect group") && error.Message.Contains("/ParticleCollision[0]"),
+                "unexpected renderer trace includes its parent and path");
+            rejected = error.Message.Contains("type=MeshRenderer, layer=15") && error.Message.Contains("/ParticleCollision[0]");
+        }
+        Require(rejected && !body.forceRenderingOff && !scan.forceRenderingOff && !radar.forceRenderingOff,
+            "unexpected initial layout keeps the vanilla renderers visible");
+        UnityEngine.Object.Destroy(host);
     }
 
     private static GameObject MakeEnemy(out BindingOwnerEnemy enemy, out MeshRenderer body, out MeshRenderer hidden, out Transform rig)

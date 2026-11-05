@@ -13,7 +13,7 @@ namespace GojoBracken
     {
         public const string PluginGuid = "FreakyFriday.GojoBracken";
         public const string PluginName = "Gojo Bracken";
-        public const string PluginVersion = "0.1.20";
+        public const string PluginVersion = "0.1.29";
 
         private RuntimeDiagnostics diagnostics;
         private BrackenRigReport rigReport;
@@ -41,7 +41,16 @@ namespace GojoBracken
                 "Positive cosmetic saturation threshold, not a game anger limit. Restart after changing.").Value;
             float strength = Config.Bind("DevelopmentEffects", "AuraStrength", 1f,
                 "Aura intensity from 0 to 3; zero hides the aura but keeps voice events. Restart after changing.").Value;
-            if (enableEffects)
+            bool soloLiveTest = Config.Bind("DevelopmentEffects", "SoloLiveTest", false,
+                "Start the private live attachment test after the solo gameplay camera renders.").Value;
+            bool preview = Config.Bind("RenderPreview", "Enabled", false,
+                "Enable local HDRP render checks via request files. Use a solo test profile.").Value;
+            if (enableEffects || soloLiveTest || preview)
+                Logger.LogInfo($"[Startup] Effective config: DevelopmentEffects.Enabled={enableEffects}, " +
+                    $"StandingModelPreview={standingModel}, SoloLiveTest={soloLiveTest}, RenderPreview.Enabled={preview}. File={Config.ConfigFilePath}");
+            if (enableEffects && soloLiveTest)
+                ArmLiveTest(saturation, strength, standingModel);
+            else if (enableEffects)
             {
                 try
                 {
@@ -51,8 +60,6 @@ namespace GojoBracken
                 }
                 catch (Exception exception) { Logger.LogWarning("[Effects] Disabled: " + exception.Message); }
             }
-            bool preview = Config.Bind("RenderPreview", "Enabled", false,
-                "Enable local HDRP render checks via request files. Use a solo test profile.").Value;
             if (preview)
             {
                 try
@@ -85,6 +92,34 @@ namespace GojoBracken
                 effects?.Dispose();
                 effects = null;
             }
+        }
+
+        private void ArmLiveTest(float saturation, float strength, bool standingModel)
+        {
+            var log = Logger;
+            try
+            {
+                var enemyType = AccessTools.TypeByName("FlowermanAI");
+                if (!standingModel || Application.unityVersion != "2022.3.62f2"
+                    || enemyType?.Module.ModuleVersionId != BrackenV81Presentation.SupportedMvid)
+                    throw new InvalidOperationException("Requires inspected v81, Unity 2022.3.62f2, and StandingModelPreview enabled.");
+                var directory = Path.GetDirectoryName(Info.Location);
+                InGameRenderPreviewRunner.StartLiveTest(InGameRenderPreview.BindSoloCamera(enemyType.Assembly),
+                    () =>
+                    {
+                        try
+                        {
+                            return DevelopmentEffects.Start(enemyType, directory, saturation, strength,
+                                message => log.LogInfo(message), message => log.LogWarning(message), true, true);
+                        }
+                        catch (Exception error)
+                        {
+                            log.LogWarning("[LiveTest] Attachment test could not start: " + error.Message);
+                            return null;
+                        }
+                    }, message => log.LogInfo(message), message => log.LogWarning(message));
+            }
+            catch (Exception error) { log.LogWarning("[LiveTest] Disabled: " + error.Message); }
         }
 
         private IEnumerator Observe()

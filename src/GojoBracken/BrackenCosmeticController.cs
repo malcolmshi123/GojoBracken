@@ -14,6 +14,7 @@ namespace GojoBracken
         private ParticleSystem.Burst[][] bursts;
         private ParticleSystem.Burst[][] scaledBursts;
         private Renderer[] renderers;
+        private Vector3[] rendererScales;
         private bool[] visible;
         private MaterialPropertyBlock[] properties;
         private AudioSource voice;
@@ -79,6 +80,7 @@ namespace GojoBracken
                     pending.scaledBursts[i] = (ParticleSystem.Burst[])saved.Clone();
                 }
                 pending.renderers = aura.GetComponentsInChildren<Renderer>(true);
+                pending.rendererScales = Array.ConvertAll(pending.renderers, renderer => renderer.transform.localScale);
                 pending.visible = Array.ConvertAll(pending.renderers, renderer => renderer.enabled);
                 pending.properties = Array.ConvertAll(pending.renderers, renderer => new MaterialPropertyBlock());
                 foreach (var renderer in pending.renderers) renderer.enabled = false;
@@ -165,10 +167,19 @@ namespace GojoBracken
             }
         }
 
-        internal void SetEffectScale(float scale)
+        internal Vector3 WorldPosition => effects.transform.position;
+
+        internal void SetEffectScale(float wispScale, float flameHeightScale)
         {
             if (stopped || effects == null) return;
-            effects.transform.localScale = Vector3.one * scale;
+            effects.transform.localScale = Vector3.one * wispScale;
+            for (int i = 0; i < renderers.Length; i++)
+            {
+                if (!(renderers[i] is MeshRenderer)) continue;
+                var scale = rendererScales[i];
+                scale.y *= flameHeightScale / wispScale;
+                renderers[i].transform.localScale = scale;
+            }
             foreach (var system in particles)
             {
                 var main = system.main;
