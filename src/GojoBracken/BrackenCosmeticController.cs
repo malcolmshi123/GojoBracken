@@ -165,6 +165,19 @@ namespace GojoBracken
             }
         }
 
+        internal void SetEffectScale(float scale)
+        {
+            if (stopped || effects == null) return;
+            effects.transform.localScale = Vector3.one * scale;
+            foreach (var system in particles)
+            {
+                var main = system.main;
+                main.scalingMode = ParticleSystemScalingMode.Hierarchy;
+                // Existing world-space wisps belong to the previous size.
+                system.Clear(false);
+            }
+        }
+
         internal void SetVisibility(BrackenVisibility visibility)
         {
             if (visibility.Layer < 0 || visibility.Layer > 31)

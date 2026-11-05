@@ -5,13 +5,17 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <RootNamespace>GojoBracken</RootNamespace>
     <AssemblyName>GojoBracken</AssemblyName>
-    <Version>0.1.12</Version>
+    <Version>0.1.20</Version>
     <Description>Cosmetic Gojo Satoru replacement for Lethal Company's Bracken.</Description>
     <BepInExCoreDir Condition="'$(BepInExCoreDir)' == '' and '$(LethalCompanyDir)' != ''">$(LethalCompanyDir)/BepInEx/core</BepInExCoreDir>
     <GameManagedDir Condition="'$(GameManagedDir)' == '' and '$(LethalCompanyDir)' != ''">$(LethalCompanyDir)/Lethal Company_Data/Managed</GameManagedDir>
   </PropertyGroup>
 
   <ItemGroup>
+    <Reference Include="UnityEngine.PhysicsModule">
+      <HintPath>$(GameManagedDir)/UnityEngine.PhysicsModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
     <Reference Include="UnityEngine.AssetBundleModule">
       <HintPath>$(GameManagedDir)/UnityEngine.AssetBundleModule.dll</HintPath>
       <Private>false</Private>
