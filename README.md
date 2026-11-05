@@ -186,7 +186,7 @@ The testing-PC report and main menu identify game v81 and Unity 2022.3.62f2. The
 2. Inspect the testing PC's game version; prepare the Unity asset pipeline and credited assets.
 3. Implement the animated replacement with vanilla visuals retained if assets cannot load.
 4. Add anger-scaled aura and one-shot spatial audio on aggro entry.
-5. Package and validate in the game before publishing separately.
+5. [Build the package](docs/packaging.md) and validate in the game before publishing separately.
 
 The aura has a faint baseline at zero anger and a bounded maximum, with configurable strength and maximum anger. This applies during retreat too, superseding the initial retreat-off idea. Corpse dragging gets the same aura scaling and no additional audio. Death and despawn stop effects and audio.
 
