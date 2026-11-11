@@ -6,9 +6,9 @@ Reports installed game and mod-loader file versions without loading game assembl
 Compatible with Windows PowerShell 5.1. No PowerShell upgrade is required.
 The examples set RemoteSigned only for the child process; no persistent policy is changed.
 .EXAMPLE
-powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File .\scripts\Get-GameCompatibility.ps1 -GameDirectory 'C:\Games\Lethal Company'
+powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File .\scripts\diagnostics\Get-GameCompatibility.ps1 -GameDirectory 'C:\Games\Lethal Company'
 .EXAMPLE
-powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File .\scripts\Get-GameCompatibility.ps1 -GameDirectory 'C:\Games\Lethal Company' -BepInExCoreDirectory 'C:\ModProfiles\GojoTest\BepInEx\core'
+powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File .\scripts\diagnostics\Get-GameCompatibility.ps1 -GameDirectory 'C:\Games\Lethal Company' -BepInExCoreDirectory 'C:\ModProfiles\GojoTest\BepInEx\core'
 #>
 [CmdletBinding()]
 param(

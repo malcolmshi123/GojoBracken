@@ -3,18 +3,7 @@
 param([string] $UnityEditorPath)
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
-$repository = Split-Path -Parent $PSScriptRoot
-$versionText = Get-Content (Join-Path $repository 'UnityProject\ProjectSettings\ProjectVersion.txt') -Raw
-if ($versionText -notmatch '(?m)^m_EditorVersion:\s*(\S+)') { throw 'Pinned Unity version missing.' }
-$version = $Matches[1]
-if ([string]::IsNullOrWhiteSpace($UnityEditorPath)) {
-    $standalone = Join-Path $env:ProgramFiles "Unity $version\Editor\Unity.exe"
-    $hub = Join-Path $env:ProgramFiles "Unity\Hub\Editor\$version\Editor\Unity.exe"
-    $UnityEditorPath = if (Test-Path -LiteralPath $standalone) { $standalone } else { $hub }
-}
-if (-not (Test-Path -LiteralPath $UnityEditorPath -PathType Leaf)) { throw 'Pass the pinned Unity Editor path.' }
-$metadata = [Diagnostics.FileVersionInfo]::GetVersionInfo($UnityEditorPath).ProductVersion
-if ($metadata -notmatch ('^' + [regex]::Escape($version) + '(?=$|[\s_(])')) { throw "Expected Unity $version; found $metadata." }
+. (Join-Path $PSScriptRoot 'Resolve-TestUnity.ps1')
 $run = Join-Path $repository ('artifacts\asset-bundle-tests\' + [Guid]::NewGuid().ToString('N'))
 $project = Join-Path $run 'UnityProject'
 foreach ($folder in @('Assets\Editor', 'Packages', 'ProjectSettings')) {
@@ -23,7 +12,7 @@ foreach ($folder in @('Assets\Editor', 'Packages', 'ProjectSettings')) {
 Copy-Item -LiteralPath (Join-Path $repository 'UnityProject\ProjectSettings\ProjectVersion.txt') -Destination (Join-Path $project 'ProjectSettings\ProjectVersion.txt')
 Copy-Item -LiteralPath (Join-Path $repository 'src\GojoBracken\GojoAssetBundle.cs') -Destination (Join-Path $project 'Assets\Editor\GojoAssetBundle.cs')
 Copy-Item -LiteralPath (Join-Path $repository 'UnityProject\Assets\Editor\BuildGojoAssets.cs') -Destination (Join-Path $project 'Assets\Editor\BuildGojoAssets.cs')
-Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'tests\AssetBundleChecks.cs') -Destination (Join-Path $project 'Assets\Editor\AssetBundleChecks.cs')
+Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'AssetBundleChecks.cs') -Destination (Join-Path $project 'Assets\Editor\AssetBundleChecks.cs')
 $package = (Join-Path $repository 'shared\GojoBracken.Presentation').Replace('\', '/')
 $manifest = @{ dependencies = @{
     'ca.malcolmshi.gojobracken.presentation' = "file:$package"

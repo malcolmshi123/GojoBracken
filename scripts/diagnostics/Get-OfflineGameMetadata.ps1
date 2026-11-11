@@ -11,7 +11,7 @@ $assemblyPath = Join-Path $ManagedDirectory 'Assembly-CSharp.dll'
 if (-not (Test-Path -LiteralPath $assemblyPath -PathType Leaf)) { throw 'Assembly-CSharp.dll was not found.' }
 if (-not (Test-Path -LiteralPath $CecilPath -PathType Leaf)) { throw 'Pass Mono.Cecil.dll from the existing BepInEx core directory.' }
 if ([string]::IsNullOrWhiteSpace($OutputPath)) {
-    $repository = Split-Path -Parent $PSScriptRoot
+    $repository = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
     $OutputPath = Join-Path $repository ('artifacts\offline-game-metadata-' + [Guid]::NewGuid().ToString('N') + '.json')
 }
 # Only the metadata reader is loaded. The game assembly is never passed to Assembly.Load/Add-Type.

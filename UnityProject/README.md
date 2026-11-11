@@ -34,7 +34,7 @@ For the existing local Gojo study, open Assets/LocalModelStudy/GojoIdleStudy.uni
 Run the repeatable native checks from the repository root in Windows PowerShell 5.1:
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File .\scripts\Test-ConnectedCosmetics.ps1
+powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File .\scripts\tests\Test-ConnectedCosmetics.ps1
 ```
 
 The checks create an isolated ignored project under artifacts, use the pinned Editor, and need no game or downloaded Gojo model. They verify smoothing, phases, overlays, voice intent, strength, actual effect shutdown/reset, and independent controllers. No voice clip is included, so successful Japanese audio playback remains untested.
@@ -47,7 +47,7 @@ The scene is already generated. The **GojoBracken > Create native aura study** m
 
 ## Required assets
 
-Assets/GojoBracken/Prefabs/Aura.prefab is now included with native components and persistent dependencies. See [the bake and verification details](../docs/native-aura.md). Its built-in authoring materials still require game-pipeline validation.
+Assets/GojoBracken/Prefabs/Aura.prefab is now included with native components and persistent dependencies. See [the bake and verification details](../docs/asset-pipeline.md). Its built-in authoring materials still require game-pipeline validation.
 
 | Project-relative path | Requirements |
 | --- | --- |
@@ -58,7 +58,7 @@ Assets/GojoBracken/Prefabs/Aura.prefab is now included with native components an
 
 Prefabs must use native Unity components only, with no custom or missing scripts and no missing materials/shaders. Runtime mod code will be attached by the plugin later. Referenced model textures, materials, animation controllers, and clips are included as bundle dependencies by Unity.
 
-Skinned meshes must have matching bind poses and valid bones. Each Animator must have a controller; this structural requirement does not replace animation adaptation. CREDITS.txt is now embedded as asset_credits as well as copied beside the bundle. The runtime loader uses the same asset addresses as the exporter. See [runtime loading and isolated bundle tests](../docs/asset-loading.md).
+Skinned meshes must have matching bind poses and valid bones. Each Animator must have a controller; this structural requirement does not replace animation adaptation. CREDITS.txt is now embedded as asset_credits as well as copied beside the bundle. The runtime loader uses the same asset addresses as the exporter. See [runtime loading and isolated bundle tests](../docs/runtime-behavior.md).
 
 Model research checked on 2026-10-25:
 
@@ -66,7 +66,7 @@ Model research checked on 2026-10-25:
 - [Wnight's Gojo](https://sketchfab.com/3d-models/gojo-satoru-jujutsu-kaisen-683a544b70d4418cb378f094aa55c8f1) lists FBX and CC BY 4.0, but its live model information says Rigged geometries: No and Animations: 0. It would require rigging before animation work.
 - The next candidate is [Gojo Satoru Dance by Ayanokoji031](https://sketchfab.com/3d-models/gojo-satoru-dance-jujutsu-kaisen-556b63af173241d79598d62cf220671d). Its viewer shows white hair, a black blindfold, and a dark uniform. Live model information reports 12.6k triangles, 6.9k vertices, four materials/textures, rigged geometry, one animation, and original glTF with converted GLB available. Its license link identifies CC BY 4.0. Download opens a Sketchfab login prompt.
 
-The Ayanokoji031 candidate has now been downloaded and imported into a separate local study, with skin and clip-sampling checks and a rendered preview. It has not been adopted as a release asset. See [the inspection report and local study instructions](../docs/model-evaluation.md). Download the original archive with all textures and retain its license/attribution files. Before importing, inspect the skeleton, bind pose, skin weights, any included source credits, and animation data. The listed dance does not supply the required Bracken movement/attack/corpse animations. Unity glTFast 6.14.0 is now pinned for editor import, with its resolved dependencies retained in packages-lock.json. This does not select the game render pipeline or add a glTF runtime dependency to the plugin.
+The Ayanokoji031 candidate has now been downloaded and imported into a separate local study, with skin and clip-sampling checks and a rendered preview. It has not been adopted as a release asset. See [the inspection report and local study instructions](../archive/docs/model-evaluation.md). Download the original archive with all textures and retain its license/attribution files. Before importing, inspect the skeleton, bind pose, skin weights, any included source credits, and animation data. The listed dance does not supply the required Bracken movement/attack/corpse animations. Unity glTFast 6.14.0 is now pinned for editor import, with its resolved dependencies retained in packages-lock.json. This does not select the game render pipeline or add a glTF runtime dependency to the plugin.
 
 Record the source URL, credited author(s), exact license, archive hash, and actual modifications when adopting an asset. Keep third-party terms separate from the repository's MIT code license. The exporter credits check validates presence, not legal permission.
 
