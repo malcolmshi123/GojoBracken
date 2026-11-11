@@ -2,6 +2,8 @@
 
 Gojo holds a fixed standing pose and follows the Bracken. His aura scales with anger and a spatial voice clip plays on entry into aggro. This development build targets the inspected Lethal Company v81 and uses BepInEx 5.
 
+The Japanese aggro line is performed by `the_greymouse`.
+
 ## Install for local validation
 
 Install [BepInExPack 5.4.2305](https://thunderstore.io/c/lethal-company/p/BepInEx/BepInExPack/) in a separate test profile. Import the ZIP as a local mod, or extract its BepInEx folder into the profile. Keep GojoBracken.dll and the extensionless gojobracken bundle together under BepInEx/plugins. For a private candidate built with IncludeSoloConfig, verify the supplied config is installed before the first launch. For a standard package, launch once to generate the config, then close the game.
