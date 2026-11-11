@@ -124,7 +124,7 @@ namespace GojoBracken
                     var binding = BrackenGameBinding.Attach(enemy, enemyType.Module.ModuleVersionId,
                         assets.Aura, assets.Voice, saturation, strength, warning, standingModelPreview ? assets.Model : null,
                         standingModelPreview ? 3f / 2.1f : 1f, standingModelPreview ? 1.25f : 1f, standingModelPreview ? 1.75f : 1f,
-                        soloLiveTest ? info : null, useV81BodyLayout: true, music: assets.Music);
+                        soloLiveTest ? info : null, useV81BodyLayout: true, music: assets.Music, boostVoice: assets.BoostVoice);
                     attempted[enemy] = binding;
                     if (binding != null)
                         info("[Effects] Attached cosmetics to Bracken " + enemy.GetInstanceID()

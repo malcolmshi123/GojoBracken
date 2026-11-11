@@ -51,6 +51,15 @@ public static class BuildSoloLiveTestBundle
             names.Add("voice_source");
         }
 
+        string voiceBoost = withVoice ? voiceStem + ".boost.txt" : null;
+        bool withBoost = withVoice && File.Exists(voiceBoost);
+        if (withBoost)
+        {
+            AssetDatabase.ImportAsset(voiceBoost, ImportAssetOptions.ForceSynchronousImport);
+            paths.Add(voiceBoost);
+            names.Add("uniform_voice_boost");
+        }
+
         AudioClip importedMusic = null;
         if (withMusic)
         {
@@ -81,6 +90,7 @@ public static class BuildSoloLiveTestBundle
             var musicClip = bundle.LoadAsset<AudioClip>("aggro_music");
             if (bundle.LoadAsset<GameObject>("gojo") == null || bundle.LoadAsset<GameObject>("aura") == null
                 || clip == null || clip.samples != imported.samples || bundle.LoadAsset<TextAsset>("asset_credits") == null
+                || bundle.Contains("uniform_voice_boost") != withBoost
                 || (withMusic ? musicClip == null || musicClip.samples != importedMusic.samples : musicClip != null)
                 || (withVoice ? source == null || source.text.Trim() != audioCredits.Trim() : source != null))
                 throw new InvalidOperationException("Live test bundle round trip failed.");

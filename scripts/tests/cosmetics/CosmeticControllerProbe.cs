@@ -114,7 +114,7 @@ public sealed class CosmeticControllerProbe : MonoBehaviour
             invalidAura, clip, 12f, 1f, out _, out _), "prefab audio rejected before instantiation");
         Destroy(invalidAura);
         Require(BrackenCosmeticController.TryCreate(first.transform, BrackenV81Presentation.SupportedMvid,
-            template, clip, 12f, 1f, out var one, out var error, musicClip: clip), error);
+            template, clip, 12f, 1f, out var one, out var error, musicClip: clip, boostVoice: true), error);
         Require(!BrackenCosmeticController.TryCreate(first.transform, BrackenV81Presentation.SupportedMvid,
             template, clip, 12f, 1f, out _, out _), "duplicate controller rejected");
         Require(BrackenCosmeticController.TryCreate(second.transform, BrackenV81Presentation.SupportedMvid,
@@ -136,10 +136,17 @@ public sealed class CosmeticControllerProbe : MonoBehaviour
         var sources = first.GetComponentsInChildren<AudioSource>();
         var voice = Array.Find(sources, source => !source.loop);
         var music = Array.Find(sources, source => source.loop);
-        Require(music != null && music.isPlaying && Mathf.Abs(music.volume - .2f) < .001f,
+        Require(music != null && music.isPlaying && Mathf.Abs(music.volume - .32137f) < .001f,
             "music starts with voice at full anger and loops");
+        Require(Mathf.Abs(voice.volume - .95493f) < .001f, "voice source uses the measured comparison gain");
+        var gain = voice.GetComponent<GojoVoiceGain>();
+        Require(gain != null && music.GetComponent<GojoVoiceGain>() == null, "uniform gain affects only voice");
+        var samples = new[] { -.75f, .125f, .4f };
+        gain.OnAudioFilterRead(samples, 1);
+        Require(samples[0] == -1.5f && samples[1] == .25f && samples[2] == .8f,
+            "voice gain is constant across samples");
         one.Apply(Input(2, 6f), true, 10f);
-        Require(music.isPlaying && Mathf.Abs(music.volume - .1f) < .001f && one.VoiceRequests == 1,
+        Require(music.isPlaying && Mathf.Abs(music.volume - .160685f) < .001f && one.VoiceRequests == 1,
             "music volume follows anger during aggro");
         Require(voice.clip == clip && voice.spatialBlend == 1f && !voice.loop && !voice.playOnAwake
             && voice.dopplerLevel == 0f && voice.minDistance == 2f && voice.maxDistance == 25f, "owned spatial voice source configured");

@@ -13,15 +13,17 @@ namespace GojoBracken
         internal GameObject Aura { get; private set; }
         internal AudioClip Voice { get; private set; }
         internal AudioClip Music { get; private set; }
+        internal bool BoostVoice { get; private set; }
         internal string Credits { get; private set; }
 
-        private GojoAssetBundle(AssetBundle bundle, GameObject model, GameObject aura, AudioClip voice, AudioClip music, string credits)
+        private GojoAssetBundle(AssetBundle bundle, GameObject model, GameObject aura, AudioClip voice, AudioClip music, bool boostVoice, string credits)
         {
             this.bundle = bundle;
             Model = model;
             Aura = aura;
             Voice = voice;
             Music = music;
+            BoostVoice = boostVoice;
             Credits = credits;
         }
 
@@ -46,7 +48,8 @@ namespace GojoBracken
                 var credits = candidate.LoadAsset<TextAsset>(GojoAssetContract.Credits);
                 Validate(model, aura, voice, credits);
                 var music = candidate.LoadAsset<AudioClip>(GojoAssetContract.Music);
-                assets = new GojoAssetBundle(candidate, model, aura, voice, music != null && music.samples > 0 ? music : null, credits.text);
+                assets = new GojoAssetBundle(candidate, model, aura, voice, music != null && music.samples > 0 ? music : null,
+                    candidate.Contains(GojoAssetContract.BoostedVoice), credits.text);
                 candidate = null; // Ownership transfers only after every check passes.
                 return true;
             }

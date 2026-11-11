@@ -17,7 +17,10 @@ namespace GojoBracken
         private Vector3[] rendererScales;
         private bool[] visible;
         private MaterialPropertyBlock[] properties;
-        private const float MaximumMusicVolume = .20f;
+        // Measured from the comparison bundle over the first 5.094 seconds.
+        private const float BalancedVoiceVolume = .95493f;
+        private const float BalancedMusicVolume = .32137f;
+        private float musicMaxVolume = 1f;
         private AudioSource voice;
         private AudioSource music;
         private float strength;
@@ -29,7 +32,7 @@ namespace GojoBracken
 
         // The caller must pass the observed game assembly MVID, not a guessed version number.
         internal static bool TryCreate(Transform host, Guid gameMvid, GameObject auraPrefab, AudioClip clip,
-            float saturationAnger, float auraStrength, out BrackenCosmeticController controller, out string error, AudioClip musicClip = null)
+            float saturationAnger, float auraStrength, out BrackenCosmeticController controller, out string error, AudioClip musicClip = null, bool boostVoice = false)
         {
             controller = null;
             error = null;
@@ -87,6 +90,12 @@ namespace GojoBracken
                 pending.properties = Array.ConvertAll(pending.renderers, renderer => new MaterialPropertyBlock());
                 foreach (var renderer in pending.renderers) renderer.enabled = false;
                 pending.voice = pending.CreateAudioSource(clip, loop: false);
+                if (boostVoice)
+                {
+                    pending.voice.gameObject.AddComponent<GojoVoiceGain>();
+                    pending.voice.volume = BalancedVoiceVolume;
+                    pending.musicMaxVolume = BalancedMusicVolume;
+                }
                 if (musicClip != null && musicClip.samples > 0)
                     pending.music = pending.CreateAudioSource(musicClip, loop: true);
                 pending.effects.SetActive(true);
@@ -107,7 +116,9 @@ namespace GojoBracken
 
         private AudioSource CreateAudioSource(AudioClip clip, bool loop)
         {
-            var source = effects.AddComponent<AudioSource>();
+            var audioObject = new GameObject(loop ? "Gojo aggro music" : "Gojo aggro voice");
+            audioObject.transform.SetParent(effects.transform, false);
+            var source = audioObject.AddComponent<AudioSource>();
             source.playOnAwake = false;
             source.loop = loop;
             source.clip = clip;
@@ -155,7 +166,7 @@ namespace GojoBracken
             }
             if (music != null)
             {
-                music.volume = visualAnger * MaximumMusicVolume;
+                music.volume = visualAnger * musicMaxVolume;
                 if (observation.StateIndex != 2 && music.isPlaying) music.Stop();
             }
             if (LastFrame.PlayAggroVoice)
@@ -216,5 +227,13 @@ namespace GojoBracken
 
         private void OnDisable() { Shutdown(); }
         private void OnDestroy() { Shutdown(); }
+    }
+
+    internal sealed class GojoVoiceGain : MonoBehaviour
+    {
+        internal void OnAudioFilterRead(float[] samples, int channels)
+        {
+            for (int i = 0; i < samples.Length; i++) samples[i] *= 2f;
+        }
     }
 }

@@ -178,7 +178,8 @@ namespace GojoBracken
             cycleAudio = bundledVoice == null ? "synthetic tone" : "imported voice clip";
             cycleAggroHold = bundledVoice == null ? 2.5f : Mathf.Max(2.5f, bundledVoice.length + .25f);
             if (!BrackenCosmeticController.TryCreate(anchor.transform, BrackenV81Presentation.SupportedMvid,
-                aura, bundledVoice ?? previewClip, 12f, 1f, out controller, out var error, bundledMusic))
+                aura, bundledVoice ?? previewClip, 12f, 1f, out controller, out var error, bundledMusic,
+                bundledVoice != null && bundle.Contains(GojoAssetContract.BoostedVoice)))
                 throw new InvalidOperationException(error);
             ScaleAura(height);
             info("[RenderPreview] Placed local model: fixed standing pose.");
