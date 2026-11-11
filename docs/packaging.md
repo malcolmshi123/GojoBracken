@@ -4,35 +4,30 @@ Gojo holds a fixed standing pose and follows the Bracken. His aura scales with a
 
 GojoBracken was created by Malcolm Shi. The Japanese aggro line is performed by Ashton Mak.
 
-## Install for local validation
+## Install
 
-Install [BepInExPack 5.4.2305](https://thunderstore.io/c/lethal-company/p/BepInEx/BepInExPack/) in a separate test profile. Import the ZIP as a local mod, or extract its BepInEx folder into the profile. Keep GojoBracken.dll and the extensionless gojobracken bundle together under BepInEx/plugins. For a private candidate built with IncludeSoloConfig, verify the supplied config is installed before the first launch. For a standard package, launch once to generate the config, then close the game.
+Install BepInExPack 5.4.2305 and GojoBracken in a Lethal Company v81 profile. Keep GojoBracken.dll and the extensionless gojobracken bundle together under BepInEx/plugins. For a local ZIP, use [Import local mod](https://wiki.thunderstore.io/mods/mod-not-visible).
 
-The private candidate supplies these settings in BepInEx/config/FreakyFriday.GojoBracken.cfg. For a standard package, set them before relaunching.
+Launch once to generate BepInEx/config/FreakyFriday.GojoBracken.cfg, then close the game. Set the following values and relaunch.
 
 ~~~ini
 [DevelopmentEffects]
 Enabled = true
 StandingModelPreview = true
-SoloLiveTest = true
+SoloLiveTest = false
 
 [RenderPreview]
 Enabled = false
 ~~~
 
-These settings enable the solo-only attachment path with the verified v81 body filter. For a controlled spawn, follow the development repository's [solo live-test instructions](https://github.com/malcolmshi123/GojoBracken/blob/main/docs/in-game-testing.md#private-solo-bracken-attachment-test). Live movement and multiplayer compatibility still need validation.
+The standard package uses the regular attachment path. Multiplayer compatibility is unverified.
 
-## Check a local mod-manager install
+## Smoke-test a fresh install
 
-Use a fresh Lethal Company profile with BepInExPack installed. In the mod manager settings, choose Import local mod and select the ZIP. Browse the profile folder and confirm there is one GojoBracken.dll and that gojobracken sits beside it. [Thunderstore local import instructions](https://wiki.thunderstore.io/mods/mod-not-visible)
+Confirm the mod manager displays the portrait and installs one DLL beside the bundle. With the settings above, check BepInEx/LogOutput.log for Gojo Bracken loading and [Effects] Development cosmetics enabled. The latter confirms the plugin opened and validated the bundle. This check can end in the ship.
 
-For the private candidate, check that the manager installed the config with the values above. If the manager does not install it, record that as an import failure. For the standard package, create or update the config manually before starting a solo session. In the ship, look for the Gojo Bracken load line, the LiveTest solo camera line, and Effects Development cosmetics enabled in BepInEx/LogOutput.log. The last line means the runtime loader opened and validated the packaged bundle. This checkpoint ends in the ship.
+For a private candidate built with IncludeSoloConfig, confirm the imported config sets SoloLiveTest to true and check for the solo camera log as well. The 0.1.34 private candidate passed the fresh-profile import and startup check on v81. See the [development test guide](https://github.com/malcolmshi123/GojoBracken/blob/main/docs/in-game-testing.md#private-solo-bracken-attachment-test) for the controlled spawn workflow.
 
-## Private candidate verification
-
-The 0.1.34 fresh-install ZIP passed on Lethal Company v81 in the new Thunderstore profile GojoBracken_v3. Thunderstore displayed the Gojo portrait and installed the packaged config. The startup log confirmed the expected config, the solo gameplay camera, and Development cosmetics enabled after bundle validation. The checkpoint ended in the ship.
-
-Live Bracken movement and multiplayer remain pending. The [release asset credits](release-assets.md) list the remaining source and permission checks before public packaging.
 
 ## Build the archive
 
