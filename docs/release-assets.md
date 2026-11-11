@@ -1,11 +1,12 @@
 # Release asset credits and open items
 
-The private mod-manager ZIP contains the assets below. The public release needs a verified source and redistribution basis for each third-party asset.
+GojoBracken was created by Malcolm Shi. The private builds use the assets below. The public release needs a verified source and redistribution basis for each third-party asset.
 
 | Asset | Recorded source and changes | Release status |
 | --- | --- | --- |
 | Gojo model, rig, and textures | [Gojo Satoru Dance](https://sketchfab.com/models/556b63af173241d79598d62cf220671d/embed), uploaded by Ayanokoji031. The [archive inspection](../archive/docs/model-evaluation.md#source-and-archive) records VALHAISTO GAMES in the listing description and FreeFire New Male 3d Model By PaceGaming in the model hierarchy. GojoBracken posed the rig, baked the standing prefab, and converted the materials for HDRP. | The [Sketchfab API listing](https://api.sketchfab.com/v3/models/556b63af173241d79598d62cf220671d) confirms the upload is marked [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). The source and redistribution terms for the underlying mesh and textures remain unverified. |
-| Japanese aggro audio | Original performance by `the_greymouse`, supplied as ryoiki_tenkai_muryokusho.mp3. Converted to mono and boosted with peak limiting. | Permission to redistribute the edited recording in the public mod remains to be confirmed with the performer. |
+| Japanese aggro audio | Original performance by Ashton Mak, supplied as ryoiki_tenkai_muryokusho.mp3. Converted to mono and boosted with peak limiting. | Permission to redistribute the edited recording in the public mod remains to be confirmed with the performer. |
+| Aggro music | ANGELPLAYA — LET THEM HAVE IT [NCS Release]. Music provided by NoCopyrightSounds. [Track](https://ncs.io/LETTHEMHAVEIT) | Private test only. NCS lists game use under its [licensing process](https://ncs.io/usage-policy). |
 | Aura | GojoBracken contributors. Native wisps and flame shell with HDRP materials. | Project asset. Credit GojoBracken contributors. |
 | Package icon | User-supplied gojo.jpg, cropped to a square and resized to a 256 by 256 PNG for Thunderstore. Source SHA-256: 27192FF5D96C14C25161594B700A62A88E37F04FDCB2FF17F1F2FFC1F89EB60D. | Selected for the private package. The original source and public-use permission are unknown. |
 

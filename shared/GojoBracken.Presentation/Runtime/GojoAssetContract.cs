@@ -6,6 +6,7 @@ namespace GojoBracken
         internal const string Model = "gojo";
         internal const string Aura = "aura";
         internal const string Voice = "domain_expansion";
+        internal const string Music = "aggro_music";
         internal const string Credits = "asset_credits";
     }
 }

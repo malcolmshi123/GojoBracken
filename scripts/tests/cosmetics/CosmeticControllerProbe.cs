@@ -114,7 +114,7 @@ public sealed class CosmeticControllerProbe : MonoBehaviour
             invalidAura, clip, 12f, 1f, out _, out _), "prefab audio rejected before instantiation");
         Destroy(invalidAura);
         Require(BrackenCosmeticController.TryCreate(first.transform, BrackenV81Presentation.SupportedMvid,
-            template, clip, 12f, 1f, out var one, out var error), error);
+            template, clip, 12f, 1f, out var one, out var error, musicClip: clip), error);
         Require(!BrackenCosmeticController.TryCreate(first.transform, BrackenV81Presentation.SupportedMvid,
             template, clip, 12f, 1f, out _, out _), "duplicate controller rejected");
         Require(BrackenCosmeticController.TryCreate(second.transform, BrackenV81Presentation.SupportedMvid,
@@ -133,18 +133,26 @@ public sealed class CosmeticControllerProbe : MonoBehaviour
         one.Apply(Input(2, 12f), true, 10f);
         one.Apply(Input(2, 12f), true, .1f);
         Require(one.VoiceRequests == 1 && aura.isPlaying, "aggro effects and single voice request");
-        var voice = first.GetComponentInChildren<AudioSource>();
+        var sources = first.GetComponentsInChildren<AudioSource>();
+        var voice = Array.Find(sources, source => !source.loop);
+        var music = Array.Find(sources, source => source.loop);
+        Require(music != null && music.isPlaying && Mathf.Abs(music.volume - .2f) < .001f,
+            "music starts with voice at full anger and loops");
+        one.Apply(Input(2, 6f), true, 10f);
+        Require(music.isPlaying && Mathf.Abs(music.volume - .1f) < .001f && one.VoiceRequests == 1,
+            "music volume follows anger during aggro");
         Require(voice.clip == clip && voice.spatialBlend == 1f && !voice.loop && !voice.playOnAwake
             && voice.dopplerLevel == 0f && voice.minDistance == 2f && voice.maxDistance == 25f, "owned spatial voice source configured");
         one.Apply(Input(1, 6f), true, 10f);
         Require(one.LastFrame.AuraLevel > .15f && aura.isPlaying, "retreat retains anger aura");
+        Require(!music.isPlaying, "leaving aggro stops music");
         one.Apply(Input(2, 12f), true, 10f);
-        Require(one.VoiceRequests == 2, "aggro reentry requests again");
+        Require(one.VoiceRequests == 2 && music.isPlaying, "aggro reentry restarts both sources");
         one.Apply(Input(1, 6f, carrying: true), true, 10f);
         Require(one.VoiceRequests == 2 && aura.isPlaying, "corpse carry continues aura without voice");
         one.Apply(Input(2, 12f, killing: true), true, 10f);
         one.Apply(Input(2, 12f), true, .1f);
-        Require(one.VoiceRequests == 2, "overlay exit does not fabricate voice");
+        Require(one.VoiceRequests == 2 && !music.isPlaying, "overlay exit does not fabricate audio");
         one.Apply(Input(0, 12f), false, 10f);
         Require(one.LastFrame.UsesPhaseApproximation && one.LastFrame.AuraLevel == .15f, "remote approximation ignores local anger");
         two.Apply(Input(2, 12f), true, 10f);
@@ -152,7 +160,7 @@ public sealed class CosmeticControllerProbe : MonoBehaviour
         Require(!second.GetComponentInChildren<ParticleSystem>(true).isPlaying
             && !second.GetComponentInChildren<ParticleSystemRenderer>(true).enabled, "zero strength clears particles and hides renderers");
         one.Apply(Input(2, 12f, dead: true), true, 0f);
-        Require(!voice.isPlaying && !aura.isPlaying && aura.particleCount == 0 && !aura.gameObject.activeInHierarchy,
+        Require(!voice.isPlaying && !music.isPlaying && !aura.isPlaying && aura.particleCount == 0 && !aura.gameObject.activeInHierarchy,
             "death stops actual audio and particles immediately");
         one.Apply(Input(2, 12f), true, 10f);
         Require(one.VoiceRequests == 2, "terminal death cannot restart effects");

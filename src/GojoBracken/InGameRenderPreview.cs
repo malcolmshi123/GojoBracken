@@ -173,10 +173,12 @@ namespace GojoBracken
                 throw new InvalidOperationException("The preview bundle declares a voice source but has no valid domain_expansion clip.");
 
             if (bundledVoice == null) previewClip = CreatePreviewClip(testTone);
+            var bundledMusic = bundledVoice != null ? bundle.LoadAsset<AudioClip>(GojoAssetContract.Music) : null;
+            if (bundledMusic != null) info("[RenderPreview] Loaded aggro music for the phase cycle.");
             cycleAudio = bundledVoice == null ? "synthetic tone" : "imported voice clip";
             cycleAggroHold = bundledVoice == null ? 2.5f : Mathf.Max(2.5f, bundledVoice.length + .25f);
             if (!BrackenCosmeticController.TryCreate(anchor.transform, BrackenV81Presentation.SupportedMvid,
-                aura, bundledVoice ?? previewClip, 12f, 1f, out controller, out var error))
+                aura, bundledVoice ?? previewClip, 12f, 1f, out controller, out var error, bundledMusic))
                 throw new InvalidOperationException(error);
             ScaleAura(height);
             info("[RenderPreview] Placed local model: fixed standing pose.");

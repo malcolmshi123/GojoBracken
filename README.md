@@ -9,4 +9,6 @@ A Lethal Company v81 cosmetic mod. Standing Gojo follows the Bracken, the aura s
 - [Runtime behavior](docs/runtime-behavior.md) describes asset loading, model replacement, aura, and voice.
 - [Game compatibility](docs/game-compatibility.md) covers v81 evidence, diagnostics, and regression checks.
 
+Mod created by Malcolm Shi. Japanese aggro voice performed by Ashton Mak.
+
 The code is [MIT licensed](LICENSE). Historical guides and the retired standalone preview are in the [archive](archive/README.md).

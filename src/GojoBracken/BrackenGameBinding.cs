@@ -26,7 +26,7 @@ namespace GojoBracken
         // The session verifies the actual type/module identity before calling this binding.
         internal static BrackenGameBinding Attach(Component enemy, Guid gameMvid, GameObject aura, AudioClip voice,
             float saturation, float strength, Action<string> warning, GameObject modelPrefab = null, float modelScale = 1f, float wispScale = 1f, float flameHeightScale = 1f,
-            Action<string> traceVisibleLayers = null, bool useV81BodyLayout = false)
+            Action<string> traceVisibleLayers = null, bool useV81BodyLayout = false, AudioClip music = null)
         {
             var reader = new BrackenStateReader(enemy.GetType());
             if (!reader.TryRead(enemy, out var initial, out var error)) throw new InvalidOperationException(error);
@@ -35,7 +35,7 @@ namespace GojoBracken
             if (useV81BodyLayout) visibilityReader.SelectV81Body(enemy);
             if (!visibilityReader.TryRead(enemy, out var initialVisibility, out error, traceVisibleLayers: traceVisibleLayers)) throw new InvalidOperationException(error);
             if (!BrackenCosmeticController.TryCreate(enemy.transform, gameMvid, aura, voice, saturation, strength,
-                out var controller, out error)) throw new InvalidOperationException(error);
+                out var controller, out error, music)) throw new InvalidOperationException(error);
             BrackenGameBinding binding = null;
             BrackenModelAttachment replacement = null;
             try

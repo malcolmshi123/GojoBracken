@@ -17,7 +17,9 @@ namespace GojoBracken
         private Vector3[] rendererScales;
         private bool[] visible;
         private MaterialPropertyBlock[] properties;
+        private const float MaximumMusicVolume = .20f;
         private AudioSource voice;
+        private AudioSource music;
         private float strength;
         private bool stopped;
         private bool visibleByGame = true;
@@ -27,7 +29,7 @@ namespace GojoBracken
 
         // The caller must pass the observed game assembly MVID, not a guessed version number.
         internal static bool TryCreate(Transform host, Guid gameMvid, GameObject auraPrefab, AudioClip clip,
-            float saturationAnger, float auraStrength, out BrackenCosmeticController controller, out string error)
+            float saturationAnger, float auraStrength, out BrackenCosmeticController controller, out string error, AudioClip musicClip = null)
         {
             controller = null;
             error = null;
@@ -84,15 +86,9 @@ namespace GojoBracken
                 pending.visible = Array.ConvertAll(pending.renderers, renderer => renderer.enabled);
                 pending.properties = Array.ConvertAll(pending.renderers, renderer => new MaterialPropertyBlock());
                 foreach (var renderer in pending.renderers) renderer.enabled = false;
-                pending.voice = pending.effects.AddComponent<AudioSource>();
-                pending.voice.playOnAwake = false;
-                pending.voice.loop = false;
-                pending.voice.clip = clip;
-                pending.voice.spatialBlend = 1f;
-                pending.voice.dopplerLevel = 0f;
-                pending.voice.rolloffMode = AudioRolloffMode.Logarithmic;
-                pending.voice.minDistance = 2f;
-                pending.voice.maxDistance = 25f;
+                pending.voice = pending.CreateAudioSource(clip, loop: false);
+                if (musicClip != null && musicClip.samples > 0)
+                    pending.music = pending.CreateAudioSource(musicClip, loop: true);
                 pending.effects.SetActive(true);
                 controller = pending;
                 return true;
@@ -107,6 +103,20 @@ namespace GojoBracken
                 error = "Cosmetic attachment failed; keep vanilla Bracken visible. " + exception.Message;
                 return false;
             }
+        }
+
+        private AudioSource CreateAudioSource(AudioClip clip, bool loop)
+        {
+            var source = effects.AddComponent<AudioSource>();
+            source.playOnAwake = false;
+            source.loop = loop;
+            source.clip = clip;
+            source.spatialBlend = 1f;
+            source.dopplerLevel = 0f;
+            source.rolloffMode = AudioRolloffMode.Logarithmic;
+            source.minDistance = 2f;
+            source.maxDistance = 25f;
+            return source;
         }
 
         internal void Apply(BrackenObservation observation, bool useDetailedAnger, float deltaTime)
@@ -143,11 +153,17 @@ namespace GojoBracken
                 properties[i].SetFloat("_Intensity", strength);
                 renderer.SetPropertyBlock(properties[i]);
             }
+            if (music != null)
+            {
+                music.volume = visualAnger * MaximumMusicVolume;
+                if (observation.StateIndex != 2 && music.isPlaying) music.Stop();
+            }
             if (LastFrame.PlayAggroVoice)
             {
                 VoiceRequests++;
                 voice.Stop();
                 voice.Play();
+                if (music != null) music.Play();
             }
         }
 
@@ -157,6 +173,7 @@ namespace GojoBracken
             stopped = true;
             presentation?.Reset();
             if (voice != null) voice.Stop();
+            if (music != null) music.Stop();
             if (particles != null)
                 foreach (var system in particles)
                     if (system != null) system.Stop(false, ParticleSystemStopBehavior.StopEmittingAndClear);

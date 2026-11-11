@@ -13,7 +13,7 @@ namespace GojoBracken
     {
         public const string PluginGuid = "FreakyFriday.GojoBracken";
         public const string PluginName = "Gojo Bracken";
-        public const string PluginVersion = "0.1.36";
+        public const string PluginVersion = "0.1.37";
 
         private RuntimeDiagnostics diagnostics;
         private BrackenRigReport rigReport;

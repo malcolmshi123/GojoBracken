@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
@@ -18,6 +19,8 @@ public static class BuildSoloLiveTestBundle
             throw new InvalidOperationException("Invalid staged voice identifier.");
         string voiceStem = withVoice ? "Assets/GojoVoice-" + args[voiceArg + 1] : null;
         string voice = withVoice ? voiceStem + ".wav" : "Assets/SoloLiveTestSilence.wav";
+        string music = withVoice ? voiceStem + ".mp3" : null;
+        bool withMusic = withVoice && File.Exists(music);
         string voiceCredits = withVoice ? voiceStem + ".txt" : null;
         const string credits = "Assets/SoloLiveTestCredits.txt";
         if (AssetDatabase.LoadAssetAtPath<GameObject>(model) == null
@@ -40,14 +43,32 @@ public static class BuildSoloLiveTestBundle
         if (imported == null || imported.samples <= 0 || (withVoice && (imported.channels != 1 || imported.length > 10f)))
             throw new InvalidOperationException("Import a nonempty mono WAV trimmed to ten seconds or less.");
 
-        string folder = withVoice ? "live-test-voice-bundle" : "live-test-bundle";
+        var paths = new List<string> { model, aura, voice, credits };
+        var names = new List<string> { "gojo", "aura", "domain_expansion", "asset_credits" };
+        if (withVoice)
+        {
+            paths.Add(voiceCredits);
+            names.Add("voice_source");
+        }
+
+        AudioClip importedMusic = null;
+        if (withMusic)
+        {
+            AssetDatabase.ImportAsset(music, ImportAssetOptions.ForceSynchronousImport);
+            importedMusic = AssetDatabase.LoadAssetAtPath<AudioClip>(music);
+            if (importedMusic == null || importedMusic.samples <= 0)
+                throw new InvalidOperationException("Aggro music must import as a nonempty AudioClip.");
+            paths.Add(music);
+            names.Add("aggro_music");
+        }
+
+        string folder = withMusic ? "live-test-music-bundle" : withVoice ? "live-test-voice-bundle" : "live-test-bundle";
         string output = Path.Combine(Directory.GetParent(Application.dataPath).Parent.FullName, folder);
         Directory.CreateDirectory(output);
         var manifest = BuildPipeline.BuildAssetBundles(output, new[] { new AssetBundleBuild {
             assetBundleName = "gojobracken",
-            assetNames = withVoice ? new[] { model, aura, voice, credits, voiceCredits } : new[] { model, aura, voice, credits },
-            addressableNames = withVoice ? new[] { "gojo", "aura", "domain_expansion", "asset_credits", "voice_source" }
-                : new[] { "gojo", "aura", "domain_expansion", "asset_credits" }
+            assetNames = paths.ToArray(),
+            addressableNames = names.ToArray()
         } }, BuildAssetBundleOptions.StrictMode | BuildAssetBundleOptions.ChunkBasedCompression, BuildTarget.StandaloneWindows64);
         if (manifest == null) throw new InvalidOperationException("Live test bundle build failed.");
 
@@ -57,8 +78,10 @@ public static class BuildSoloLiveTestBundle
         {
             var clip = bundle.LoadAsset<AudioClip>("domain_expansion");
             var source = bundle.LoadAsset<TextAsset>("voice_source");
+            var musicClip = bundle.LoadAsset<AudioClip>("aggro_music");
             if (bundle.LoadAsset<GameObject>("gojo") == null || bundle.LoadAsset<GameObject>("aura") == null
                 || clip == null || clip.samples != imported.samples || bundle.LoadAsset<TextAsset>("asset_credits") == null
+                || (withMusic ? musicClip == null || musicClip.samples != importedMusic.samples : musicClip != null)
                 || (withVoice ? source == null || source.text.Trim() != audioCredits.Trim() : source != null))
                 throw new InvalidOperationException("Live test bundle round trip failed.");
         }

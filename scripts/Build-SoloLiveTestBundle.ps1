@@ -4,7 +4,8 @@ param(
     [Parameter(Mandatory)] [string] $CandidateProject,
     [string] $UnityEditorPath = 'C:\Program Files\Unity 2022.3.62f2\Editor\Unity.exe',
     [string] $VoiceWav,
-    [string] $VoiceCredits
+    [string] $VoiceCredits,
+    [string] $MusicMp3
 )
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
@@ -20,6 +21,11 @@ if ($withVoice) {
         [string]::IsNullOrWhiteSpace((Get-Content -LiteralPath $VoiceCredits -Raw))) {
         throw 'VoiceCredits must point to a text file with source and permission details.'
     }
+}
+$withMusic = $PSBoundParameters.ContainsKey('MusicMp3')
+if ($withMusic -and (!$withVoice -or [string]::IsNullOrWhiteSpace($MusicMp3) -or
+    -not (Test-Path -LiteralPath $MusicMp3 -PathType Leaf) -or [IO.Path]::GetExtension($MusicMp3) -ne '.mp3')) {
+    throw 'Supply a local MP3 with -MusicMp3 together with the voice WAV and credits.'
 }
 $project = (Resolve-Path -LiteralPath $CandidateProject).ProviderPath
 if (-not (Test-Path -LiteralPath (Join-Path $project 'Assets\HdrpCandidates\Gojo.prefab'))) {
@@ -43,6 +49,11 @@ try {
         Copy-Item -LiteralPath $VoiceWav -Destination "$stem.wav"
         Copy-Item -LiteralPath $VoiceCredits -Destination "$stem.txt"
         $arguments += @('-gojoVoiceId', $voiceId)
+        if ($withMusic) {
+            $bundleFolder = 'live-test-music-bundle'
+            $stagedFiles += @("$stem.mp3", "$stem.mp3.meta")
+            Copy-Item -LiteralPath $MusicMp3 -Destination "$stem.mp3"
+        }
     }
     $process = Start-Process -FilePath $UnityEditorPath -ArgumentList $arguments -WindowStyle Hidden -Wait -PassThru
 } finally {

@@ -21,4 +21,4 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-HdrpMate
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-SoloLiveTestBundle.ps1 -CandidateProject $candidateProject -VoiceWav $voiceWav -VoiceCredits $voiceCredits
 ~~~
 
-Set candidateProject to the generated u directory. Supply the local mono WAV and a credits text file. The run produces bundles/gojobracken-hdrp-material-check for material checks and live-test-voice-bundle/gojobracken for the private voice build. Capture-HdrpPreview.ps1 accepts the same candidate project for offline screenshots. See [packaging](packaging.md) for the ZIP.
+Set candidateProject to the generated u directory. Supply the local mono WAV and a credits text file. For private music tests, add -MusicMp3 with the local MP3 and include its source in the credits. That variant writes live-test-music-bundle/gojobracken. The run produces bundles/gojobracken-hdrp-material-check for material checks and live-test-voice-bundle/gojobracken for the private voice build. Capture-HdrpPreview.ps1 accepts the same candidate project for offline screenshots. See [packaging](packaging.md) for the ZIP.
