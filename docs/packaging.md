@@ -2,7 +2,7 @@
 
 Gojo follows the Bracken in a fixed standing pose. His aura grows stronger with anger, and a spatial voice clip plays when the Bracken enters aggro. This development build targets Lethal Company v81 and uses BepInEx 5.
 
-Malcolm Shi created GojoBracken. Ashton Mak performed the Japanese aggro line.
+GojoBracken created by Malcolm Shi. Japanese aggro line performed by Ashton Mak.
 
 ## Install
 
