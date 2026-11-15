@@ -25,6 +25,7 @@
 # Generated bundles and release packages
 /artifacts/
 /dist/
+/archive/
 
 # Unity-generated IDE projects (keep the plugin solution tracked)
 /UnityProject/*.csproj
