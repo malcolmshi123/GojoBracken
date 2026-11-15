@@ -1,11 +1,11 @@
 # Inspected v81 behavior and cosmetic rules
 
-The supplied Assembly-CSharp.dll was read as metadata/IL with Mono.Cecil, never loaded or executed as a game assembly. Both identity checks match the earlier offline report:
+We inspected the supplied Assembly-CSharp.dll with Mono.Cecil. The inspection read metadata and IL without loading or executing the game assembly. Both values match the earlier offline report:
 
 - MVID: aca1e98d-6f84-4d3f-85cd-22b6f7be2f9b
 - SHA256: 5F7DB5538B78DC408845A3002907619785AC9F9C6B6059D13DC9A602D9B65731
 
-The rules below are specific to this inspected assembly. IL evidence stays in ignored artifacts/v81-flowerman-il.txt; the game DLL is not added to Git.
+These rules apply to that assembly. The IL evidence is in artifacts/v81-flowerman-il.txt, which Git ignores. Keep the game DLL out of Git.
 
 ## State mapping
 
@@ -20,15 +20,15 @@ The rules below are specific to this inspected assembly. IL evidence stays in ig
 
 AddToAngerMeter IL_0106-0114 enters state 2 and sends the current anger through EnterAngerModeServerRpc. Retreat's timeout returns to state 0 (Update IL_0380-0397). Aggro's owner returns to state 1 after anger expires (IL_082a-0841).
 
-isInAngerMode is a locally updated presentation flag. It can lag the raw index around state transitions; the prepared voice-edge logic uses the verified index rather than this flag.
+The game updates isInAngerMode locally, so it can lag the raw index during a transition. The voice logic uses the verified index.
 
 ## Anger and networking
 
 EnterAngerModeServerRpc forwards its Single argument to EnterAngerModeClientRpc (IL_0127-0129). In the receiving client body, IL_00e1-00ea assigns that argument to angerMeter and selects state 2.
 
-The aggro branch decrements angerMeter by deltaTime outside the owner-only exit check (Update IL_0818-0841). Thus non-owner clients have an event-initialized local countdown. This is not the same as an authoritative continuously replicated NetworkVariable. Ownership, latency, stun/hit changes, and runtime behavior still need controlled integration validation.
+The aggro branch subtracts deltaTime from angerMeter outside the owner-only exit check (Update IL_0818-0841). Non-owner clients count down from the value set by the event. The game does not send a continuous authoritative anger value through a NetworkVariable. Ownership, latency, stun and hit changes, and runtime behavior still need controlled integration tests.
 
-No fixed global upper clamp on angerMeter was found in the inspected FlowermanAI writes:
+The inspected FlowermanAI writes show no fixed upper limit on angerMeter:
 
 - AddToAngerMeter adds its argument and can add timesThreatened / 1.75.
 - The 0.99 clamp bounds the probability calculation, not angerMeter.
@@ -36,7 +36,7 @@ No fixed global upper clamp on angerMeter was found in the inspected FlowermanAI
 - HitEnemy's owner path assigns 11, then calls AddToAngerMeter(0.1).
 - The aggro branch subtracts deltaTime.
 
-The presentation default of 12 is therefore a tunable saturation threshold chosen from an observed strong-anger assignment, not a proven game maximum. Values above it saturate the visual only; no game value is altered.
+The presentation uses 12 as the default saturation point because the game assigns that value in one strong-anger path. You can tune the threshold. Above it, the visual effect stays at full strength and the game keeps its original anger value.
 
 ## Animation and transform observations
 
@@ -73,7 +73,7 @@ Passed: phase mapping, stale anger-mode flags, repeated aggro entries, kill/corp
 
 Before choosing a Unity Editor version, run the read-only compatibility script on the PC with Lethal Company installed. It reports file versions and SHA256 hashes without loading game assemblies or changing the game. It does not include your installation paths in the JSON.
 
-Use the built-in Windows PowerShell 5.1; PowerShell 7 is not required. From the repository root, use the actual game installation and, if applicable, your separate mod-manager test profile:
+Run the command from the repository root in Windows PowerShell 5.1. Use your game installation path and, if you have one, the BepInEx core path for your separate mod-manager test profile:
 
 ```powershell
 New-Item -ItemType Directory -Force artifacts | Out-Null
@@ -101,4 +101,4 @@ For a rig report, enable Diagnostics.ExportBrackenRig and inspect BepInEx/config
 
 ## Regression checks
 
-Run the six launchers under scripts/tests in Windows PowerShell 5.1. They cover the bundle, native aura, connected cosmetics, attachment and visibility, observer lifecycle, and rig reporting. Test-ObserverLifecycle.ps1 accepts BepInExCoreDirectory. These checks use isolated Unity projects under ignored artifacts.
+Run the six launchers under scripts/tests in Windows PowerShell 5.1. They check bundle loading, the native aura, connected cosmetics, attachment and visibility, observer lifecycle, and rig reports. Pass BepInExCoreDirectory to Test-ObserverLifecycle.ps1 if needed. The launchers create isolated Unity projects under artifacts, which Git ignores.

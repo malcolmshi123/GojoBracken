@@ -1,6 +1,6 @@
 # Solo in-game HDRP preview
 
-Use this check with the inspected v81 game and Unity 2022.3.62f2. GojoBracken 0.1.34 provides the opt-in RenderPreview setting. The test bundle contains the calibrated Gojo and aura prefabs for local evaluation.
+Use the ship preview with Lethal Company v81 and Unity 2022.3.62f2. GojoBracken 0.1.34 offers the opt-in RenderPreview setting. The test bundle contains the calibrated Gojo and aura prefabs.
 
 With the game closed, back up any existing GojoBracken DLL and config outside the profile's plugin folder. Place the test GojoBracken.dll and gojobracken-hdrp-material-check together in the existing GojoBracken plugin directory. Keep one GojoBracken.dll in the profile. Put the supplied FreakyFriday.GojoBracken.cfg in the profile's BepInEx/config directory. It enables RenderPreview and disables DevelopmentEffects and the rig report.
 
@@ -10,11 +10,13 @@ Start a solo session and stay inside the ship. Stand where you have a few metres
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Request-HdrpPreview.ps1 -PluginDirectory $pluginDirectory -Command calm
 ~~~
 
-The first request places a world-space model roughly 3.5 metres ahead and aligns the lowest posed mesh vertex to the deck. Wait two seconds and take a screenshot. Send full and take a second screenshot from the same spot. Send clear to remove the preview or reposition before placing it again. The console log shows placement, anger, aura level, and graphics settings under [RenderPreview]. If placement fails, share the log lines and stop there. No landing or encounter is needed.
+The first request places Gojo about 3.5 metres ahead and lines up the lowest vertex of the posed mesh with the deck. Wait two seconds, then take a screenshot. Send full and take another screenshot from the same spot. Send clear to remove Gojo before placing him again. Look under [RenderPreview] for placement, anger, aura level, and graphics settings. If placement fails, share those lines and stop in the ship.
 
-The preview uses the v81 local gameplay camera and requires zero other connected players. It is a local visual object. The solo gameplay camera must render before the preview runner starts. Unity can recreate the runner on a later camera render if it is destroyed. The separate preview runner persists across scene loads and clears the model on camera or scene changes, another player joining, or game exit. A request sent before the solo camera is ready stays queued until the runner can poll. Send requests from the ship so placement uses your intended view. The preview searches from 0.65 metres above to 1.05 metres below the camera-based foot estimate for a walkable collider, ignoring triggers. It measures the posed mesh separately and places it 5 mm above the chosen surface. Face a clear aisle so nearby equipment does not intercept the search. If no surface is found, the request reports the problem without placing Gojo. The Floor alignment log records the collider, deck height, estimated anchor height, mesh offset, and applied correction.
+The preview runs on the local v81 gameplay camera when you play alone. The runner starts after that camera renders and survives scene loads. Unity can recreate it on a later camera render if it was destroyed. It clears the model when the camera or scene changes, another player joins, or the game exits. Requests sent before the camera is ready wait for the runner to poll.
 
-The developer build is produced from the Release plugin and the Windows candidate bundle from Build-HdrpMaterials.ps1. The Unity fixture uses simulated camera/session state and the actual candidate bundle. Lethal Company's lighting, exposure, and runtime shader compatibility need the screenshots from this check. Restore your backed-up DLL and config after testing.
+Send requests from inside the ship and face a clear aisle so equipment stays out of the floor search. The preview looks for a walkable collider from 0.65 metres above to 1.05 metres below the camera's foot estimate and skips triggers. It measures the posed mesh separately, then sets it 5 mm above the chosen surface. If it finds no surface, it logs the failure and skips placement. The Floor alignment line records the collider, deck height, estimated anchor height, mesh offset, and correction.
+
+Build the developer preview with the Release plugin and the Windows candidate bundle from Build-HdrpMaterials.ps1. The Unity fixture uses the actual bundle with a simulated camera and session. Take screenshots in Lethal Company to check the lighting, exposure, and shaders. Restore your backed-up DLL and config after testing.
 
 For lifecycle troubleshooting, the log includes the absolute watched request path, the first poll and a heartbeat every 15 seconds, scene loads, and runner disable/destruction. Collect those lines together with the directory listing if a request remains pending.
 
@@ -30,7 +32,7 @@ In a solo ship, face down a clear, level aisle. Send one walk request and switch
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Request-HdrpPreview.ps1 -PluginDirectory $pluginDirectory -Command walk
 ~~~
 
-The request places a fresh 3.000 m preview with full aura. After a four-second countdown, Gojo slides 1.2 m toward the placement camera over two seconds while holding his upright standing pose. Stay in place and watch that the pose holds, the flame shell moves with Gojo, and the wisps look attached while moving. Share the Walk complete line and what you saw. The line reports model travel and maximum aura anchor offset. The game’s AI and navigation are outside this test. If the preview rejects the path, share the warning and end the checkpoint. No landing or Bracken spawn is needed.
+The walk request places a fresh 3.000 m preview at full aura. After four seconds, Gojo slides 1.2 m toward the camera that placed him. The slide takes two seconds. Stay in place and watch whether Gojo holds his standing pose and the flame and wisps follow him. Share what you saw and the Walk complete line, which reports travel and maximum aura anchor offset. This checks the visual effect from the ship. If the preview rejects the path, share the warning and stop.
 
 ## Controlled phase cycle
 
@@ -42,7 +44,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Request-HdrpPreview.ps
 
 After four seconds, a stationary Gojo cycles through hunting, retreating, aggro, corpse dragging, retreating, aggro again, and hunting. Each phase lasts about two and a half seconds. The aura should be faint in zero-anger hunting, visible during retreat and corpse dragging at intermediate anger, and strongest during both aggro entries. Each aggro entry should play the selected spatial audio once. The standard preview uses a generated tone. A private preview bundle with a supplied voice clip plays that clip and holds aggro long enough to hear it. The corpse-dragging phase is an aura and audio check using simulated inputs.
 
-Share the Phase sample and Phase cycle complete lines, how the aura changed, and how many tones you heard. Expect two audio requests total and zero in the corpse-dragging sample. Clear removes the preview. No landing or spawn is needed.
+Share the Phase sample and Phase cycle complete lines. Describe how the aura changed and count the tones or voice lines you heard. Expect two audio requests, both on entry into aggro, with zero in the corpse-dragging sample. Send clear to remove Gojo. Stay in the ship for this check.
 
 ## Compare two standing heights
 
@@ -52,7 +54,7 @@ Send calm to place the default 3.000 m preview. Keep the camera and model in pla
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Request-HdrpPreview.ps1 -PluginDirectory $pluginDirectory -Command height -Height 2.400
 ~~~
 
-This command accepts 1.000 to 3.000 m, keeps the same horizontal placement and aura state, and realigns the scaled mesh to the original deck point. Use the same command with 3.000 to go back. Both log lines report the result. The 2.400 m setting is a visual trial.
+The command accepts 1.000 to 3.000 m. It keeps the horizontal position and aura state, then realigns the mesh to the original deck point. Run it with 3.000 to restore the default. Check both log entries. Use 2.400 m as a visual comparison.
 
 The flame and wisps scale with the measured standing height relative to the 2.100 m authoring reference. At 3.000 m the wisps and the flame shell width/depth scale by 1.250, while the flame shell height scales by 1.750. Height changes clear wisps emitted at the old scale, so allow a moment for new particles to appear.
 
@@ -93,7 +95,7 @@ Install Imperium 1.3.0 with its dependencies in that test profile. That version 
 2. Enable God Mode in Imperium's player settings. Land on a moon, enter the facility, and use Imperium's F2 spawn interface to spawn one Bracken in a clear interior spot. Use the entity selector and leave the AI enabled for the movement check. [Imperium controls](https://github.com/giosuel/imperium#interface-navigation)
 3. Watch briefly for one Gojo replacing the Bracken, feet near the floor, plausible facing and movement, and an aura that follows. Take one screenshot if convenient. Return the Startup effective-config line, LiveTest scene and lifecycle lines, Effects live scans from before and after landing, and any candidate, attachment, or failure lines with your observations. Exit the test after this first check.
 
-Imperium supplies the controlled spawn. GojoBracken only reads and adapts the live enemy's presentation. This run tests attachment and visible behavior with the debugger active. Gameplay parity, multiplayer, killing, carrying, and voice remain separate checks.
+Use Imperium to spawn the enemy. GojoBracken reads the live enemy and changes its presentation. This check covers attachment and visible movement with the debugger active. Gameplay parity, multiplayer, killing, carrying, and voice need separate checks.
 
 If attachment rejects mixed body layers, include every Visible body renderer line for that Bracken ID. Each line records the renderer type, layer number and name, and hierarchy path with sibling indices. The current visibility check preserves the vanilla model on rejection.
 
