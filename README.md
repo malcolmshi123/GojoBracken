@@ -13,6 +13,6 @@ Gojo replaces the Bracken in Lethal Company v81. He holds a standing pose as he 
 - [See how the mod loads assets, replaces the model, and handles the aura and voice](docs/runtime-behavior.md)
 - [Check v81 compatibility, diagnostics, and regression tests](docs/game-compatibility.md)
 
-Mod created by Malcolm Shi. Japanese aggro line recorded by Ashton Mak.
+GojoBracken created by Malcolm Shi. Japanese aggro line performed by Ashton Mak.
 
 The code uses the [MIT license](LICENSE). See the [archive](archive/README.md) for the old guides and standalone preview.
