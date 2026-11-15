@@ -41,7 +41,7 @@ $manifest = [ordered]@{
     dependencies = @('BepInEx-BepInExPack-5.4.2305')
 }
 $files = [ordered]@{
-    'README.md' = (Join-Path $repo 'docs/packaging.md')
+    'README.md' = (Join-Path $repo 'packaging/README.md')
     'icon.png' = $icon
     'LICENSE' = (Join-Path $repo 'LICENSE')
     'ASSET-CREDITS.txt' = $credits
