@@ -23,7 +23,7 @@ The development laptop imported this project with Unity 2022.3.62f2 and generate
 - Entering aggro increments the voice-trigger counter once. Leave aggro and return to trigger it again.
 - No voice is supplied. Optionally assign your own local AudioClip to the AudioSource on **Preview controls - editor study only** before entering Play mode.
 - Enable Remote simulation to use a faint aura outside aggro and a strong aura during aggro, regardless of the anger slider. This approximates phase; it does not simulate authoritative anger.
-- Kill animation overlay suppresses an aggro-entry voice event; finishing that overlay does not create a new entry.
+- Kill animation overlay suppresses the voice line on entry into aggro; finishing that overlay does not create a new entry.
 - Aura strength scales the envelope intensity and wisp emission from 0 to 3; 1 preserves the approved appearance.
 - Simulate death clears particles and stops audio. End preview keeps effects stopped; Reset preview clears state and counters and returns to hunting.
 

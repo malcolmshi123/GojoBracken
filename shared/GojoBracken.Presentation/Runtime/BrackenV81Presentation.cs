@@ -8,7 +8,7 @@ namespace GojoBracken
     {
         internal readonly BrackenPhase Phase;
         internal readonly float AuraLevel;
-        internal readonly bool PlayAggroVoice;
+        internal readonly bool PlayVoiceLine;
         internal readonly bool StopEffects;
         internal readonly bool UsesPhaseApproximation;
 
@@ -16,7 +16,7 @@ namespace GojoBracken
         {
             Phase = phase;
             AuraLevel = auraLevel;
-            PlayAggroVoice = playVoice;
+            PlayVoiceLine = playVoice;
             StopEffects = stop;
             UsesPhaseApproximation = approximate;
         }
@@ -56,7 +56,7 @@ namespace GojoBracken
             }
             bool aggro = observation.StateIndex == 2;
             bool playVoice = aggro && !wasAggro && !observation.InKillAnimation && !observation.CarryingBody;
-            // Track the real state edge; ending an overlay must not retrigger the aggro line.
+            // Track the real state edge; ending an overlay must not retrigger the voice line.
             wasAggro = aggro;
             BrackenPhase phase = observation.InKillAnimation ? BrackenPhase.Killing
                 : observation.CarryingBody ? BrackenPhase.CorpseDragging

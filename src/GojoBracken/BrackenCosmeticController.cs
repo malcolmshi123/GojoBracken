@@ -116,7 +116,7 @@ namespace GojoBracken
 
         private AudioSource CreateAudioSource(AudioClip clip, bool loop)
         {
-            var audioObject = new GameObject(loop ? "Gojo aggro music" : "Gojo aggro voice");
+            var audioObject = new GameObject(loop ? "Gojo aggro music" : "Gojo voice line");
             audioObject.transform.SetParent(effects.transform, false);
             var source = audioObject.AddComponent<AudioSource>();
             source.playOnAwake = false;
@@ -169,7 +169,7 @@ namespace GojoBracken
                 music.volume = visualAnger * musicMaxVolume;
                 if (observation.StateIndex != 2 && music.isPlaying) music.Stop();
             }
-            if (LastFrame.PlayAggroVoice)
+            if (LastFrame.PlayVoiceLine)
             {
                 VoiceRequests++;
                 voice.Stop();

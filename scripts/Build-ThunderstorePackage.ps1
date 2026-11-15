@@ -37,11 +37,11 @@ $manifest = [ordered]@{
     name = 'GojoBracken'
     version_number = $version
     website_url = 'https://github.com/malcolmshi123/GojoBracken'
-    description = 'Replaces the Bracken visually with a standing Gojo, an anger-scaled aura, and a spatial aggro voice line.'
+    description = 'Replaces the Bracken visually with a standing Gojo, an anger-scaled aura, and a spatial voice line.'
     dependencies = @('BepInEx-BepInExPack-5.4.2305')
 }
 $files = [ordered]@{
-    'README.md' = (Join-Path $repo 'packaging/README.md')
+    'README.md' = (Join-Path $repo 'README.md')
     'icon.png' = $icon
     'LICENSE' = (Join-Path $repo 'LICENSE')
     'ASSET-CREDITS.txt' = $credits

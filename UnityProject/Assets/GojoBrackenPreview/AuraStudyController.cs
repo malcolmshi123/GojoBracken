@@ -52,7 +52,7 @@ namespace GojoBracken.Authoring
                 return;
             }
             EffectsStopped = false;
-            if (frame.PlayAggroVoice)
+            if (frame.PlayVoiceLine)
             {
                 VoiceTriggerCount++;
                 if (VoiceSource != null && VoiceSource.clip != null)
@@ -218,7 +218,7 @@ namespace GojoBracken.Authoring
             InKillAnimation = GUILayout.Toggle(InKillAnimation, "Kill animation overlay");
             GUILayout.Label("Aura strength: " + AuraStrength.ToString("0.0"));
             AuraStrength = GUILayout.HorizontalSlider(AuraStrength, 0f, 3f);
-            GUILayout.Label("Aggro voice triggers: " + VoiceTriggerCount);
+            GUILayout.Label("Voice line triggers: " + VoiceTriggerCount);
             GUILayout.Label(VoiceSource != null && VoiceSource.clip != null ? "Local voice clip assigned." : "No voice clip assigned.");
             if (GUILayout.Button("Simulate death")) SimulateDeath();
             if (GUILayout.Button("End preview")) EndPreview();
