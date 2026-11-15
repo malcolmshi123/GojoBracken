@@ -2,6 +2,10 @@
 
 A Lethal Company v81 cosmetic mod. Standing Gojo follows the Bracken, the aura scales with anger, and the Japanese line plays on eligible aggro entries.
 
+![Gojo standing in the Lethal Company ship with a blue aura](docs/images/gojo-ship-preview.png)
+
+*In-game solo ship preview of Gojo with the aura at full intensity.*
+
 - [Packaging](docs/packaging.md) covers building and installing the Thunderstore ZIP.
 - [Release assets](docs/release-assets.md) records credits and public release status.
 - [Asset pipeline](docs/asset-pipeline.md) covers compiling the plugin and exporting Unity assets.
