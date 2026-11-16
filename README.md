@@ -1,10 +1,10 @@
 # GojoBracken
 
-Gojo Satoru replaces the Bracken in Lethal Company v81. He follows the Bracken’s movements in a standing pose. When the Bracken enters aggro, Gojo plays a Japanese voice line over music that loops until aggro ends. As the Bracken gets angrier, Gojo’s aura grows stronger and the music gets louder.
+Gojo Satoru replaces the Bracken in Lethal Company v81. He follows the Bracken’s movements in a standing pose. When the Bracken enters aggro, Gojo plays a Japanese voice line over music that loops until aggro ends. As the Bracken gets angrier, the music gets louder and Gojo's aura grows stronger.
 
 ![Gojo standing in the Lethal Company ship with a blue aura](https://raw.githubusercontent.com/malcolmshi123/GojoBracken/main/docs/images/gojo-ship-preview.png)
 
-*Solo ship preview with the aura at full strength.*
+*Solo ship preview with Gojo's aura at full strength.*
 
 ## Credits
 
