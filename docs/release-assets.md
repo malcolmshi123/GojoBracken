@@ -1,6 +1,6 @@
 # Release asset credits
 
-GojoBracken created by Malcolm Shi. These credits apply to version 0.2.6.
+GojoBracken created by Malcolm Shi. These credits apply to version 0.2.7.
 
 | Asset | Recorded source and changes | Release status |
 | --- | --- | --- |

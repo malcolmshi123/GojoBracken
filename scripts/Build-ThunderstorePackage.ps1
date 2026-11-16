@@ -1,4 +1,4 @@
-#requires -Version 5.1
+﻿#requires -Version 5.1
 [CmdletBinding()]
 param(
     [Parameter(Mandatory)] [string] $BundleDirectory,
@@ -37,7 +37,7 @@ $manifest = [ordered]@{
     name = 'GojoBracken'
     version_number = $version
     website_url = 'https://github.com/malcolmshi123/GojoBracken'
-    description = 'Replaces the Bracken visually with a standing Gojo, an anger-scaled aura, and a spatial voice line.'
+    description = "Swaps the Bracken’s model for Gojo. Plays a voice line and music when the Bracken enters aggro. Gojo’s aura grows stronger as the Bracken gets angrier."
     dependencies = @('BepInEx-BepInExPack-5.4.2305')
 }
 $files = [ordered]@{
