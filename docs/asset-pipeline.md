@@ -24,3 +24,9 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-SoloLive
 Point candidateProject to the generated u directory and supply a local mono WAV and a credits text file. The voice build writes live-test-voice-bundle/gojobracken. For a private music test, pass the local MP3 with -MusicMp3 and credit its source. That build writes live-test-music-bundle/gojobracken. To test constant 2× playback gain, pass -UniformVoiceBoost with a voice WAV at its original level.
 
 Use bundles/gojobracken-hdrp-material-check for material checks. Capture-HdrpPreview.ps1 takes the same candidate project and saves screenshots offline. Follow the [packaging guide](packaging.md) to build the ZIP.
+
+When exporting assets, put the credits, source links, permissions, and changes in CREDITS.txt. The Unity exporter embeds that text in the bundle and writes ASSET-CREDITS.txt for the [package build](packaging.md).
+
+Source archive SHA-256 for the model is B0969E72C9BD3C3D0D48BFF1DB6A9033297D8CF128552F51C66C8B355985F8A9. Current voice source SHA-256 is 80E2F04FFB0058B7EB46A0EB4E727392660FCD7370F6EDD807F09C4296610E36.
+
+For the release voice mix, the mono PCM file uses 6.16x whole-clip gain (+15.79 dB), with an estimated RMS of -15.65 dBFS before playback gain. The export uses no limiter. UniformVoiceBoost applies another 2x gain during playback.

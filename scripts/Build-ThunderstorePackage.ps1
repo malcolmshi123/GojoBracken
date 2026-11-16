@@ -28,7 +28,7 @@ $image = [Drawing.Image]::FromFile($icon)
 try {
     if ($image.RawFormat.Guid -ne [Drawing.Imaging.ImageFormat]::Png.Guid -or
         $image.Width -ne 256 -or $image.Height -ne 256) {
-        throw 'The package icon must be a 256 by 256 PNG.'
+        throw 'The package icon must be a 256x256 PNG.'
     }
 } finally { $image.Dispose() }
 

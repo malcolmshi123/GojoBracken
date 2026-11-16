@@ -31,7 +31,7 @@ For a private candidate built with IncludeSoloConfig, confirm the imported confi
 
 ## Build the archive
 
-Build the Release plugin and export the Windows x64 bundle and its ASSET-CREDITS.txt with the Unity exporter. Supply a 256 by 256 PNG icon and the directory containing both exported files.
+Build the Release plugin and export the Windows x64 bundle and its ASSET-CREDITS.txt with the Unity exporter. Supply a 256x256 PNG icon and the directory containing both exported files.
 
 ~~~powershell
 dotnet build GojoBracken.sln -c Release
