@@ -2,10 +2,12 @@
 [CmdletBinding()]
 param(
     [string] $UnityEditorPath = 'C:\Program Files\Unity 2022.3.62f2\Editor\Unity.exe',
-    [switch] $VerifyOnly
+    [switch] $VerifyOnly,
+    [switch] $Reimport
 )
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+if ($VerifyOnly -and $Reimport) { throw 'Choose verification or reimport, not both.' }
 $repo = Split-Path -Parent $PSScriptRoot
 $output = Join-Path $repo 'artifacts\unity'
 $project = Join-Path $output 'project'
@@ -58,7 +60,9 @@ function Invoke-Unity([string] $Method, [string] $LogName, [string] $Marker) {
         throw "Unity failed during $Method. Read $log."
     }
 }
-if (-not $VerifyOnly -and -not (Test-Path -LiteralPath (Join-Path $project 'Assets\Gojo'))) {
+if ($Reimport) {
+    Invoke-Unity 'ImportGojo.Reimport' 'import.log' 'GOJO UNITY IMPORT PASS:'
+} elseif (-not $VerifyOnly -and -not (Test-Path -LiteralPath (Join-Path $project 'Assets\Gojo'))) {
     Invoke-Unity 'ImportGojo.Run' 'import.log' 'GOJO UNITY IMPORT PASS:'
 }
 Invoke-Unity 'GojoModelChecks.VerifyBundle' 'verification.log' 'GOJO BUNDLE CHECKS PASS'

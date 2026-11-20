@@ -11,6 +11,14 @@ using UnityEngine.Rendering.HighDefinition;
 public static class ImportGojo
 {
     private const string Folder = "Assets/Gojo";
+    public static void Reimport()
+    {
+        GojoModelChecks.ReadData();
+        if (AssetDatabase.IsValidFolder(Folder))
+            GojoModelChecks.Require(AssetDatabase.DeleteAsset(Folder), "Could not replace generated Gojo assets");
+        AssetDatabase.DeleteAsset("Assets/GojoPipeline.asset");
+        Run();
+    }
     public static void Run()
     {
         GojoModelChecks.Require(Application.unityVersion == "2022.3.62f2", "Use Unity 2022.3.62f2");

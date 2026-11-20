@@ -38,7 +38,9 @@ public static class CaptureGojo
             Render(camera, target, output, "side", center, Vector3.left, 2.52f);
             Render(camera, target, output, "back", center, Vector3.forward, 2.52f);
             Render(camera, target, output, "three-quarter", center, new Vector3(-1, 0, -1), 2.52f);
-            Render(camera, target, output, "hand-contact", new Vector3(center.x, .96f, 0), Vector3.left, .43f);
+            Render(camera, target, output, "hands", new Vector3(center.x, .96f, 0), Vector3.left, .43f);
+            Render(camera, target, output, "neck-side", new Vector3(center.x, 1.82f, .015f), Vector3.left, .42f);
+            Render(camera, target, output, "neck-back", new Vector3(center.x, 1.82f, .015f), Vector3.forward, .42f);
             UnityEngine.Object.DestroyImmediate(target);
             Debug.Log("GOJO HDRP PREVIEWS PASS: " + output);
         }
