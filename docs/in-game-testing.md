@@ -1,4 +1,12 @@
-# Solo in-game HDRP preview
+# In-game testing
+
+For the approved Blender model and current private test kit, use the [solo behavior checkpoint](solo-regression.md). It covers aura/audio transitions, kill/body observations and cleanup, with Git Bash commands for preflight and evidence collection.
+
+For a stationary simulated cycle using the approved 0.2.7 assets, use the [private phase preview](phase-preview.md). It includes temporary setup and restore commands for `profiles/test`. These simulated states do not validate live AI, cleanup or player-kill/body alignment.
+
+The earlier HDRP development-preview procedures below refer to historical preview builds and bundles. They are retained for that workflow; use the current kit's own metadata and configuration for the approved model.
+
+## Earlier solo HDRP preview
 
 Use the ship preview with Lethal Company v81 and Unity 2022.3.62f2. GojoBracken 0.1.34 offers the opt-in RenderPreview setting. The test bundle contains the calibrated Gojo and aura prefabs.
 

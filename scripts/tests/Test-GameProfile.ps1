@@ -26,15 +26,17 @@ $expected = [ordered]@{gameMvid=$mvid;dllSha256=(Get-FileHash "$plugin\GojoBrack
 $manifest = Join-Path $root 'expected.json'
 [IO.File]::WriteAllText($manifest, ($expected | ConvertTo-Json))
 $report = Join-Path $root 'report.json'
-function Invoke-Check([bool] $ShouldPass, [string] $Name) {
+function Invoke-Check([bool] $ShouldPass, [string] $Name, [string] $Mode = '') {
     $arguments = @('-NoProfile', '-ExecutionPolicy', 'RemoteSigned', '-File', ('"' + (Join-Path $repo 'scripts\Test-GameProfile.ps1') + '"'),
         '-GameDirectory', ('"' + $game + '"'), '-ProfileDirectory', ('"' + $profile + '"'),
         '-ExpectedManifest', ('"' + $manifest + '"'), '-OutputPath', ('"' + $report + '"'))
+    if ($Mode) { $arguments += @('-Mode', $Mode) }
     $process = Start-Process -FilePath powershell.exe -ArgumentList $arguments -WindowStyle Hidden -Wait -PassThru -RedirectStandardOutput (Join-Path $root "$Name.log") -RedirectStandardError (Join-Path $root "$Name-error.log")
     $passed = $process.ExitCode -eq 0
     if ($passed -ne $ShouldPass) { throw "Unexpected preflight result: $Name" }
     $record = Get-Content -LiteralPath $report -Raw | ConvertFrom-Json
     if ($record.preflightPassed -ne $ShouldPass -or $record.gameplayValidated) { throw "Incorrect or stale report: $Name" }
+    if ($ShouldPass -and $Mode -and ($record.mode -ne $Mode -or -not $record.simulatedChecksOnly)) { throw "Incorrect preview mode report: $Name" }
 }
 Invoke-Check $true 'valid-fixture'
 [IO.File]::AppendAllText((Join-Path $plugin 'gojobracken'), 'tampered')
@@ -48,4 +50,28 @@ Remove-Item -LiteralPath (Join-Path $duplicate 'GojoBracken.dll')
 $expected.gameMvid = [Guid]::NewGuid().ToString('D')
 [IO.File]::WriteAllText($manifest, ($expected | ConvertTo-Json))
 Invoke-Check $false 'unsupported-game'
-Write-Output "GAME PROFILE CHECKS PASS: valid synthetic fixture; tampered bundle, duplicate plugin, unsupported MVID and stale success report rejected. No game run. Logs: $root"
+$expected.gameMvid = $mvid
+[IO.File]::WriteAllText($manifest, ($expected | ConvertTo-Json))
+$previewBundle = Join-Path $plugin 'gojobracken-hdrp-material-check'
+Move-Item -LiteralPath (Join-Path $plugin 'gojobracken') -Destination $previewBundle
+$config = Join-Path $profile 'BepInEx\config\FreakyFriday.GojoBracken.cfg'
+$previewConfig = Get-Content -LiteralPath (Join-Path $repo 'packaging/preview/FreakyFriday.GojoBracken.cfg') -Raw
+[IO.File]::WriteAllText($config, $previewConfig)
+Invoke-Check $true 'valid-preview' 'RenderPreview'
+Invoke-Check $false 'preview-config-in-live-mode'
+[IO.File]::AppendAllText($previewBundle, 'tampered')
+Invoke-Check $false 'tampered-preview' 'RenderPreview'
+[IO.File]::WriteAllText($previewBundle, 'Synthetic bundle payload')
+Move-Item -LiteralPath $previewBundle -Destination (Join-Path $plugin 'gojobracken')
+Invoke-Check $false 'preview-requires-preview-filename' 'RenderPreview'
+Move-Item -LiteralPath (Join-Path $plugin 'gojobracken') -Destination $previewBundle
+[IO.File]::WriteAllText($config, $previewConfig.Replace('Enabled = false', 'Enabled = true'))
+Invoke-Check $false 'preview-rejects-live-effects' 'RenderPreview'
+[IO.File]::WriteAllText($config, $previewConfig.Replace('SoloLiveTest = false', 'SoloLiveTest = true'))
+Invoke-Check $false 'preview-rejects-live-test' 'RenderPreview'
+[IO.File]::WriteAllText($config, $previewConfig.Replace('Enabled = true', 'Enabled = false'))
+Invoke-Check $false 'preview-requires-enabled' 'RenderPreview'
+[IO.File]::WriteAllText($config, $previewConfig)
+Copy-Item -LiteralPath (Join-Path $plugin 'GojoBracken.dll') -Destination $duplicate
+Invoke-Check $false 'preview-rejects-duplicate-dll' 'RenderPreview'
+Write-Output "GAME PROFILE CHECKS PASS: live/preview fixtures, mode isolation, tampering, duplicate DLLs, unsupported MVID and stale-report rejection. Synthetic files only; no game run. Logs: $root"
