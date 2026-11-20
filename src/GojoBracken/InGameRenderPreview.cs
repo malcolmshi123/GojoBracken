@@ -11,7 +11,6 @@ namespace GojoBracken
     internal sealed class InGameRenderPreview : IDisposable
     {
         internal const string BundleName = "gojobracken-hdrp-material-check";
-        private const float AuraReferenceHeight = 2.10f;
         private const string RequestName = "gojobracken-preview.request";
         private static readonly (int state, float anger, bool carrying)[] CyclePhases =
         {
@@ -166,7 +165,7 @@ namespace GojoBracken
             visual.transform.SetParent(anchor.transform, false);
             UnityEngine.Object.Instantiate(model, visual.transform, false);
             BrackenModelAttachment.UseStandingPose(visual.transform);
-            float height = AlignHeight(3.000f);
+            AlignHeight(3.000f);
             var bundledVoice = testTone && bundle.Contains("voice_source")
                 ? bundle.LoadAsset<AudioClip>(GojoAssetContract.Voice) : null;
             if (testTone && bundle.Contains("voice_source") && (bundledVoice == null || bundledVoice.samples <= 0))
@@ -181,8 +180,7 @@ namespace GojoBracken
                 aura, bundledVoice ?? previewClip, 12f, 1f, out controller, out var error, bundledMusic,
                 bundledVoice != null && bundle.Contains(GojoAssetContract.BoostedVoice)))
                 throw new InvalidOperationException(error);
-            ScaleAura(height);
-            info("[RenderPreview] Placed local model: fixed standing pose.");
+            info("[RenderPreview] Placed local model: fixed standing pose; aura width/depth scale=1.2; height scale=1.500; flame height calm/full=1.200/1.500.");
         }
 
         private static AudioClip CreatePreviewClip(bool testTone)
@@ -322,10 +320,10 @@ namespace GojoBracken
                 return;
             }
             walking = false;
-            ScaleAura(AlignHeight(height));
+            AlignHeight(height);
         }
 
-        private float AlignHeight(float targetHeight)
+        private void AlignHeight(float targetHeight)
         {
             float beforeY = anchor.transform.position.y;
             var standing = MeasureStandingMesh(visual);
@@ -344,18 +342,6 @@ namespace GojoBracken
             anchor.transform.position += Vector3.up * correction;
             info(FormattableString.Invariant(
                 $"[RenderPreview] Floor alignment: collider={deck.collider.name}, deckY={deck.point.y:F3}, anchorYBefore={beforeY:F3}, meshBottomOffset={lowestMeshY - beforeY:F3}, correction={correction:F3} m."));
-            return standing.height;
-        }
-
-        private void ScaleAura(float height)
-        {
-            float ratio = height / AuraReferenceHeight;
-            float wispScale = Mathf.Min(ratio, 1.25f);
-            float flameHeightScale = ratio <= 1f ? ratio
-                : Mathf.Lerp(1f, 1.75f, Mathf.InverseLerp(AuraReferenceHeight, 3f, height));
-            controller.SetEffectScale(wispScale, flameHeightScale);
-            info(FormattableString.Invariant(
-                $"[RenderPreview] Aura geometry scale: wisps={wispScale:F3}, flame width/depth={wispScale:F3}, flame height={flameHeightScale:F3} at {height:F3} m."));
         }
 
         private RaycastHit FindDeck(Vector3 estimatedFeet)

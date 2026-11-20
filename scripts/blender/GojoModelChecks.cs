@@ -31,7 +31,16 @@ public static class GojoModelChecks
     public static GojoModelData ReadData() => JsonUtility.FromJson<GojoModelData>(File.ReadAllText(Path.Combine(Output, "Gojo.json")));
     public static void Verify()
     {
-        Check(AssetDatabase.LoadAssetAtPath<GameObject>(Prefab), ReadData());
+        var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(Prefab);
+        var data = ReadData();
+        Check(prefab, data);
+        var normals = data.meshes[0].normals;
+        for (int i = 0; i < 3; i++) normals[i] = -normals[i];
+        bool rejected = false;
+        try { Check(prefab, data); }
+        catch (InvalidOperationException error) { rejected = error.Message.StartsWith("Blender/Unity normals differ"); }
+        finally { for (int i = 0; i < 3; i++) normals[i] = -normals[i]; }
+        Require(rejected, "Normal regression was not rejected");
         Debug.Log("GOJO PREFAB CHECKS PASS");
     }
     public static void VerifyBundle()
@@ -89,9 +98,15 @@ public static class GojoModelChecks
                 {
                     skin.BakeMesh(baked);
                     var vertices = baked.vertices;
+                    var normals = baked.normals;
                     Require(vertices.Length * 3 == source.posed.Length, "Vertex count changed");
                     for (int i = 0; i < vertices.Length; i++)
+                    {
                         maximum = Mathf.Max(maximum, Vector3.Distance(skin.transform.TransformPoint(vertices[i]), V3(source.posed, i)));
+                        var actualNormal = skin.transform.TransformDirection(normals[i]).normalized;
+                        Require(Vector3.Dot(actualNormal, V3(source.normals, i).normalized) > .9999f,
+                            "Blender/Unity normals differ: " + source.name + " vertex " + i);
+                    }
                 }
                 finally { UnityEngine.Object.DestroyImmediate(baked); }
             }

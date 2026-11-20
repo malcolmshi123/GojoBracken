@@ -25,7 +25,7 @@ namespace GojoBracken
 
         // The session verifies the actual type/module identity before calling this binding.
         internal static BrackenGameBinding Attach(Component enemy, Guid gameMvid, GameObject aura, AudioClip voice,
-            float saturation, float strength, Action<string> warning, GameObject modelPrefab = null, float modelScale = 1f, float wispScale = 1f, float flameHeightScale = 1f,
+            float saturation, float strength, Action<string> warning, GameObject modelPrefab = null, float modelScale = 1f,
             Action<string> traceVisibleLayers = null, bool useV81BodyLayout = false, AudioClip music = null, bool boostVoice = false)
         {
             var reader = new BrackenStateReader(enemy.GetType());
@@ -43,7 +43,6 @@ namespace GojoBracken
                 if (modelPrefab != null)
                     replacement = BrackenModelAttachment.Create(enemy.transform,
                         visibilityReader.SnapshotRenderers(enemy), modelPrefab, initialVisibility, modelScale);
-                if (wispScale != 1f || flameHeightScale != 1f) controller.SetEffectScale(wispScale, flameHeightScale);
                 binding = enemy.gameObject.AddComponent<BrackenGameBinding>();
                 binding.enemy = enemy;
                 binding.reader = reader;

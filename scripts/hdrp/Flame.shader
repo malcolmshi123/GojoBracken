@@ -32,7 +32,7 @@ Shader "GojoBracken/HDRP/Flame"
                 float taper = sin(h * 3.14159);
                 v.vertex.xz *= 1 + wave * taper * (0.3 + _Strength * 2);
                 v.vertex.x += sin(h * 5 - time * 2) * h * h * 0.25 * _Strength;
-                v.vertex.y *= lerp(0.65, 1.0, _Strength);
+                v.vertex.y *= lerp(0.8, 1.0, _Strength);
                 o.pos = TransformObjectToHClip(v.vertex.xyz);
                 o.world = TransformObjectToWorld(v.vertex.xyz);
                 o.normal = TransformObjectToWorldNormal(v.normal);

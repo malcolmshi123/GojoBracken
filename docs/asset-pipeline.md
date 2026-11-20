@@ -1,32 +1,43 @@
 # Asset pipeline
 
-## Compile the plugin
+The current release uses the edited Blender model and a native Unity prefab/bundle. Blender, Unity and the source assets are development requirements; players install the release ZIP.
 
-Install the .NET 10 SDK. Copy local.props.example to local.props. Set LethalCompanyDir to the game directory and BepInExCoreDir to the BepInEx core directory. GameManagedDir defaults to Lethal Company_Data/Managed inside the game installation. You can also pass these values as MSBuild properties.
+## Compile
 
-~~~powershell
+Install the .NET 10 SDK and configure `local.props` from `local.props.example` with the BepInEx core and game Managed directories. The plugin targets netstandard2.1.
+
+```bash
 dotnet build GojoBracken.sln -c Release
-~~~
+dotnet run --project tests/StateReaderChecks/StateReaderChecks.csproj -c Release
+```
 
-The plugin targets netstandard2.1. The Release DLL is in src/GojoBracken/bin/Release/netstandard2.1.
+## Model and bundle
 
-## Author and export
+Retain these ignored local authoring files when cleaning build output:
 
-Use Unity 2022.3.62f2. The [Unity project guide](../UnityProject/README.md) explains how to author prefabs, build the native aura, and export the production bundle. Record sources and permissions in the [release asset credits](release-assets.md).
+- `artifacts/blender/Gojo.blend`: the approved editable model, including hands and neck, with four packed textures.
+- `artifacts/blender/source/`: published 0.2.7 package, source textures, license and credits used as provenance.
+- `artifacts/blender/scripts/`: validation and consistent preview rendering; `tools/` and `user/` hold the isolated Blender installation/settings.
+- `artifacts/unity/project`: native model and HDRP assets in Unity 2022.3.62f2 / HDRP 14.0.12.
+- `artifacts/unity/mod-bundle/`: the approved complete `gojobracken`, credits and build manifest.
 
-For the private bundle, use Prepare-LocalModel.ps1 with the original model archive in Downloads. Use the GojoBracken editor menu to prepare and bake the standing model. Build the HDRP candidates, then build the voice bundle.
+The model has seven skinned meshes and 31 bones. Exported bind poses and a standing controller preserve the approved pose when runtime attachment disables the Animator. The jacket placket has two closed rectangular layers with constant widths and defined edges. Connected hand surfaces and the smooth neck join are retained. Custom normals are rebuilt for the edited surfaces. Blender fingerprints include posed normals; Unity checks both positions and normals and rejects a deliberately inverted normal. Independent finger animation and a calibrated corpse grip are not provided.
 
-~~~powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-HdrpMaterials.ps1
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-SoloLiveTestBundle.ps1 -CandidateProject $candidateProject -VoiceWav $voiceWav -VoiceCredits $voiceCredits
-~~~
+Run from the checkout root in Git Bash:
 
-Point candidateProject to the generated u directory and supply a local mono WAV and a credits text file. The voice build writes live-test-voice-bundle/gojobracken. For a private music test, pass the local MP3 with -MusicMp3 and credit its source. That build writes live-test-music-bundle/gojobracken. To test constant 2× playback gain, pass -UniformVoiceBoost with a voice WAV at its original level.
+```bash
+powershell.exe -NoProfile -ExecutionPolicy RemoteSigned \
+  -File scripts/Import-BlenderModel.ps1
+powershell.exe -NoProfile -ExecutionPolicy RemoteSigned \
+  -File scripts/Build-GojoBundle.ps1
+```
 
-Use bundles/gojobracken-hdrp-material-check for material checks. Capture-HdrpPreview.ps1 takes the same candidate project and saves screenshots offline. Follow the [packaging guide](packaging.md) to build the ZIP.
+Import verifies existing outputs instead of overwriting them. After deliberately editing Gojo.blend, use `-Reimport` on Import-BlenderModel.ps1 to replace generated native model assets. Use `-VerifyOnly` on either script to check existing outputs. Complete-bundle verification requires its existing build manifest to match the current flame shader and bundle bytes; it preserves that provenance instead of relabeling an older bundle. A normal bundle build refreshes the canonical HDRP shader copies before export. Keep the Editor project closed during batch commands. Build-GojoBundle uses pinned UnityPy 1.25.4 through uvx to preserve the released encoded audio streams.
 
-When exporting assets, put the credits, source links, permissions, and changes in CREDITS.txt. The Unity exporter embeds that text in the bundle and writes ASSET-CREDITS.txt for the [package build](packaging.md).
+The complete bundle retains `gojo`, `aura`, `domain_expansion`, `aggro_music` and the existing metadata aliases. Model/source hashes and verification records are under artifacts. Do not replace the complete bundle with the model-only `gojo-model` output.
 
-Source archive SHA-256 for the model is B0969E72C9BD3C3D0D48BFF1DB6A9033297D8CF128552F51C66C8B355985F8A9. Current voice source SHA-256 is 80E2F04FFB0058B7EB46A0EB4E727392660FCD7370F6EDD807F09C4296610E36.
+## Release and historical tools
 
-For the release voice mix, the mono PCM file uses 6.16x whole-clip gain (+15.79 dB), with an estimated RMS of -15.65 dBFS before playback gain. The export uses no limiter. UniformVoiceBoost applies another 2x gain during playback.
+Use the [packaging guide](packaging.md) to build and verify the release ZIP and [asset credits](release-assets.md) for attribution. The current bundle's credits already include the Blender modification notice; preserve their bytes with the bundle.
+
+UnityProject contains the earlier authoring studies and alternate raw-asset exporter. The older HDRP/solo bundle builders remain available for those studies; they are not the current release route. Superseded Blender handoff guides and the one-off 0.2.7 preview-kit builder are under ignored archive/, alongside increment records. They are historical snapshots, not current build instructions.

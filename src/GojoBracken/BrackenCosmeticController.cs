@@ -14,7 +14,6 @@ namespace GojoBracken
         private ParticleSystem.Burst[][] bursts;
         private ParticleSystem.Burst[][] scaledBursts;
         private Renderer[] renderers;
-        private Vector3[] rendererScales;
         private bool[] visible;
         private MaterialPropertyBlock[] properties;
         // Measured from the comparison bundle over the first 5.094 seconds.
@@ -61,6 +60,7 @@ namespace GojoBracken
                 pending.strength = auraStrength;
                 pending.effects = new GameObject("GojoBracken cosmetics");
                 pending.effects.transform.SetParent(host, false);
+                pending.effects.transform.localScale = new Vector3(1.2f, 1.5f, 1.2f);
                 // Prevent play-on-awake while preparing the clone.
                 pending.effects.SetActive(false);
                 var aura = Instantiate(auraPrefab, pending.effects.transform, false);
@@ -75,6 +75,7 @@ namespace GojoBracken
                     var system = pending.particles[i];
                     var main = system.main;
                     main.playOnAwake = false;
+                    main.scalingMode = ParticleSystemScalingMode.Hierarchy;
                     system.Stop(false, ParticleSystemStopBehavior.StopEmittingAndClear);
                     var emission = system.emission;
                     pending.timeRates[i] = emission.rateOverTimeMultiplier;
@@ -85,7 +86,6 @@ namespace GojoBracken
                     pending.scaledBursts[i] = (ParticleSystem.Burst[])saved.Clone();
                 }
                 pending.renderers = aura.GetComponentsInChildren<Renderer>(true);
-                pending.rendererScales = Array.ConvertAll(pending.renderers, renderer => renderer.transform.localScale);
                 pending.visible = Array.ConvertAll(pending.renderers, renderer => renderer.enabled);
                 pending.properties = Array.ConvertAll(pending.renderers, renderer => new MaterialPropertyBlock());
                 foreach (var renderer in pending.renderers) renderer.enabled = false;
@@ -196,26 +196,6 @@ namespace GojoBracken
         }
 
         internal Vector3 WorldPosition => effects.transform.position;
-
-        internal void SetEffectScale(float wispScale, float flameHeightScale)
-        {
-            if (stopped || effects == null) return;
-            effects.transform.localScale = Vector3.one * wispScale;
-            for (int i = 0; i < renderers.Length; i++)
-            {
-                if (!(renderers[i] is MeshRenderer)) continue;
-                var scale = rendererScales[i];
-                scale.y *= flameHeightScale / wispScale;
-                renderers[i].transform.localScale = scale;
-            }
-            foreach (var system in particles)
-            {
-                var main = system.main;
-                main.scalingMode = ParticleSystemScalingMode.Hierarchy;
-                // Existing world-space wisps belong to the previous size.
-                system.Clear(false);
-            }
-        }
 
         internal void SetVisibility(BrackenVisibility visibility)
         {

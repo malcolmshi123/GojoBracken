@@ -29,6 +29,17 @@ if ((Get-FileHash -LiteralPath $releasedBundle -Algorithm SHA256).Hash -ne '1A4A
 $data = Get-Content -LiteralPath (Join-Path $output 'Gojo.json') -Raw
 if ($data -notmatch '"sourceSha256":"([a-f0-9]{64})"') { throw 'Model source hash is missing.' }
 if ($Matches[1] -ine (Get-FileHash -LiteralPath (Join-Path $repo 'artifacts\blender\Gojo.blend')).Hash) { throw 'The exported model no longer matches Gojo.blend.' }
+$bundle = Join-Path $output 'mod-bundle\gojobracken'
+$buildManifest = Join-Path $output 'mod-bundle\build.json'
+if ($VerifyOnly) {
+    if (-not (Test-Path -LiteralPath $buildManifest)) { throw 'Bundle build provenance differs or is missing. Rebuild the bundle first.' }
+    $built = Get-Content -LiteralPath $buildManifest -Raw | ConvertFrom-Json
+    if (-not $built.PSObject.Properties['flameShaderSha256'] -or -not $built.PSObject.Properties['bundleSha256'] -or
+        $built.flameShaderSha256 -ne (Get-FileHash -LiteralPath (Join-Path $repo 'scripts/hdrp/Flame.shader')).Hash -or
+        $built.bundleSha256 -ne (Get-FileHash -LiteralPath $bundle).Hash) {
+        throw 'Bundle build provenance differs from the current shader or bundle. Rebuild the bundle first.'
+    }
+}
 $editor = Join-Path $project 'Assets\Editor'
 Copy-Item -Path (Join-Path $PSScriptRoot 'bundle\*.cs') -Destination $editor -Force
 $runtime = Join-Path $project 'Assets\GojoRuntime'
@@ -61,21 +72,23 @@ if (-not $VerifyOnly) {
 } else {
     Invoke-Unity 'GojoBundleChecks.Verify' 'verify-bundle.log' 'GOJO COMPLETE BUNDLE CHECKS PASS'
 }
-$bundle = Join-Path $output 'mod-bundle\gojobracken'
 & $UvPath --from UnityPy==1.25.4 python (Join-Path $PSScriptRoot 'bundle\bundle_resources.py') $releasedBundle --compare $bundle
 if ($LASTEXITCODE -ne 0) { throw 'Encoded audio no longer matches the release.' }
 if (-not $VerifyOnly) { Invoke-Unity 'GojoBracken.CaptureGojoBundle.Run' 'bundle-previews.log' 'GOJO COMPLETE BUNDLE PREVIEWS PASS:' }
-$record = [ordered]@{
-    modelSha256 = (Get-FileHash -LiteralPath (Join-Path $repo 'artifacts\blender\Gojo.blend')).Hash
-    sourcePackageSha256 = (Get-FileHash -LiteralPath $sourceZip).Hash
-    sourceBundleSha256 = (Get-FileHash -LiteralPath $releasedBundle).Hash
-    bundleSha256 = (Get-FileHash -LiteralPath $bundle).Hash
-    creditsSha256 = (Get-FileHash -LiteralPath (Join-Path $output 'mod-bundle\ASSET-CREDITS.txt')).Hash
-    unityVersion = '2022.3.62f2'
-    hdrpVersion = '14.0.12'
-    resourceToolVersion = 'UnityPy 1.25.4'
-    encodedAudioMatchesRelease = $true
+if (-not $VerifyOnly) {
+    $record = [ordered]@{
+        modelSha256 = (Get-FileHash -LiteralPath (Join-Path $repo 'artifacts\blender\Gojo.blend')).Hash
+        sourcePackageSha256 = (Get-FileHash -LiteralPath $sourceZip).Hash
+        sourceBundleSha256 = (Get-FileHash -LiteralPath $releasedBundle).Hash
+        bundleSha256 = (Get-FileHash -LiteralPath $bundle).Hash
+        creditsSha256 = (Get-FileHash -LiteralPath (Join-Path $output 'mod-bundle\ASSET-CREDITS.txt')).Hash
+        unityVersion = '2022.3.62f2'
+        hdrpVersion = '14.0.12'
+        flameShaderSha256 = (Get-FileHash -LiteralPath (Join-Path $repo 'scripts/hdrp/Flame.shader')).Hash
+        resourceToolVersion = 'UnityPy 1.25.4'
+        encodedAudioMatchesRelease = $true
+    }
+    [IO.File]::WriteAllText($buildManifest, ($record | ConvertTo-Json))
 }
-[IO.File]::WriteAllText((Join-Path $output 'mod-bundle\build.json'), ($record | ConvertTo-Json))
 Get-FileHash -LiteralPath $bundle -Algorithm SHA256
 Write-Output "Complete model/aura/audio bundle: $bundle"

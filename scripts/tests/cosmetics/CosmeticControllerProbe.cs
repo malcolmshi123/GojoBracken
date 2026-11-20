@@ -77,6 +77,10 @@ public sealed class CosmeticControllerProbe : MonoBehaviour
             BakedAura, clip, 12f, 1f, out var native, out var nativeError), nativeError);
         Require(Array.TrueForAll(nativeHost.GetComponentsInChildren<Renderer>(true), renderer => !renderer.enabled),
             "native shell and particles wait for first observation");
+        Require(Vector3.Distance(nativeHost.transform.GetChild(0).localScale, new Vector3(1.2f, 1.5f, 1.2f)) < .0001f,
+            "aura width/depth is 1.2 while height stays at 1.5");
+        Require(nativeHost.GetComponentInChildren<ParticleSystem>().main.scalingMode == ParticleSystemScalingMode.Hierarchy,
+            "wisps inherit the fixed aura scale");
         native.Apply(Input(2, 12f), true, 10f);
         var nativeShell = nativeHost.GetComponentInChildren<MeshRenderer>();
         var nativeProperties = new MaterialPropertyBlock();

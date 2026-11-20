@@ -31,9 +31,7 @@ public static class BuildGojoBundle
             GojoModelChecks.Require(BundleSnapshot.Hash(bytes) == resource.sha256, "Source resource hash mismatch");
             File.WriteAllBytes(Folder + "/Resources/" + resource.file, bytes);
         }
-        foreach (string name in new[] { "Flame", "Wisps" })
-            File.WriteAllText(Folder + "/Shaders/" + name + ".shader", File.ReadAllText(Path.GetFullPath(Path.Combine(GojoModelChecks.Output, "../../scripts/hdrp", name + ".shader"))).Replace("\r\n", "\n"), new UTF8Encoding(false));
-        AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
+        RefreshAuraShaders();
         var bundle = AssetBundle.LoadFromFile(Path.Combine(source, "package/BepInEx/plugins/GojoBracken/gojobracken"));
         GojoModelChecks.Require(bundle != null, "Released GojoBracken bundle is required");
         try
@@ -126,6 +124,7 @@ public static class BuildGojoBundle
         alias == "domain_expansion" || alias == "aggro_music" ? Folder + "/Audio/" + alias + ".asset" : Folder + "/" + alias + ".txt";
     public static void Build()
     {
+        RefreshAuraShaders();
         GojoModelChecks.Verify();
         string output = Path.GetDirectoryName(GojoBundleChecks.BundlePath); Directory.CreateDirectory(output);
         var aliases = new[] { "gojo" }.Concat(Aliases).ToArray();
@@ -137,5 +136,11 @@ public static class BuildGojoBundle
         File.Copy(Folder + "/asset_credits.txt", Path.Combine(output, "ASSET-CREDITS.txt"), true);
         GojoBundleChecks.Verify();
         Debug.Log("GOJO COMPLETE BUNDLE BUILD PASS: " + GojoBundleChecks.BundlePath);
+    }
+    private static void RefreshAuraShaders()
+    {
+        foreach (string name in new[] { "Flame", "Wisps" })
+            File.WriteAllText(Folder + "/Shaders/" + name + ".shader", File.ReadAllText(Path.GetFullPath(Path.Combine(GojoModelChecks.Output, "../../scripts/hdrp", name + ".shader"))).Replace("\r\n", "\n"), new UTF8Encoding(false));
+        AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
     }
 }

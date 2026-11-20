@@ -1,41 +1,39 @@
-# GojoBracken
+# Packaging and release
 
-Gojo follows the Bracken in a fixed standing pose. His aura grows stronger with anger, and a spatial voice clip plays when the Bracken enters aggro. This development build targets Lethal Company v81 and uses BepInEx 5.
+The 0.3.0 package uses the approved Blender model and the existing aura, Japanese voice and music. Install BepInExPack 5.4.2305 and the release ZIP in a Lethal Company v81 profile, or place its BepInEx folder in the profile manually. Keep exactly one GojoBracken.dll beside the extensionless gojobracken bundle.
 
-GojoBracken created by Malcolm Shi. Japanese voice line performed by Ashton Mak.
+The package includes the normal attachment configuration: development cosmetics and the standing model enabled; SoloLiveTest and RenderPreview disabled. Existing customized configurations should be reviewed when updating. Multiplayer behavior and player-kill/body alignment are unverified for this model. Release acceptance is based on the approved model and in-ship simulated cycle. Further live testing was waived; see the [testing scope](in-game-testing.md).
 
-## Install
+## Build
 
-Install BepInExPack 5.4.2305 and GojoBracken in a Lethal Company v81 profile. Keep GojoBracken.dll and the extensionless gojobracken bundle together under BepInEx/plugins. For a local ZIP, use [Import local mod](https://wiki.thunderstore.io/mods/mod-not-visible).
+From the checkout root in Git Bash, using the approved complete bundle and its matching credits:
 
-Launch the game once to generate BepInEx/config/FreakyFriday.GojoBracken.cfg. Close the game, set these values, then relaunch.
-
-~~~ini
-[DevelopmentEffects]
-Enabled = true
-StandingModelPreview = true
-SoloLiveTest = false
-
-[RenderPreview]
-Enabled = false
-~~~
-
-The standard package uses the regular attachment path. Multiplayer compatibility is unverified.
-
-## Smoke-test a fresh install
-
-Check that the mod manager shows the portrait and installs one DLL beside the bundle. In BepInEx/LogOutput.log, look for the Gojo Bracken load message and [Effects] Development cosmetics enabled. The effects message confirms the plugin opened and validated the bundle. You can stop in the ship.
-
-For a private candidate built with IncludeSoloConfig, confirm the imported config sets SoloLiveTest to true and check for the solo camera log as well. The 0.1.34 private candidate passed the fresh-profile import and startup check on v81. See the [development test guide](https://github.com/malcolmshi123/GojoBracken/blob/main/docs/in-game-testing.md#private-solo-bracken-attachment-test) for the controlled spawn workflow.
-
-
-## Build the archive
-
-Build the Release plugin and export the Windows x64 bundle and its ASSET-CREDITS.txt with the Unity exporter. Supply a 256x256 PNG icon and the directory containing both exported files.
-
-~~~powershell
+```bash
 dotnet build GojoBracken.sln -c Release
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-ThunderstorePackage.ps1 -BundleDirectory .\artifacts\assets -IconPath $iconPath
-~~~
+powershell.exe -NoProfile -ExecutionPolicy RemoteSigned \
+  -File scripts/Build-ThunderstorePackage.ps1 \
+  -BundleDirectory artifacts/unity/mod-bundle \
+  -IconPath artifacts/unity/source/package/icon.png
+```
 
-Use -IncludeSoloConfig to put the tested solo settings in a private ZIP for a fresh test profile. The script reads the version from the DLL, writes the ZIP to dist, and prints its SHA-256 hash. The layout follows the [Thunderstore package requirements](https://wiki.thunderstore.io/mods/creating-a-package) and [BepInEx install routes](https://wiki.thunderstore.io/mods/packaging-your-mods). Before publishing, document permission to distribute the assets.
+The builder reads the assembly version, includes README.md, CHANGELOG.md, license, credits, a 256x256 PNG icon, DLL, bundle and release config, then writes dist/GojoBracken-0.3.0.zip. It refuses to overwrite an existing archive. `-IncludeSoloConfig` selects the private solo-test configuration instead and is not used for a public release.
+
+## Verify
+
+Use Mono.Cecil.dll from the BepInEx core directory to inspect DLL metadata without executing game code:
+
+```bash
+powershell.exe -NoProfile -ExecutionPolicy RemoteSigned \
+  -File scripts/Test-ReleasePackage.ps1 \
+  -PackagePath dist/GojoBracken-0.3.0.zip \
+  -BundleDirectory artifacts/unity/mod-bundle \
+  -CecilPath '/path/to/BepInEx/core/Mono.Cecil.dll'
+```
+
+Pass a Windows path or convert a Git Bash path with cygpath -w when setting CecilPath. The verifier checks exact file layout and bytes, source README/changelog/license, matching bundle/credits, config, icon, dependency identity and agreement between filename, manifest, DLL assembly, compiled PluginVersion and project version. Its adjacent JSON report includes hashes and the pinned game MVID and can serve as Test-GameProfile.ps1's ExpectedManifest. Failed verification replaces any earlier success report. File verification does not establish gameplay compatibility.
+
+For packaging regression checks, run scripts/tests/Test-ReleasePackage.ps1 with the same CecilPath. The suite tests valid packaging and rejects altered version, bundle, config, extra DLLs, and missing or duplicate entries. See [in-game testing](in-game-testing.md) for the optional preview and live modes.
+
+## Handoff
+
+Before installing, back up the profile's plugin directory and configuration outside BepInEx/plugins. Keep the approved 0.2.7 published package as provenance and rollback material. To roll back, close the game, restore the backed-up DLL, bundle and configuration together, and remove any newly introduced preview files. Do not leave duplicate plugin DLLs. Only the newly versioned ZIP is a release candidate; do not upload old private test kits. Publication, Git staging/commits/pushes and tags remain separate user actions. When uploading, retain the AI Generated category and the source/voice/music attribution. After installation, inspect LogOutput.log for bundle/configuration failures. Disable DevelopmentEffects.Enabled and restart to use vanilla visuals while diagnosing a problem. File verification does not replace a fresh-profile game launch or multiplayer test.

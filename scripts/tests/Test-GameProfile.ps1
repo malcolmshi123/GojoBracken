@@ -36,7 +36,7 @@ function Invoke-Check([bool] $ShouldPass, [string] $Name, [string] $Mode = '') {
     if ($passed -ne $ShouldPass) { throw "Unexpected preflight result: $Name" }
     $record = Get-Content -LiteralPath $report -Raw | ConvertFrom-Json
     if ($record.preflightPassed -ne $ShouldPass -or $record.gameplayValidated) { throw "Incorrect or stale report: $Name" }
-    if ($ShouldPass -and $Mode -and ($record.mode -ne $Mode -or -not $record.simulatedChecksOnly)) { throw "Incorrect preview mode report: $Name" }
+    if ($ShouldPass -and $Mode -and ($record.mode -ne $Mode -or $record.simulatedChecksOnly -ne ($Mode -eq 'RenderPreview'))) { throw "Incorrect mode report: $Name" }
 }
 Invoke-Check $true 'valid-fixture'
 [IO.File]::AppendAllText((Join-Path $plugin 'gojobracken'), 'tampered')
@@ -74,4 +74,18 @@ Invoke-Check $false 'preview-requires-enabled' 'RenderPreview'
 [IO.File]::WriteAllText($config, $previewConfig)
 Copy-Item -LiteralPath (Join-Path $plugin 'GojoBracken.dll') -Destination $duplicate
 Invoke-Check $false 'preview-rejects-duplicate-dll' 'RenderPreview'
-Write-Output "GAME PROFILE CHECKS PASS: live/preview fixtures, mode isolation, tampering, duplicate DLLs, unsupported MVID and stale-report rejection. Synthetic files only; no game run. Logs: $root"
+Remove-Item -LiteralPath (Join-Path $duplicate 'GojoBracken.dll')
+Move-Item -LiteralPath $previewBundle -Destination (Join-Path $plugin 'gojobracken')
+$multiConfig = Get-Content -LiteralPath (Join-Path $repo 'packaging/release/FreakyFriday.GojoBracken.cfg') -Raw
+[IO.File]::WriteAllText($config, $multiConfig)
+Invoke-Check $true 'valid-multiplayer' 'Multiplayer'
+Invoke-Check $false 'multiplayer-config-in-solo-mode'
+[IO.File]::WriteAllText($config, $multiConfig.Replace('SoloLiveTest = false', 'SoloLiveTest = true'))
+Invoke-Check $false 'multiplayer-rejects-solo-test' 'Multiplayer'
+[IO.File]::WriteAllText($config, $multiConfig.Replace('[RenderPreview]', '[RenderPreviewDisabled]')+"`n[RenderPreview]`nEnabled = true")
+Invoke-Check $false 'multiplayer-rejects-preview' 'Multiplayer'
+[IO.File]::WriteAllText($config, $multiConfig.Replace('StandingModelPreview = true', 'StandingModelPreview = false'))
+Invoke-Check $false 'multiplayer-requires-model' 'Multiplayer'
+[IO.File]::WriteAllText($config, $multiConfig.Replace('Enabled = true', 'Enabled = false'))
+Invoke-Check $false 'multiplayer-requires-live-effects' 'Multiplayer'
+Write-Output "GAME PROFILE CHECKS PASS: live/preview/multiplayer fixtures, mode isolation, tampering, duplicate DLLs, unsupported MVID and stale-report rejection. Synthetic files only; no game run. Logs: $root"

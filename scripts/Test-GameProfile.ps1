@@ -3,7 +3,7 @@
 param(
     [Parameter(Mandatory)] [string] $GameDirectory,
     [Parameter(Mandatory)] [string] $ProfileDirectory,
-    [ValidateSet('LiveEnemy', 'RenderPreview')] [string] $Mode = 'LiveEnemy',
+    [ValidateSet('LiveEnemy', 'RenderPreview', 'Multiplayer')] [string] $Mode = 'LiveEnemy',
     [string] $ExpectedManifest = (Join-Path $PSScriptRoot 'expected.json'),
     [string] $OutputPath = (Join-Path $PSScriptRoot 'preflight-report.json')
 )
@@ -47,9 +47,11 @@ if ($Mode -eq 'RenderPreview') {
     }
     if ($values['RenderPreview.Enabled'] -ne 'true') { throw 'RenderPreview.Enabled must be true for the simulated preview.' }
 } else {
-    foreach ($key in @('DevelopmentEffects.Enabled', 'DevelopmentEffects.StandingModelPreview', 'DevelopmentEffects.SoloLiveTest')) {
+    foreach ($key in @('DevelopmentEffects.Enabled', 'DevelopmentEffects.StandingModelPreview')) {
         if ($values[$key] -ne 'true') { throw "Test configuration requires $key=true." }
     }
+    $solo = if ($Mode -eq 'LiveEnemy') { 'true' } else { 'false' }
+    if ($values['DevelopmentEffects.SoloLiveTest'] -ne $solo) { throw "Test configuration requires DevelopmentEffects.SoloLiveTest=$solo for $Mode." }
     if ($values['RenderPreview.Enabled'] -ne 'false') { throw 'RenderPreview.Enabled must be false for the live enemy test.' }
 }
 $report = [ordered]@{

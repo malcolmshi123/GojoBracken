@@ -44,7 +44,7 @@ public static class GojoBundleChecks
             GojoBracken.BrackenModelAttachment.Validate(runtime.Model);
         }
         File.WriteAllText(Path.Combine(Path.GetDirectoryName(BundlePath), "verification.json"),
-            "{\"modelPoseVerified\":true,\"auraMatchesRelease\":true,\"decodedAudioMatchesRelease\":true,\"assetAliasesPreserved\":true,\"runtimeAssetLoaderPassed\":true}");
+            "{\"modelPoseVerified\":true,\"auraStructureMatchesRelease\":true,\"decodedAudioMatchesRelease\":true,\"assetAliasesPreserved\":true,\"runtimeAssetLoaderPassed\":true}");
         Debug.Log("GOJO COMPLETE BUNDLE CHECKS PASS");
     }
 }
