@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.1
+
+- Rewrote the maintainer guides in the style of the 0.2.7 docs. Model, aura and audio behavior are unchanged.
+
 ## 0.3.0
 
 - Refined the existing Gojo model in Blender: more symmetric posture, flat feet, a straight jacket stripe, revised hands with fingertips resting against the pants, and a continuous neck.

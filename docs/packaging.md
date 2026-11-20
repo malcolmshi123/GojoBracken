@@ -1,8 +1,8 @@
 # Packaging and release
 
-The 0.3.0 package uses the approved Blender model and the existing aura, Japanese voice and music. Install BepInExPack 5.4.2305 and the release ZIP in a Lethal Company v81 profile, or place its BepInEx folder in the profile manually. Keep exactly one GojoBracken.dll beside the extensionless gojobracken bundle.
+The 0.3.1 package contains the approved Blender model and existing aura, Japanese voice and music. Install BepInExPack 5.4.2305 and the release ZIP in a Lethal Company v81 profile. For a manual install, copy the ZIP's BepInEx folder into the profile. Keep exactly one GojoBracken.dll beside the extensionless gojobracken bundle.
 
-The package includes the normal attachment configuration: development cosmetics and the standing model enabled; SoloLiveTest and RenderPreview disabled. Existing customized configurations should be reviewed when updating. Multiplayer behavior and player-kill/body alignment are unverified for this model. Release acceptance is based on the approved model and in-ship simulated cycle. Further live testing was waived; see the [testing scope](in-game-testing.md).
+The packaged config enables development cosmetics and the standing model, with SoloLiveTest and RenderPreview disabled. Review existing custom settings when updating. The model and in-ship simulated cycle have been approved for release preparation; further live testing was waived. Multiplayer behavior and player-kill/body alignment remain unverified. See the [testing scope](in-game-testing.md).
 
 ## Build
 
@@ -16,7 +16,7 @@ powershell.exe -NoProfile -ExecutionPolicy RemoteSigned \
   -IconPath artifacts/unity/source/package/icon.png
 ```
 
-The builder reads the assembly version, includes README.md, CHANGELOG.md, license, credits, a 256x256 PNG icon, DLL, bundle and release config, then writes dist/GojoBracken-0.3.0.zip. It refuses to overwrite an existing archive. `-IncludeSoloConfig` selects the private solo-test configuration instead and is not used for a public release.
+The builder reads the assembly version and writes dist/GojoBracken-0.3.1.zip. It includes README.md, CHANGELOG.md, license, credits, a 256x256 PNG icon, DLL, bundle and release config. It refuses to overwrite an existing ZIP. Use `-IncludeSoloConfig` only for a private solo-test package.
 
 ## Verify
 
@@ -25,15 +25,23 @@ Use Mono.Cecil.dll from the BepInEx core directory to inspect DLL metadata witho
 ```bash
 powershell.exe -NoProfile -ExecutionPolicy RemoteSigned \
   -File scripts/Test-ReleasePackage.ps1 \
-  -PackagePath dist/GojoBracken-0.3.0.zip \
+  -PackagePath dist/GojoBracken-0.3.1.zip \
   -BundleDirectory artifacts/unity/mod-bundle \
   -CecilPath '/path/to/BepInEx/core/Mono.Cecil.dll'
 ```
 
-Pass a Windows path or convert a Git Bash path with cygpath -w when setting CecilPath. The verifier checks exact file layout and bytes, source README/changelog/license, matching bundle/credits, config, icon, dependency identity and agreement between filename, manifest, DLL assembly, compiled PluginVersion and project version. Its adjacent JSON report includes hashes and the pinned game MVID and can serve as Test-GameProfile.ps1's ExpectedManifest. Failed verification replaces any earlier success report. File verification does not establish gameplay compatibility.
+Pass a Windows path for CecilPath, or convert a Git Bash path with cygpath -w.
 
-For packaging regression checks, run scripts/tests/Test-ReleasePackage.ps1 with the same CecilPath. The suite tests valid packaging and rejects altered version, bundle, config, extra DLLs, and missing or duplicate entries. See [in-game testing](in-game-testing.md) for the optional preview and live modes.
+The verifier checks the exact ZIP layout and file bytes against the source README, changelog, license, bundle, credits and config. It also checks the icon and dependency identity. The filename, manifest, DLL assembly, compiled PluginVersion and project version must agree.
+
+The adjacent JSON report contains hashes and the pinned game MVID; use it as Test-GameProfile.ps1's ExpectedManifest. A failed check replaces any earlier success report. These file checks do not establish gameplay compatibility.
+
+Run scripts/tests/Test-ReleasePackage.ps1 with the same CecilPath to check packaging regressions. It accepts a valid package and rejects altered versions, bundles, configs, extra DLLs, and missing or duplicate entries. See [in-game testing](in-game-testing.md) for preview and live modes.
 
 ## Handoff
 
-Before installing, back up the profile's plugin directory and configuration outside BepInEx/plugins. Keep the approved 0.2.7 published package as provenance and rollback material. To roll back, close the game, restore the backed-up DLL, bundle and configuration together, and remove any newly introduced preview files. Do not leave duplicate plugin DLLs. Only the newly versioned ZIP is a release candidate; do not upload old private test kits. Publication, Git staging/commits/pushes and tags remain separate user actions. When uploading, retain the AI Generated category and the source/voice/music attribution. After installation, inspect LogOutput.log for bundle/configuration failures. Disable DevelopmentEffects.Enabled and restart to use vanilla visuals while diagnosing a problem. File verification does not replace a fresh-profile game launch or multiplayer test.
+Before installing, back up the profile's plugin directory and config outside BepInEx/plugins. Keep the published 0.2.7 package for provenance and rollback. To roll back, close the game and restore the backed-up DLL, bundle and config together. Remove any newly introduced preview files and check for duplicate DLLs.
+
+Upload only the new release ZIP, keeping private test kits local. Retain the AI Generated category and the source, voice and music attribution when uploading.
+
+After installation, check LogOutput.log for bundle or config errors. To use vanilla visuals while investigating, disable DevelopmentEffects.Enabled and restart. A verified ZIP still needs a fresh-profile game launch and multiplayer testing before either can be claimed as tested.

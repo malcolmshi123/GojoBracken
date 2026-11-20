@@ -2,16 +2,16 @@
 
 ## Supported runtime
 
-GojoBracken targets the inspected Lethal Company v81 assembly and Unity 2022.3.62f2 with HDRP. The read-only Mono.Cecil inspection recorded:
+GojoBracken targets the inspected Lethal Company v81 assembly and Unity 2022.3.62f2 with HDRP. Mono.Cecil read the assembly without executing it and recorded:
 
 - Assembly-CSharp MVID: `aca1e98d-6f84-4d3f-85cd-22b6f7be2f9b`
 - Assembly-CSharp SHA256: `5F7DB5538B78DC408845A3002907619785AC9F9C6B6059D13DC9A602D9B65731`
 
-Runtime guards reject an unrecognized assembly. A game version label alone does not establish compatibility. Game assemblies, extracted game assets and local inspection reports stay out of Git. The IL evidence is retained locally in `artifacts/v81-flowerman-il.txt`.
+Runtime guards reject unrecognized assemblies. Check the assembly identity even when the game version label matches. Keep game assemblies, extracted game assets and local inspection reports out of Git. The local IL evidence is in `artifacts/v81-flowerman-il.txt`.
 
 ## State contract
 
-`BrackenV81Presentation` consumes read-only observations and produces cosmetic intent. It does not change AI, networking, colliders, the original Animator or corpse handling.
+`BrackenV81Presentation` reads observations and returns cosmetic events and effect levels. It leaves AI, networking, colliders, the original Animator and corpse handling unchanged.
 
 | Observation | Presentation | Inspected FlowermanAI evidence |
 | --- | --- | --- |
@@ -22,17 +22,17 @@ Runtime guards reject an unrecognized assembly. A game version label alone does 
 | inKillAnimation | Kill overlay | Update returns before normal phase processing |
 | isEnemyDead | Death | Update returns before normal phase processing |
 
-The local `isInAngerMode` flag can lag a transition. Voice events therefore use entry into raw state 2. Kill/corpse overlays suppress that entry, and ending an overlay cannot create another voice event. Death produces zero aura and a stop-effects signal; reset clears per-instance state.
+The local `isInAngerMode` flag can lag behind a state transition, so voice events use entry into raw state 2. Kill/corpse overlays suppress that entry; ending an overlay cannot trigger another voice event. Death sets aura to zero and signals the effects to stop. Reset clears each instance's state.
 
-`EnterAngerModeServerRpc` forwards an anger value to the client RPC, which assigns `angerMeter` and state 2. Clients count down locally; this is not a continuously replicated NetworkVariable. The presentation uses detailed anger when trusted and a conservative phase approximation otherwise. Ownership, latency, stun and hit effects require runtime evidence for networking claims.
+`EnterAngerModeServerRpc` passes an anger value to the client RPC, which sets `angerMeter` and state 2. Clients then count down locally; the value is not continuously replicated through a NetworkVariable. The presentation uses detailed anger when trusted and estimates it from the phase otherwise. Ownership, latency, stun and hit effects still need runtime checks before networking behavior can be confirmed.
 
-The inspected game writes do not impose a fixed anger maximum. Stun paths assign values including 12, 2 and 6; HitEnemy assigns 11 before adding anger. The cosmetic default saturates at 12 while leaving the game's anger unchanged. Smoothed aura remains bounded between 0.15 and 1 in living phases before the configured strength multiplier.
+The inspected game writes set no fixed anger maximum. Stun paths assign values including 12, 2 and 6. HitEnemy assigns 11 before adding anger. The aura reaches full strength at the default threshold of 12 without changing game anger. In living phases, smoothed aura stays between 0.15 and 1 before the configured strength multiplier.
 
 ## Transform and animation constraints
 
-The game uses anger/sneak booleans, speedMultiplier, VelocityX/VelocityZ and killing/carryingBody animation parameters. CalculateAnimationDirection derives VelocityZ from negative local Y in animationContainer space. During carrying, the container's local Z rotation approaches 179 degrees. Copying these transforms or parameters directly into a conventional Gojo rig would require coordinate conversion.
+The game uses anger/sneak booleans, speedMultiplier, VelocityX/VelocityZ and killing/carryingBody animation parameters. CalculateAnimationDirection derives VelocityZ from negative local Y in animationContainer space. The container's local Z rotation approaches 179 degrees while carrying. Copying these transforms or parameters into a conventional Gojo rig requires coordinate conversion.
 
-The current replacement instead follows the enemy root with a fixed standing pose and a facing correction. It preserves the original gameplay animation and body grip. It does not implement movement/attack retargeting or a calibrated corpse grip. The approved in-ship simulation cannot establish live AI, cleanup, player-kill/body alignment or multiplayer behavior; see [testing scope](in-game-testing.md).
+Gojo follows the enemy root in a fixed standing pose with a facing correction. The replacement keeps the original gameplay animation and body grip. It has no movement/attack retargeting or calibrated corpse grip. The approved ship simulation does not validate live AI, cleanup, player-kill/body alignment or multiplayer behavior. See the [testing scope](in-game-testing.md).
 
 ## Checks and diagnostics
 
@@ -43,9 +43,9 @@ dotnet build GojoBracken.sln -c Release
 dotnet run --project tests/StateReaderChecks/StateReaderChecks.csproj -c Release
 ```
 
-Offline checks cover phase mapping, stale flags, repeated aggro entries, overlays, smoothing, invalid anger inputs, remote approximation, death/reset, independent instances, schema drift and configuration guards. Unity launchers under `scripts/tests/` cover bundle loading, particles, cosmetic controllers, attachment/visibility, observer lifecycle and rig reports in isolated ignored projects. These checks do not launch the game or prove multiplayer parity.
+Offline checks cover phase mapping, stale flags, repeated aggro entries, overlays, smoothing, invalid anger inputs, remote approximation, death/reset, independent instances, schema drift and config guards. Unity launchers under `scripts/tests/` check bundle loading, particles, cosmetic controllers, attachment/visibility, observer lifecycle and rig reports in isolated ignored projects. They do not launch the game or establish multiplayer parity.
 
-For an installed testing profile, use the [profile preflight](in-game-testing.md) before launching. To inspect a different installation without executing its assemblies, set its actual paths and run:
+Run the [profile preflight](in-game-testing.md) before launching an installed test profile. To inspect a different installation without executing its assemblies, set the actual paths and run:
 
 ```bash
 GAME='/d/SteamLibrary/steamapps/common/Lethal Company'
@@ -64,4 +64,4 @@ powershell.exe -NoProfile -ExecutionPolicy RemoteSigned \
   -CecilPath "$(cygpath -w "$PROFILE/BepInEx/core/Mono.Cecil.dll")"
 ```
 
-The rendering collector reads existing files and logs; the metadata collector uses Mono.Cecil. Retain reports alongside the game's displayed version and Player.log. For a rig report, enable `Diagnostics.ExportBrackenRig` and inspect `BepInEx/config/GojoBracken` or the timeout in LogOutput.log. An already-loaded prefab is sufficient; this diagnostic never spawns an enemy.
+The rendering collector reads existing files and logs. The metadata collector uses Mono.Cecil. Keep the reports with the game's displayed version and Player.log. For a rig report, enable `Diagnostics.ExportBrackenRig` and check `BepInEx/config/GojoBracken` or the timeout in LogOutput.log. The diagnostic can use an already-loaded prefab and never spawns an enemy.

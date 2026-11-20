@@ -2,9 +2,9 @@
 
 ## Current validation status
 
-Release acceptance covers the approved Blender model and the in-ship simulated phase cycle. Further live solo and multiplayer checks were waived for package preparation; they remain unverified. Do not describe the cycle as proof of live AI, cleanup, player-kill/body alignment or multiplayer compatibility.
+The Blender model and in-ship simulated phase cycle have been approved for release preparation. Further live solo and multiplayer checks were waived and remain unverified. The cycle does not test live AI, cleanup, player-kill/body alignment or multiplayer compatibility.
 
-The current release uses the fixed standing model in every state. It does not provide the older procedural reach/drag poses or a calibrated corpse grip. Historical step-by-step handoffs are archived under archive/docs/blender-handoffs; this is the maintained guide.
+Gojo holds the same standing pose in every state. The release has no procedural reach/drag poses or calibrated corpse grip. Earlier step-by-step handoffs are under archive/docs/blender-handoffs.
 
 ## Configuration modes
 
@@ -16,9 +16,9 @@ Close the game before changing configuration. Use a separate profiles/test profi
 | LiveEnemy (private solo runner) | solo/ | true | true | true | false |
 | RenderPreview (stationary simulation) | preview/ | false | false | false | true |
 
-The normal release config also works in solo play. Multiplayer names the general attachment preflight configuration, not a claim that networking has been tested. Test-GameProfile.ps1 verifies the installed DLL/bundle hashes, pinned Unity player/MVID, single plugin copy and selected config. It does not launch or validate the game.
+The normal release config works in solo play too. Multiplayer is the preflight name for general attachment; networking remains untested. Test-GameProfile.ps1 checks the installed DLL/bundle hashes, pinned Unity player/MVID, plugin copy count and selected config. It does not launch the game or check gameplay.
 
-From Git Bash, set GAME and the actual test profile folder from Thunderstore Mod Manager, then select one mode. Do not assume an r2modman profile location:
+In Git Bash, set GAME and the actual test profile folder from Thunderstore Mod Manager, then choose a mode. Use your Thunderstore folder instead of an assumed r2modman location:
 
 ```bash
 GAME='/d/SteamLibrary/steamapps/common/Lethal Company'
@@ -28,14 +28,14 @@ powershell.exe -NoProfile -ExecutionPolicy RemoteSigned \
   -File scripts/Test-GameProfile.ps1 -Mode "$MODE" \
   -GameDirectory "$(cygpath -w "$GAME")" \
   -ProfileDirectory "$(cygpath -w "$PROFILE")" \
-  -ExpectedManifest "$(cygpath -w "$PWD/dist/GojoBracken-0.3.0.json")"
+  -ExpectedManifest "$(cygpath -w "$PWD/dist/GojoBracken-0.3.1.json")"
 ```
 
-The expected manifest is produced by the release package verifier. Add -OutputPath to select a report location. Stop on failure; do not bypass the version guard. Reports always retain gameplayValidated=false; simulatedChecksOnly=true identifies RenderPreview.
+Use the expected manifest from the release package verifier. Add -OutputPath to choose where the report is saved. Stop if preflight fails and keep the version guard enabled. Reports always have gameplayValidated=false; simulatedChecksOnly=true marks RenderPreview.
 
 ## In-ship simulated cycle
 
-Copy the release DLL and the same complete bundle into the test plugin directory, naming the preview copy gojobracken-hdrp-material-check. Preserve the regular gojobracken file and any earlier preview copy in your backup. Apply packaging/preview/FreakyFriday.GojoBracken.cfg, then preflight with Mode=RenderPreview. Host a private solo game, stay in the ship, and face a clear level aisle with roughly four metres free.
+Copy the release DLL and complete bundle into the test plugin directory. Name the preview bundle gojobracken-hdrp-material-check. Back up the regular gojobracken file and any existing preview copy. Apply packaging/preview/FreakyFriday.GojoBracken.cfg, then preflight with Mode=RenderPreview. Host a private solo game and stay in the ship. Face a clear, level aisle with about four metres free.
 
 ```bash
 PLUGIN='/path/to/profiles/test/BepInEx/plugins/GojoBracken'
@@ -44,20 +44,22 @@ powershell.exe -NoProfile -ExecutionPolicy RemoteSigned \
   -PluginDirectory "$(cygpath -w "$PLUGIN")" -Command cycle
 ```
 
-After four seconds, the local standing figure simulates hunting, retreat, aggro, corpse dragging on raw aggro, retreat, aggro again and hunting. Expect seven Phase sample lines and two voice requests using the imported clip. Aura responds to the synthetic anger; each aggro entry starts voice/music. Corpse dragging triggers no new voice, and existing music may continue while raw aggro remains active. Music stops when raw aggro ends. The short cycle need not include a full music loop. No live enemy or player corpse is involved.
+After four seconds, the standing figure cycles through hunting, retreat, aggro, corpse dragging on raw aggro, retreat, aggro again and hunting.
 
-Use the same request command with -Command clear before exiting. This removes the local preview; it is not a live-enemy cleanup test. Restore the exact backed-up profile files with the game closed, removing only newly introduced preview/config files that were originally absent. Preserve any pending request with the results before restoring normal play.
+Expect seven Phase sample lines and two requests for the imported voice clip. The aura follows synthetic anger, and each aggro entry starts voice/music. Corpse dragging requests no new voice. Music may continue through that overlay while raw aggro remains active, then stops when raw aggro ends. The short cycle may end before a full music loop plays. There is no live enemy or player corpse in this check.
+
+Send -Command clear before exiting to remove the local preview. Clearing it does not test live-enemy cleanup. Close the game and restore the exact backed-up profile files. Remove newly introduced preview/config files only if they were absent before setup. Save any pending request with the results before returning to normal play.
 
 ## Silent full-aura screenshot
 
-With a fresh preview session, use the same request command with `-Command full`. It places stationary Gojo at maximum aura with a silent fixture and no voice/music loaded. Use `clear` and wait for it to be consumed before placing a fresh preview if a cycle is already running. The fixed aura width/depth scale is 1.2 and height scale is 1.5; the main flame height is 1.2 at zero anger and 1.5 at full anger relative to its authored size. Capture manually, then clear and restore the profile as above. Existing game ambience is unaffected.
+Start a fresh preview with `-Command full` for stationary Gojo at maximum aura. It uses a silent fixture and loads no voice/music. If a cycle is running, send `clear` and return to the game until it consumes the request before placing Gojo again. Fixed aura width/depth is 1.2 and height is 1.5. The main flame height is 1.2 at zero anger and 1.5 at full anger, relative to its authored size. Take the screenshot yourself, then clear and restore the profile as above. Game ambience stays unchanged.
 
 ## Optional live and multiplayer checks
 
-These checks remain unverified for the current model unless new evidence is collected:
+The following checks remain unverified for the current model:
 
-- Live encounter: use LiveEnemy or the normal release path, keep AI enabled, and observe model/floor alignment, movement, natural phase transitions, aura/audio and cleanup after enemy removal/scene changes. Record debugger overrides.
-- Kill/carry: keep an observer alive and let another participant be the victim in a disposable private game. Observe actual corpse handling and visual alignment rather than forced carrying flags. A fixed hand pose can still miss the body.
-- Multiplayer: compare modded host/vanilla client and vanilla host/modded client. Vanilla should retain ordinary Bracken visuals; cosmetics are local. Non-owner anger uses phase approximation, so matching aura intensity frame for frame is not required.
+- Live encounter: use LiveEnemy or the normal release path with AI enabled. Watch model/floor alignment, movement, natural phase transitions, aura/audio and cleanup after enemy removal or scene changes. Record debugger overrides.
+- Kill/carry: keep an observer alive and let another participant be the victim in a disposable private game. Watch actual corpse handling and visual alignment without forcing carrying flags. The fixed hand pose can miss the body.
+- Multiplayer: compare modded host/vanilla client and vanilla host/modded client. Vanilla players should see ordinary Brackens because the cosmetics are local. Non-owner anger uses a phase estimate, so aura intensity can differ between clients.
 
-Collect the full BepInEx LogOutput.log, preflight and candidate JSON reports, screenshots/video and pass/fail/not-observed notes for each case. Preserve the original AI, colliders, Animator and corpse handling; do not turn simulated observations or a successful join into a gameplay-parity claim.
+Save the full BepInEx LogOutput.log, preflight and candidate JSON reports, screenshots/video, and pass/fail/not-observed notes for each case. Leave the original AI, colliders, Animator and corpse handling unchanged. A simulated check or successful join does not establish gameplay parity.
