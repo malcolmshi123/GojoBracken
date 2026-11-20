@@ -30,9 +30,15 @@ if (-not (Test-Path -LiteralPath $manifest)) {
     Copy-Item -LiteralPath (Join-Path $repo 'UnityProject\ProjectSettings\ProjectVersion.txt') -Destination (Join-Path $project 'ProjectSettings')
 }
 Copy-Item -Path (Join-Path $PSScriptRoot 'blender\*.cs') -Destination (Join-Path $project 'Assets\Editor') -Force
+$runtime = Join-Path $project 'Assets\GojoRuntime'
+New-Item -ItemType Directory -Force $runtime | Out-Null
 foreach ($name in @('BrackenModelAttachment.cs', 'BrackenVisibilityReader.cs')) {
-    Copy-Item -LiteralPath (Join-Path $repo "src\GojoBracken\$name") -Destination (Join-Path $project 'Assets\Editor') -Force
+    Copy-Item -LiteralPath (Join-Path $repo "src\GojoBracken\$name") -Destination $runtime -Force
+    $oldEditorCopy = Join-Path $project "Assets\Editor\$name"
+    if (Test-Path -LiteralPath $oldEditorCopy) { Remove-Item -LiteralPath $oldEditorCopy -Force }
+    if (Test-Path -LiteralPath ($oldEditorCopy + '.meta')) { Remove-Item -LiteralPath ($oldEditorCopy + '.meta') -Force }
 }
+[IO.File]::WriteAllText((Join-Path $runtime 'EditorVisibility.cs'), '[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Assembly-CSharp-Editor")]')
 if (-not $VerifyOnly) {
     if (-not (Test-Path -LiteralPath $blender -PathType Leaf)) { throw 'The local Blender installation is required.' }
     & $blender -b $model --python-exit-code 1 --python (Join-Path $PSScriptRoot 'blender\export_model.py')
