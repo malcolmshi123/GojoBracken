@@ -27,7 +27,6 @@ function Read-Entry([string] $Name) {
 try {
     $files = [ordered]@{
         'README.md' = Join-Path $repo 'README.md'
-        'CHANGELOG.md' = Join-Path $repo 'CHANGELOG.md'
         'LICENSE' = Join-Path $repo 'LICENSE'
         'ASSET-CREDITS.txt' = Join-Path $BundleDirectory 'ASSET-CREDITS.txt'
         'BepInEx/config/FreakyFriday.GojoBracken.cfg' = Join-Path $repo 'packaging/release/FreakyFriday.GojoBracken.cfg'

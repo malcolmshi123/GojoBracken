@@ -42,7 +42,6 @@ $manifest = [ordered]@{
 }
 $files = [ordered]@{
     'README.md' = (Join-Path $repo 'README.md')
-    'CHANGELOG.md' = (Join-Path $repo 'CHANGELOG.md')
     'icon.png' = $icon
     'LICENSE' = (Join-Path $repo 'LICENSE')
     'ASSET-CREDITS.txt' = $credits

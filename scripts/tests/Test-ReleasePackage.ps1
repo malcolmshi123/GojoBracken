@@ -11,7 +11,7 @@ Add-Type -AssemblyName System.IO.Compression.FileSystem
 $zip = [IO.Compression.ZipFile]::OpenRead($package)
 try {
     if (-not $zip.GetEntry('BepInEx/config/FreakyFriday.GojoBracken.cfg')) { throw 'Release package must enable normal attachment on a fresh install.' }
-    if (-not $zip.GetEntry('CHANGELOG.md')) { throw 'Release changelog is missing.' }
+    if ($zip.GetEntry('CHANGELOG.md')) { throw 'Release package must not include CHANGELOG.md.' }
 } finally { $zip.Dispose() }
 $report = Join-Path $run 'report.json'
 function Check([string] $Path, [bool] $Pass, [string] $Name) {
@@ -24,7 +24,7 @@ function Check([string] $Path, [bool] $Pass, [string] $Name) {
     if ($result.packageVerified -ne $Pass -or $result.gameplayValidated) { throw "Stale or incorrect verification report: $Name" }
 }
 Check $package $true 'valid'
-foreach ($change in @('version', 'bundle', 'config', 'extra-dll', 'missing-entry', 'duplicate-entry')) {
+foreach ($change in @('version', 'bundle', 'config', 'extra-dll', 'extra-changelog', 'missing-entry', 'duplicate-entry')) {
     $folder = Join-Path $run $change
     New-Item -ItemType Directory -Path $folder | Out-Null
     $bad = Join-Path $folder ([IO.Path]::GetFileName($package))
@@ -36,6 +36,7 @@ foreach ($change in @('version', 'bundle', 'config', 'extra-dll', 'missing-entry
             bundle { 'BepInEx/plugins/GojoBracken/gojobracken' }
             config { 'BepInEx/config/FreakyFriday.GojoBracken.cfg' }
             extra-dll { 'BepInEx/plugins/Duplicate/GojoBracken.dll' }
+            extra-changelog { 'CHANGELOG.md' }
             missing-entry { 'ASSET-CREDITS.txt' }
             duplicate-entry { 'README.md' }
         }
@@ -56,4 +57,4 @@ foreach ($change in @('version', 'bundle', 'config', 'extra-dll', 'missing-entry
     } finally { $zip.Dispose() }
     Check $bad $false $change
 }
-Write-Output "RELEASE PACKAGE CHECKS PASS: fresh-install config, exact payload and metadata; version/bundle/config/extra-DLL tampering, missing/duplicate entries and stale reports rejected. $run"
+Write-Output "RELEASE PACKAGE CHECKS PASS: fresh-install config, exact payload and metadata; version/bundle/config/extra-DLL tampering, unwanted changelog, missing/duplicate entries and stale reports rejected. $run"
