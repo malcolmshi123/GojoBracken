@@ -28,7 +28,7 @@ powershell.exe -NoProfile -ExecutionPolicy RemoteSigned \
   -File scripts/Test-GameProfile.ps1 -Mode "$MODE" \
   -GameDirectory "$(cygpath -w "$GAME")" \
   -ProfileDirectory "$(cygpath -w "$PROFILE")" \
-  -ExpectedManifest "$(cygpath -w "$PWD/dist/GojoBracken-0.3.2.json")"
+  -ExpectedManifest "$(cygpath -w "$PWD/dist/GojoBracken-0.3.3.json")"
 ```
 
 Use the expected manifest from the release package verifier. Add -OutputPath to choose where the report is saved. Stop if preflight fails and keep the version guard enabled. Reports always have gameplayValidated=false; simulatedChecksOnly=true marks RenderPreview.

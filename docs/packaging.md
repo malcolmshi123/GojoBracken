@@ -1,6 +1,6 @@
 # Packaging and release
 
-The 0.3.2 package contains the approved Blender model and existing aura, Japanese voice and music. Install BepInExPack 5.4.2305 and the release ZIP in a Lethal Company v81 profile. For a manual install, copy the ZIP's BepInEx folder into the profile. Keep exactly one GojoBracken.dll beside the extensionless gojobracken bundle.
+The 0.3.3 package contains the approved Blender model and existing aura, Japanese voice and music. Install BepInExPack 5.4.2305 and the release ZIP in a Lethal Company v81 profile. For a manual install, copy the ZIP's BepInEx folder into the profile. Keep exactly one GojoBracken.dll beside the extensionless gojobracken bundle.
 
 The packaged config enables development cosmetics and the standing model, with SoloLiveTest and RenderPreview disabled. Review existing custom settings when updating. The model and in-ship simulated cycle have been approved for release preparation; further live testing was waived. Multiplayer behavior and player-kill/body alignment remain unverified. See the [testing scope](in-game-testing.md).
 
@@ -16,7 +16,7 @@ powershell.exe -NoProfile -ExecutionPolicy RemoteSigned \
   -IconPath artifacts/unity/source/package/icon.png
 ```
 
-The builder reads the assembly version and writes dist/GojoBracken-0.3.2.zip. It includes README.md, license, credits, a 256x256 PNG icon, DLL, bundle and release config. It refuses to overwrite an existing ZIP. Use `-IncludeSoloConfig` only for a private solo-test package.
+The builder reads the assembly version and writes dist/GojoBracken-0.3.3.zip. It includes README.md, license, credits, a 256x256 PNG icon, DLL, bundle and release config. It refuses to overwrite an existing ZIP. Use `-IncludeSoloConfig` only for a private solo-test package.
 
 ## Verify
 
@@ -25,7 +25,7 @@ Use Mono.Cecil.dll from the BepInEx core directory to inspect DLL metadata witho
 ```bash
 powershell.exe -NoProfile -ExecutionPolicy RemoteSigned \
   -File scripts/Test-ReleasePackage.ps1 \
-  -PackagePath dist/GojoBracken-0.3.2.zip \
+  -PackagePath dist/GojoBracken-0.3.3.zip \
   -BundleDirectory artifacts/unity/mod-bundle \
   -CecilPath '/path/to/BepInEx/core/Mono.Cecil.dll'
 ```

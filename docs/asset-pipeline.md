@@ -23,7 +23,7 @@ Keep these local authoring files when cleaning build output. Git ignores them:
 
 The model has seven skinned meshes and 31 bones. Its exported bind poses and standing controller keep the approved pose after runtime attachment disables the Animator.
 
-The jacket placket has two closed rectangular layers, each with a constant width and defined edges. The hands have connected surfaces, and the neck joins smoothly. Custom normals smooth the edited surfaces. Blender fingerprints include posed normals, and Unity checks positions and normals, including a test that rejects an inverted normal. The model has no independent finger animation or calibrated corpse grip.
+The jacket's inner armholes sit lower, with the original shoulder caps unchanged. The placket has two closed rectangular layers, each with a constant width and defined edges. The hands have connected surfaces, and the neck joins smoothly. Custom normals smooth the edited surfaces. Blender fingerprints include posed normals, and Unity checks positions and normals, including a test that rejects an inverted normal. The model has no independent finger animation or calibrated corpse grip.
 
 Run from the checkout root in Git Bash:
 
